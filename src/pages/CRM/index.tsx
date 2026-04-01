@@ -5,7 +5,7 @@ import { getClient } from '@/api/crm'
 import { Pipeline } from './Pipeline'
 import { ProjectDetail } from './ProjectDetail'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
+
 import type { Client } from '@/types/crm'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
@@ -49,7 +49,7 @@ export default function CRMPage() {
               <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to pipeline
             </button>
 
-            <GlassPanel depth="elevated" className="p-10">
+            <div className="rounded-3xl bg-white/40 p-10">
               <div className="flex items-start justify-between">
                 <div>
                   <h1 className="font-display text-display-md font-light text-on-surface">{client.name}</h1>
@@ -101,7 +101,7 @@ export default function CRMPage() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </GlassPanel>
+            </div>
 
             <ProjectDetail clientId={client.id} />
           </motion.div>

@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getSession, createSession } from '@/api/claudeCode'
+import { getSession, createSession, getSessions } from '@/api/claudeCode'
 import { SessionList } from './SessionList'
 import { CCTerminal } from './Terminal'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
+import { WhisperStat } from '@/components/spatial/WhisperStat'
 import type { CCSession } from '@/types/claudeCode'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Sparkles } from 'lucide-react'
+import { ArrowLeft, Sparkles, Activity, Clock } from 'lucide-react'
+import { formatRelative } from '@/lib/utils'
 
 export default function ClaudeCodePage() {
   const { sessionId } = useParams()
@@ -27,6 +28,16 @@ export default function ClaudeCodePage() {
     },
   })
 
+  // Get sessions for ambient stats
+  const { data: sessions } = useQuery({
+    queryKey: ['ccSessions'],
+    queryFn: () => getSessions({ limit: 20 }),
+  })
+
+  const sessionList = sessions?.sessions ?? []
+  const runningCount = sessionList.filter((s: CCSession) => s.status === 'running' || s.status === 'initializing').length
+  const lastCompleted = sessionList.find((s: CCSession) => s.status === 'complete' || s.status === 'error')
+
   const create = useMutation({
     mutationFn: () => createSession({ initialPrompt: prompt }),
     onSuccess: (data) => {
@@ -39,16 +50,13 @@ export default function ClaudeCodePage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="mb-12">
+      <div className="mb-10">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           AI Operations
         </span>
         <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
           Autonomy <em className="not-italic font-normal text-primary">Core</em>
         </h1>
-        <p className="mt-3 max-w-lg text-sm leading-relaxed text-on-surface-muted">
-          Deploying ambient logic structures across the Ecodia network.
-        </p>
       </div>
 
       <AnimatePresence mode="popLayout" initial={false}>
@@ -77,35 +85,46 @@ export default function ClaudeCodePage() {
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 200, damping: 24 }}
           >
-            <GlassPanel depth="elevated" holo className="p-8">
-              <h2 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">New Decision</h2>
-              <div className="mt-4 flex gap-3">
-                <input
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Enter initial prompt for autonomous session..."
-                  className="flex-1 rounded-xl bg-surface-container-low px-5 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
-                  onKeyDown={(e) => e.key === 'Enter' && prompt.trim() && create.mutate()}
+            {/* Ambient stats */}
+            <div className="mb-10 flex gap-10">
+              <WhisperStat
+                label="Running"
+                value={runningCount}
+                icon={Activity}
+                accent={runningCount > 0 ? 'text-secondary' : 'text-on-surface-muted'}
+              />
+              {lastCompleted && (
+                <WhisperStat
+                  label="Last completed"
+                  value={formatRelative(lastCompleted.completed_at || lastCompleted.started_at)}
+                  icon={Clock}
+                  accent="text-on-surface-muted"
                 />
-                <motion.button
-                  onClick={() => create.mutate()}
-                  disabled={!prompt.trim() || create.isPending}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="btn-primary-gradient flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-40"
-                >
-                  <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  Deploy
-                </motion.button>
-              </div>
-            </GlassPanel>
-
-            <div className="mt-10">
-              <h2 className="mb-6 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Recent Decisions</h2>
-              <GlassPanel depth="surface" className="overflow-hidden">
-                <SessionList onSelect={setSelectedSession} />
-              </GlassPanel>
+              )}
             </div>
+
+            {/* Input — floating, no wrapper */}
+            <div className="mb-10 flex gap-3">
+              <input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Enter initial prompt for autonomous session..."
+                className="flex-1 rounded-xl bg-surface-container-low px-5 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && prompt.trim() && create.mutate()}
+              />
+              <motion.button
+                onClick={() => create.mutate()}
+                disabled={!prompt.trim() || create.isPending}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="btn-primary-gradient flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-40"
+              >
+                <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Deploy
+              </motion.button>
+            </div>
+
+            <SessionList onSelect={setSelectedSession} />
           </motion.div>
         )}
       </AnimatePresence>

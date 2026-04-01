@@ -1,36 +1,32 @@
 import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { syncFinance } from '@/api/finance'
+import { useQuery } from '@tanstack/react-query'
+import { getFinanceSummary } from '@/api/finance'
 import { TransactionList } from './TransactionList'
 import { CategoryChart } from './CategoryChart'
 import { ReconcilePanel } from './ReconcilePanel'
-import toast from 'react-hot-toast'
-import { RefreshCw } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { WhisperStat } from '@/components/spatial/WhisperStat'
+import { AmbientPulse } from '@/components/spatial/AmbientPulse'
+import { useWorkerStatus } from '@/hooks/useWorkerStatus'
+import { formatCurrency, cn } from '@/lib/utils'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import type { WorkerStatus } from '@/store/workerStore'
 
 export default function FinancePage() {
   const [tab, setTab] = useState<'all' | 'uncategorized'>('all')
-  const queryClient = useQueryClient()
+  const { data: summary } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })
+  const financeWorker = useWorkerStatus('finance') as WorkerStatus | null
 
-  const sync = useMutation({
-    mutationFn: syncFinance,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['financeSummary'] })
-      toast.success('Xero sync complete')
-    },
-    onError: () => toast.error('Sync failed'),
-  })
+  const net = summary?.net ?? 0
 
   const tabs = [
-    { key: 'all' as const, label: 'Protocol Ledger', idx: 0 },
-    { key: 'uncategorized' as const, label: 'Uncategorized', idx: 1 },
+    { key: 'all' as const, label: 'Protocol Ledger' },
+    { key: 'uncategorized' as const, label: 'Uncategorized' },
   ]
 
   return (
     <div className="max-w-5xl">
-      <div className="mb-16 flex items-start justify-between">
+      <div className="mb-6 flex items-start justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Capital Flow
@@ -38,20 +34,46 @@ export default function FinancePage() {
           <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
             Financial <em className="not-italic font-normal text-primary">Ecosystem</em>
           </h1>
-          <p className="mt-3 max-w-lg text-sm leading-relaxed text-on-surface-muted">
-            Atmospheric oversight of capital flow and resource allocation across the Ecodia network.
-          </p>
         </div>
-        <motion.button
-          onClick={() => sync.mutate()}
-          disabled={sync.isPending}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${sync.isPending ? 'animate-spin' : ''}`} strokeWidth={1.75} />
-          Sync Data
-        </motion.button>
+        {financeWorker && (
+          <AmbientPulse label="Xero" lastSyncAt={financeWorker.lastSync} status={financeWorker.status} />
+        )}
+      </div>
+
+      {/* Hero net figure */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        className="mb-12"
+      >
+        <p className={cn(
+          'font-display text-display-lg font-light tabular-nums',
+          net >= 0 ? 'text-secondary' : 'text-error',
+        )}>
+          {formatCurrency(net)}
+        </p>
+        <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
+          Net · month to date
+        </span>
+      </motion.div>
+
+      {/* Whisper stats: Income + Expenses */}
+      <div className="mb-14 flex gap-12">
+        <WhisperStat
+          label="Income"
+          value={formatCurrency(summary?.income ?? 0)}
+          icon={TrendingUp}
+          accent="text-secondary"
+          subtext="Month to date"
+        />
+        <WhisperStat
+          label="Expenses"
+          value={formatCurrency(summary?.expenses ?? 0)}
+          icon={TrendingDown}
+          accent="text-tertiary"
+          subtext="Month to date"
+        />
       </div>
 
       <CategoryChart />

@@ -4,7 +4,7 @@ import { DataTable } from '@/components/shared/DataTable'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
+
 import type { Transaction } from '@/types/finance'
 
 export function TransactionList({ status }: { status?: string }) {
@@ -49,9 +49,5 @@ export function TransactionList({ status }: { status?: string }) {
     { key: 'status', header: 'Status', render: (r: Transaction) => <StatusBadge status={r.status} /> },
   ]
 
-  return (
-    <GlassPanel depth="surface" className="overflow-hidden">
-      <DataTable columns={columns} data={data?.transactions ?? []} />
-    </GlassPanel>
-  )
+  return <DataTable columns={columns} data={data?.transactions ?? []} />
 }

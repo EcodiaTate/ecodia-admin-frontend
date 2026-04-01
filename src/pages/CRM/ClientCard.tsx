@@ -9,7 +9,7 @@ interface ClientCardProps {
 
 export function ClientCard({ client, onClick }: ClientCardProps) {
   return (
-    <GlassPanel depth="elevated" parallax holo onClick={onClick} className="p-5">
+    <GlassPanel depth="surface" onClick={onClick} className="p-5">
       <div className="flex items-start justify-between">
         <div>
           <p className="font-display text-sm font-medium text-on-surface">{client.name}</p>

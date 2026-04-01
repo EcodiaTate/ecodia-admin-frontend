@@ -112,32 +112,32 @@ The base `surface` layer should feature subtle, ambient gradient washes — ethe
 
 ---
 
-## 5. Glassmorphism: "Optic Glass" Specification
+## 5. Tonal Glass Specification (No Blur)
 
-All floating panels, cards, modals, and overlays must use the Optic Glass treatment:
+**`backdrop-filter` and `filter: blur()` are PROHIBITED.** They are GPU-expensive and cause frame drops on laptops. Glass depth is achieved through **tonal opacity differentiation** — higher opacity backgrounds naturally obscure what's behind them.
 
 ```css
-/* Standard Glass Card */
-background: rgba(255, 255, 255, 0.45);
-backdrop-filter: blur(20px);
--webkit-backdrop-filter: blur(20px);
-border: 1px solid rgba(255, 255, 255, 0.6);
-border-bottom-color: rgba(0, 0, 0, 0.04);
-border-right-color: rgba(0, 0, 0, 0.04);
+/* Standard Glass Pane */
+background: rgba(255, 255, 255, 0.55);
+border: 1px solid rgba(255, 255, 255, 0.55);
+border-bottom-color: rgba(0, 0, 0, 0.03);
+border-right-color: rgba(0, 0, 0, 0.03);
 box-shadow: 0 20px 50px -12px rgba(0, 104, 122, 0.04);
 border-radius: 1.5rem;  /* xl */
 
-/* Elevated Glass (modals, floating nav) */
-background: rgba(255, 255, 255, 0.6);
-backdrop-filter: blur(24px);
+/* Elevated Glass (modals, prominent panes) */
+background: rgba(255, 255, 255, 0.70);
+border: 1px solid rgba(255, 255, 255, 0.7);
 box-shadow: 0 32px 64px -16px rgba(0, 104, 122, 0.06);
 ```
 
 **Key rules:**
+- **NEVER** use `backdrop-filter`, `-webkit-backdrop-filter`, or `filter: blur()`
 - Shadow color is always tinted with `primary` (0, 104, 122) — never pure black
 - Shadow blur is always `40px+` with `4-6%` opacity — atmospheric, not Material
 - Top/left borders are brighter (light catch), bottom/right are darker (depth)
 - Internal card padding is minimum `p-7` (1.75rem), ideally `p-10` (2.5rem)
+- Aurora orbs use wide radial gradients (transparent at 50%) instead of blur filters
 
 ---
 
@@ -388,8 +388,10 @@ Ecodia OS uses evocative, environmental language for system concepts. This is no
 - Reduced motion: respect `prefers-reduced-motion` — disable spring animations, use instant transitions
 
 ### Performance
-- `backdrop-filter` is GPU-intensive — limit to ~5 glass layers visible simultaneously
-- Aurora gradients: CSS only (no JS animation loops), or a single lightweight canvas
+- **NEVER** use `backdrop-filter` or `filter: blur()` — they cause GPU frame drops on laptops
+- Aurora orbs use wide radial gradients (transparent at 50%) — no blur filters
+- CursorGlow is removed — aurora orbs provide sufficient atmosphere
+- AmbientParticles limited to 8 (not 18)
 - Lazy-load route-level pages with React.lazy + Suspense
 - React Query handles cache/stale/refetch — no manual polling unless WebSocket isn't available
 - Images: use WebP/AVIF, lazy-load below fold
@@ -402,12 +404,16 @@ Ecodia OS uses evocative, environmental language for system concepts. This is no
 | If you catch yourself doing this... | Do this instead... |
 |---|---|
 | Adding a `border` or `divide-y` | Use tonal shifts or spacing voids |
+| Using `backdrop-filter` or `filter: blur()` | Use tonal opacity (higher bg opacity = more depth) |
 | Using `bg-zinc-950` or any dark background | Use `surface` (#F9F9F9) with aurora washes |
 | Using `shadow-md` or `shadow-lg` | Use atmospheric shadows (40px+ blur, 4% opacity, primary-tinted) |
 | Centering everything | Use intentional asymmetry — offset placement |
 | Adding a second hero element | Remove it. One story per screen. |
 | Using `ease-in-out` or `transition-all` | Use Framer Motion spring physics |
 | Writing "Welcome back!" or "Let's get started!" | Write nothing, or write plainly: "Atmospheric Integrity: 98.4%" |
+| Building a KPI card grid | Use one hero stat + `WhisperStat` components that expand on hover |
+| Adding a "Sync" button | The system syncs autonomously — show `AmbientPulse` with "synced 3m ago" |
+| Adding descriptive paragraphs under headings | Remove them. The interface speaks through its data. |
 | Building a generic dashboard grid | Build a spatial environment with floating glass panes |
 | Using `rounded-md` | Use `rounded-2xl` or `rounded-3xl` — organic, never sharp |
 | Using `#FFFFFF` as a page background | Use `#F9F9F9` with aurora washes |

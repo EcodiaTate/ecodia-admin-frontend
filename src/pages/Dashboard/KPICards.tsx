@@ -1,41 +1,60 @@
 import { useQuery } from '@tanstack/react-query'
 import { getFinanceSummary } from '@/api/finance'
 import { formatCurrency } from '@/lib/utils'
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
+import { WhisperStat } from '@/components/spatial/WhisperStat'
+import { cn } from '@/lib/utils'
 
 export function KPICards() {
   const { data } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })
 
   const net = data?.net ?? 0
-  const cards = [
-    { label: 'Income', value: formatCurrency(data?.income ?? 0), icon: TrendingUp, accent: 'text-secondary' },
-    { label: 'Expenses', value: formatCurrency(data?.expenses ?? 0), icon: TrendingDown, accent: 'text-tertiary' },
-    { label: 'Net', value: formatCurrency(net), icon: DollarSign, accent: net >= 0 ? 'text-secondary' : 'text-error' },
-  ]
+  const income = data?.income ?? 0
+  const expenses = data?.expenses ?? 0
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-      {cards.map((card, i) => (
-        <motion.div
-          key={card.label}
-          initial={{ opacity: 0, scale: 0.95, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.08 }}
-        >
-          <GlassPanel depth="elevated" parallax holo className="p-8">
-            <div className="flex items-center justify-between">
-              <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
-              <card.icon className={`h-4 w-4 ${card.accent}`} strokeWidth={1.75} />
-            </div>
-            <p className={`mt-4 font-display text-[1.75rem] font-light ${card.accent}`}>
-              {card.value}
-            </p>
-            <span className="mt-1 block text-label-sm text-on-surface-muted">Month to date</span>
-          </GlassPanel>
-        </motion.div>
-      ))}
+    <div>
+      {/* Hero: Net figure — the one number that matters */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        className="mb-16"
+      >
+        <p className={cn(
+          'font-display text-display-lg font-light tabular-nums',
+          net >= 0 ? 'text-secondary' : 'text-error',
+        )}>
+          {formatCurrency(net)}
+        </p>
+        <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
+          Net · month to date
+        </span>
+      </motion.div>
+
+      {/* Whisper stats: Income + Expenses */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        className="flex gap-12"
+      >
+        <WhisperStat
+          label="Income"
+          value={formatCurrency(income)}
+          icon={TrendingUp}
+          accent="text-secondary"
+          subtext="Month to date"
+        />
+        <WhisperStat
+          label="Expenses"
+          value={formatCurrency(expenses)}
+          icon={TrendingDown}
+          accent="text-tertiary"
+          subtext="Month to date"
+        />
+      </motion.div>
     </div>
   )
 }

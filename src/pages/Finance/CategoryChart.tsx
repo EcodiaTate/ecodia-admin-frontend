@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { getFinanceSummary } from '@/api/finance'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
 
 const COLORS = ['#06B6D4', '#10B981', '#F59E0B', '#00687A', '#8B5CF6', '#EC4899', '#F97316', '#3B82F6']
 
@@ -23,7 +22,7 @@ export function CategoryChart() {
   }
 
   return (
-    <GlassPanel depth="elevated" parallax className="p-8">
+    <div>
       <h2 className="mb-6 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">
         Resource Allocation
       </h2>
@@ -56,6 +55,6 @@ export function CategoryChart() {
           />
         </PieChart>
       </ResponsiveContainer>
-    </GlassPanel>
+    </div>
   )
 }

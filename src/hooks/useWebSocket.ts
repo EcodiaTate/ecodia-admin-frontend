@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationStore } from '@/store/notificationStore'
 import { useCCSessionStore } from '@/store/ccSessionStore'
+import { useWorkerStore } from '@/store/workerStore'
 import api from '@/api/client'
 
 export function useWebSocket() {
@@ -10,6 +11,7 @@ export function useWebSocket() {
   const addNotification = useNotificationStore((s) => s.addNotification)
   const appendOutput = useCCSessionStore((s) => s.appendOutput)
   const updateSession = useCCSessionStore((s) => s.updateSession)
+  const updateWorker = useWorkerStore((s) => s.updateWorker)
 
   useEffect(() => {
     if (!token) return
@@ -39,6 +41,9 @@ export function useWebSocket() {
             case 'cc_status':
               updateSession(msg.sessionId, { status: msg.data })
               break
+            case 'worker_heartbeat':
+              updateWorker(msg.payload)
+              break
           }
         }
 
@@ -60,5 +65,5 @@ export function useWebSocket() {
     return () => {
       wsRef.current?.close()
     }
-  }, [token, addNotification, appendOutput, updateSession])
+  }, [token, addNotification, appendOutput, updateSession, updateWorker])
 }

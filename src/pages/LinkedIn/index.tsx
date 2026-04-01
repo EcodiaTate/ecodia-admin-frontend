@@ -9,14 +9,16 @@ import { ConnectionRequests } from './ConnectionRequests'
 import { ContentCalendar } from './ContentCalendar'
 import { AnalyticsSummary } from './AnalyticsSummary'
 import { LinkedInSettings } from './LinkedInSettings'
+import { WhisperStat } from '@/components/spatial/WhisperStat'
+import { AmbientPulse } from '@/components/spatial/AmbientPulse'
+import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import type { LinkedInDM } from '@/types/linkedin'
+import type { WorkerStatus } from '@/store/workerStore'
 import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
 import {
-  MessageSquare, FileText, Calendar, Users, BarChart3, Settings,
-  AlertTriangle, Target, UserPlus, PenSquare, Wifi, WifiOff, ArrowLeft,
+  MessageSquare, Target, UserPlus, PenSquare, ArrowLeft,
 } from 'lucide-react'
 
 type Tab = 'dms' | 'posts' | 'calendar' | 'connections' | 'analytics' | 'settings'
@@ -31,35 +33,22 @@ export default function LinkedInPage() {
   const { data: connRequests } = useQuery({ queryKey: ['linkedinConnectionRequests'], queryFn: () => getConnectionRequests({ status: 'pending' }) })
   const { data: posts } = useQuery({ queryKey: ['linkedinPostsWeek'], queryFn: () => getPosts({ status: 'posted', limit: 7 }) })
 
-  const isWorkerActive = workerStatus?.status === 'active' || workerStatus?.status === 'inactive'
+  const linkedinWorker = useWorkerStatus('linkedin') as WorkerStatus | null
+  const isSuspended = workerStatus?.status === 'suspended'
 
-  const statCards = [
-    { label: 'Unread DMs', value: dmStats?.unread ?? 0, icon: MessageSquare, accent: 'text-tertiary', onClick: () => setTab('dms') },
-    { label: 'Leads', value: dmStats?.leads ?? 0, icon: Target, accent: 'text-secondary', onClick: () => setTab('dms') },
-    { label: 'Pending', value: connRequests?.length ?? 0, icon: UserPlus, accent: 'text-primary', onClick: () => setTab('connections') },
-    { label: 'Posts', value: posts?.length ?? 0, icon: PenSquare, accent: 'text-primary-container', onClick: () => setTab('posts') },
-    {
-      label: 'Worker',
-      value: isWorkerActive ? 'Active' : workerStatus?.status ?? 'Unknown',
-      icon: isWorkerActive ? Wifi : WifiOff,
-      accent: isWorkerActive ? 'text-secondary' : 'text-error',
-      onClick: () => setTab('settings'),
-    },
-  ]
-
-  const tabs: { key: Tab; label: string; icon: typeof MessageSquare }[] = [
-    { key: 'dms', label: 'DMs', icon: MessageSquare },
-    { key: 'posts', label: 'Posts', icon: FileText },
-    { key: 'calendar', label: 'Calendar', icon: Calendar },
-    { key: 'connections', label: 'Connections', icon: Users },
-    { key: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { key: 'settings', label: 'Settings', icon: Settings },
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'dms', label: 'DMs' },
+    { key: 'posts', label: 'Posts' },
+    { key: 'calendar', label: 'Calendar' },
+    { key: 'connections', label: 'Connections' },
+    { key: 'analytics', label: 'Analytics' },
+    { key: 'settings', label: 'Settings' },
   ]
 
   return (
     <div className="max-w-6xl">
       {/* Header */}
-      <div className="mb-12 flex items-start justify-between">
+      <div className="mb-10 flex items-start justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Network Intelligence
@@ -68,60 +57,85 @@ export default function LinkedInPage() {
             Social <em className="not-italic font-normal text-primary">Resonance</em>
           </h1>
         </div>
-        {workerStatus?.status === 'suspended' && (
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="h-4 w-4 text-error" strokeWidth={1.75} />
-            <span className="text-sm text-error">{workerStatus.reason}</span>
-            <button
-              onClick={async () => { await resumeWorker(); toast.success('Worker resumed') }}
-              className="rounded-xl bg-secondary/10 px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:bg-secondary/20"
+
+        {/* Worker status as AmbientPulse — suspended state shows inline */}
+        <div className="flex items-center gap-3 pt-2">
+          {linkedinWorker && !isSuspended && (
+            <AmbientPulse label="Worker" lastSyncAt={linkedinWorker.lastSync} status={linkedinWorker.status} />
+          )}
+          {isSuspended && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-2 rounded-xl bg-error/5 px-3 py-1.5"
             >
-              Resume
-            </button>
-          </div>
-        )}
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-error opacity-60 animate-ping" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-error" />
+              </span>
+              <span className="text-label-sm text-error">{workerStatus.reason}</span>
+              <button
+                onClick={async () => { await resumeWorker(); toast.success('Worker resumed') }}
+                className="ml-1 text-label-sm font-medium text-error/70 underline underline-offset-2 transition-colors hover:text-error"
+              >
+                Resume
+              </button>
+            </motion.div>
+          )}
+        </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="mb-12 grid grid-cols-5 gap-4">
-        {statCards.map((card, i) => (
-          <motion.div
-            key={card.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.05 }}
-          >
-            <GlassPanel depth="elevated" parallax holo onClick={card.onClick} className="p-6 text-left">
-              <div className="flex items-center justify-between">
-                <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
-                <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
-              </div>
-              <p className={cn('mt-3 font-display text-xl font-light', card.accent)}>{card.value}</p>
-            </GlassPanel>
-          </motion.div>
-        ))}
+      {/* Whisper stats — ambient counters */}
+      <div className="mb-10 flex gap-8">
+        <WhisperStat
+          label="Unread DMs"
+          value={dmStats?.unread ?? 0}
+          icon={MessageSquare}
+          accent="text-tertiary"
+          onClick={() => setTab('dms')}
+        />
+        <WhisperStat
+          label="Leads"
+          value={dmStats?.leads ?? 0}
+          icon={Target}
+          accent="text-secondary"
+          onClick={() => setTab('dms')}
+        />
+        <WhisperStat
+          label="Pending"
+          value={connRequests?.length ?? 0}
+          icon={UserPlus}
+          accent="text-primary"
+          onClick={() => setTab('connections')}
+        />
+        <WhisperStat
+          label="Posts"
+          value={posts?.length ?? 0}
+          icon={PenSquare}
+          accent="text-primary-container"
+          onClick={() => setTab('posts')}
+        />
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — text only, no icons */}
       <div className="mb-8 flex items-center gap-1">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => { setTab(t.key); setSelectedDM(null); setShowComposer(false) }}
             className={cn(
-              'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors',
+              'rounded-xl px-4 py-2.5 text-sm font-medium transition-colors',
               tab === t.key
                 ? 'bg-primary/10 text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
-            <t.icon className="h-3.5 w-3.5" strokeWidth={1.75} />
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* Tab Content — AnimatePresence for tab switches */}
+      {/* Tab Content */}
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={tab + (tab === 'dms' && selectedDM ? '-detail' : '') + (tab === 'posts' && showComposer ? '-compose' : '')}

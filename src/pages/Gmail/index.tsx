@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { syncGmail, getGmailStats } from '@/api/gmail'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { getGmailStats } from '@/api/gmail'
 import { EmailList } from './EmailList'
 import { EmailDetail } from './EmailDetail'
 import { DraftReview } from './DraftReview'
+import { WhisperStat } from '@/components/spatial/WhisperStat'
+import { AmbientPulse } from '@/components/spatial/AmbientPulse'
+import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import type { EmailThread } from '@/types/gmail'
-import toast from 'react-hot-toast'
-import { RefreshCw, Mail, AlertTriangle, AlertCircle, ArrowLeft } from 'lucide-react'
+import type { WorkerStatus } from '@/store/workerStore'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { GlassPanel } from '@/components/spatial/GlassPanel'
+import { ArrowLeft, Mail, AlertTriangle, AlertCircle, X } from 'lucide-react'
 
 type Filter = {
   status?: string
@@ -23,22 +25,7 @@ export default function GmailPage() {
   const queryClient = useQueryClient()
 
   const { data: stats } = useQuery({ queryKey: ['gmailStats'], queryFn: getGmailStats })
-
-  const sync = useMutation({
-    mutationFn: syncGmail,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['gmailThreads'] })
-      queryClient.invalidateQueries({ queryKey: ['gmailStats'] })
-      toast.success('Synced & triaged')
-    },
-    onError: (e) => toast.error(`Sync failed: ${(e as Error).message}`),
-  })
-
-  const statCards = [
-    { label: 'Unread', value: stats?.unread ?? 0, icon: Mail, accent: 'text-tertiary', onClick: () => setFilter({ status: 'unread' }) },
-    { label: 'Urgent', value: stats?.urgent ?? 0, icon: AlertTriangle, accent: 'text-error', onClick: () => setFilter({ priority: 'urgent' }) },
-    { label: 'High', value: stats?.high ?? 0, icon: AlertCircle, accent: 'text-tertiary', onClick: () => setFilter({ priority: 'high' }) },
-  ]
+  const gmailWorker = useWorkerStatus('gmail') as WorkerStatus | null
 
   const inboxTabs = [
     { label: 'All', value: undefined },
@@ -69,7 +56,7 @@ export default function GmailPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="mb-12 flex items-start justify-between">
+      <div className="mb-10 flex items-start justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Communication Stream
@@ -78,34 +65,34 @@ export default function GmailPage() {
             Digital <em className="not-italic font-normal text-primary">Curator</em>
           </h1>
         </div>
-        <button
-          onClick={() => sync.mutate()}
-          disabled={sync.isPending}
-          className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
-        >
-          <RefreshCw className={cn('h-3.5 w-3.5', sync.isPending && 'animate-spin')} strokeWidth={1.75} />
-          Sync All
-        </button>
+        {gmailWorker && (
+          <AmbientPulse label="Gmail" lastSyncAt={gmailWorker.lastSync} status={gmailWorker.status} />
+        )}
       </div>
 
-      {/* Stat cards */}
-      <div className="mb-12 grid grid-cols-3 gap-6">
-        {statCards.map((card, i) => (
-          <motion.div
-            key={card.label}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.06 }}
-          >
-            <GlassPanel depth="elevated" parallax holo onClick={card.onClick} className="p-8 text-left">
-              <div className="flex items-center justify-between">
-                <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
-                <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
-              </div>
-              <p className={cn('mt-4 font-display text-[1.75rem] font-light', card.accent)}>{card.value}</p>
-            </GlassPanel>
-          </motion.div>
-        ))}
+      {/* Whisper stats — tiny ambient counters that spring to life on hover */}
+      <div className="mb-10 flex gap-12">
+        <WhisperStat
+          label="Unread"
+          value={stats?.unread ?? 0}
+          icon={Mail}
+          accent="text-tertiary"
+          onClick={() => setFilter({ status: 'unread' })}
+        />
+        <WhisperStat
+          label="Urgent"
+          value={stats?.urgent ?? 0}
+          icon={AlertTriangle}
+          accent="text-error"
+          onClick={() => setFilter({ priority: 'urgent' })}
+        />
+        <WhisperStat
+          label="High"
+          value={stats?.high ?? 0}
+          icon={AlertCircle}
+          accent="text-tertiary"
+          onClick={() => setFilter({ priority: 'high' })}
+        />
       </div>
 
       {/* Filter tabs */}
@@ -115,13 +102,21 @@ export default function GmailPage() {
             key={tab.label}
             onClick={() => setFilter(f => ({ ...f, inbox: tab.value }))}
             className={cn(
-              'rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              'relative rounded-xl px-4 py-2 text-sm font-medium transition-colors',
               filter.inbox === tab.value
                 ? 'bg-primary/10 text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
             {tab.label}
+            {filter.inbox === tab.value && tab.value && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setFilter(f => ({ ...f, inbox: undefined })) }}
+                className="ml-1.5 inline-flex text-primary/50 hover:text-primary"
+              >
+                <X className="h-3 w-3" strokeWidth={2} />
+              </button>
+            )}
           </button>
         ))}
 
@@ -132,24 +127,23 @@ export default function GmailPage() {
             key={s}
             onClick={() => setFilter(f => ({ ...f, status: s === 'all' ? undefined : s }))}
             className={cn(
-              'rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              'relative rounded-xl px-4 py-2 text-sm font-medium transition-colors',
               (s === 'all' && !filter.status) || filter.status === s
                 ? 'bg-primary/10 text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}
+            {filter.status === s && s !== 'all' && (
+              <button
+                onClick={(e) => { e.stopPropagation(); setFilter(f => ({ ...f, status: undefined })) }}
+                className="ml-1.5 inline-flex text-primary/50 hover:text-primary"
+              >
+                <X className="h-3 w-3" strokeWidth={2} />
+              </button>
+            )}
           </button>
         ))}
-
-        {(filter.status || filter.priority || filter.inbox) && (
-          <button
-            onClick={() => setFilter({})}
-            className="ml-2 text-xs text-on-surface-muted transition-colors hover:text-on-surface-variant"
-          >
-            Clear
-          </button>
-        )}
       </div>
 
       <EmailList

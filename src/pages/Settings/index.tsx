@@ -3,6 +3,9 @@ import api from '@/api/client'
 import { motion } from 'framer-motion'
 import { Wifi, WifiOff, Mail, DollarSign } from 'lucide-react'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
+import { AmbientPulse } from '@/components/spatial/AmbientPulse'
+import { useWorkerStatus } from '@/hooks/useWorkerStatus'
+import type { WorkerStatus } from '@/store/workerStore'
 
 export default function SettingsPage() {
   const { data } = useQuery({
@@ -13,12 +16,15 @@ export default function SettingsPage() {
     },
   })
 
+  const workers = useWorkerStatus() as Record<string, WorkerStatus>
+
   const connections = [
     {
       name: 'Xero Connection',
       icon: DollarSign,
       category: 'Financial Protocol',
       connected: data?.xero?.connected,
+      workerKey: 'finance',
       details: data?.xero?.connected ? [
         `Token expires: ${new Date(data.xero.expiresAt).toLocaleString()}`,
         `Last refresh: ${new Date(data.xero.lastRefresh).toLocaleString()}`,
@@ -31,6 +37,7 @@ export default function SettingsPage() {
       icon: Mail,
       category: 'Communication Node',
       connected: data?.gmail?.connected,
+      workerKey: 'gmail',
       details: data?.gmail?.connected ? [
         `History ID: ${data.gmail.historyId}`,
         `Last sync: ${new Date(data.gmail.lastSync).toLocaleString()}`,
@@ -47,9 +54,6 @@ export default function SettingsPage() {
         <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
           System <em className="not-italic font-normal text-primary">Nodes</em>
         </h1>
-        <p className="mt-3 max-w-lg text-sm leading-relaxed text-on-surface-muted">
-          Manage neural connections and third-party integrations within the Ecodia ecosystem.
-        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-8">
@@ -60,10 +64,19 @@ export default function SettingsPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.1 }}
           >
-          <GlassPanel depth="elevated" parallax holo className="p-8">
-            <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">
-              {conn.category}
-            </span>
+          <GlassPanel depth="elevated" className="p-8">
+            <div className="flex items-start justify-between">
+              <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">
+                {conn.category}
+              </span>
+              {workers[conn.workerKey] && (
+                <AmbientPulse
+                  label={conn.workerKey}
+                  lastSyncAt={workers[conn.workerKey].lastSync}
+                  status={workers[conn.workerKey].status}
+                />
+              )}
+            </div>
             <h2 className="mt-3 font-display text-lg font-medium text-on-surface">{conn.name}</h2>
 
             <div className="mt-6 flex items-center gap-3">
