@@ -19,8 +19,8 @@ export function useWebSocket() {
     async function connect() {
       try {
         const { data } = await api.post('/auth/ws-ticket')
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-        const ws = new WebSocket(`${protocol}//${window.location.host}/ws?ticket=${data.ticket}`)
+        const wsBase = import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
+        const ws = new WebSocket(`${wsBase}/ws?ticket=${data.ticket}`)
 
         ws.onopen = () => {
           attempt = 0

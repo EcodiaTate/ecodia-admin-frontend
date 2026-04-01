@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
-import axios from 'axios'
+import api from '@/api/client'
 import toast from 'react-hot-toast'
 
 export default function LoginPage() {
@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const { data } = await axios.post('/api/auth/login', { password })
+      const { data } = await api.post('/auth/login', { password })
       login(data.token, data.refreshToken)
       navigate('/dashboard')
     } catch {
