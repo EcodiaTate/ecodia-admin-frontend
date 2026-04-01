@@ -14,7 +14,7 @@ export function SpatialCanvas() {
   // Only compute direction when scene actually changes
   const variants = sceneKey !== prevSceneKey
     ? getTransitionDirection(prevPathRef.current, location.pathname)
-    : getTransitionDirection(location.pathname, location.pathname) // same-scene = no directional offset
+    : getTransitionDirection(location.pathname, location.pathname)
 
   // Update prev path after computing variants
   if (sceneKey !== prevSceneKey) {
@@ -23,15 +23,18 @@ export function SpatialCanvas() {
 
   return (
     <div className="spatial-viewport z-20">
-      <AnimatePresence mode="wait" initial={false}>
+      {/* popLayout lets both scenes exist simultaneously during crossfade —
+          the exiting scene ghosts away while the entering scene slides in,
+          creating the illusion of a single continuous plane */}
+      <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={sceneKey}
           initial={variants.initial}
           animate={variants.animate}
           exit={variants.exit}
           className="scene-container"
+          style={{ willChange: 'transform, opacity, filter' }}
         >
-          {/* Clone the outlet to ensure it doesn't go stale during exit */}
           {isValidElement(outlet) ? cloneElement(outlet) : outlet}
         </motion.div>
       </AnimatePresence>
