@@ -4,9 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getSession, createSession } from '@/api/claudeCode'
 import { SessionList } from './SessionList'
 import { CCTerminal } from './Terminal'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 import type { CCSession } from '@/types/claudeCode'
 import toast from 'react-hot-toast'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Sparkles } from 'lucide-react'
 
 export default function ClaudeCodePage() {
@@ -36,25 +37,6 @@ export default function ClaudeCodePage() {
     },
   })
 
-  if (session) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, x: 12 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-        className="max-w-5xl space-y-6"
-      >
-        <button
-          onClick={() => setSelectedSession(null)}
-          className="flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to sessions
-        </button>
-        <CCTerminal session={session} />
-      </motion.div>
-    )
-  }
-
   return (
     <div className="max-w-5xl">
       <div className="mb-12">
@@ -65,37 +47,68 @@ export default function ClaudeCodePage() {
           Autonomy <em className="not-italic font-normal text-primary">Core</em>
         </h1>
         <p className="mt-3 max-w-lg text-sm leading-relaxed text-on-surface-muted">
-          Deploying ambient logic structures across the Ecodia network. Monitoring autonomous nodes and resource allocation.
+          Deploying ambient logic structures across the Ecodia network.
         </p>
       </div>
 
-      <div className="glass rounded-3xl p-8">
-        <h2 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">New Decision</h2>
-        <div className="mt-4 flex gap-3">
-          <input
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Enter initial prompt for autonomous session..."
-            className="flex-1 rounded-xl bg-surface-container-low px-5 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
-            onKeyDown={(e) => e.key === 'Enter' && prompt.trim() && create.mutate()}
-          />
-          <button
-            onClick={() => create.mutate()}
-            disabled={!prompt.trim() || create.isPending}
-            className="btn-primary-gradient flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-40"
+      <AnimatePresence mode="popLayout" initial={false}>
+        {session ? (
+          <motion.div
+            key="terminal"
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+            className="space-y-6"
           >
-            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Deploy
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={() => setSelectedSession(null)}
+              className="flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to sessions
+            </button>
+            <CCTerminal session={session} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="sessions"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+          >
+            <GlassPanel depth="elevated" holo className="p-8">
+              <h2 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">New Decision</h2>
+              <div className="mt-4 flex gap-3">
+                <input
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Enter initial prompt for autonomous session..."
+                  className="flex-1 rounded-xl bg-surface-container-low px-5 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
+                  onKeyDown={(e) => e.key === 'Enter' && prompt.trim() && create.mutate()}
+                />
+                <motion.button
+                  onClick={() => create.mutate()}
+                  disabled={!prompt.trim() || create.isPending}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="btn-primary-gradient flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-40"
+                >
+                  <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  Deploy
+                </motion.button>
+              </div>
+            </GlassPanel>
 
-      <div className="mt-10">
-        <h2 className="mb-6 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Recent Decisions</h2>
-        <div className="glass rounded-3xl overflow-hidden">
-          <SessionList onSelect={setSelectedSession} />
-        </div>
-      </div>
+            <div className="mt-10">
+              <h2 className="mb-6 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Recent Decisions</h2>
+              <GlassPanel depth="surface" className="overflow-hidden">
+                <SessionList onSelect={setSelectedSession} />
+              </GlassPanel>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

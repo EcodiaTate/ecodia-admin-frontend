@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@/api/client'
 import { motion } from 'framer-motion'
 import { Wifi, WifiOff, Mail, DollarSign } from 'lucide-react'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 
 export default function SettingsPage() {
   const { data } = useQuery({
@@ -55,11 +56,11 @@ export default function SettingsPage() {
         {connections.map((conn, i) => (
           <motion.div
             key={conn.name}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.1 }}
-            className="glass rounded-3xl p-8"
           >
+          <GlassPanel depth="elevated" parallax holo className="p-8">
             <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">
               {conn.category}
             </span>
@@ -105,6 +106,7 @@ export default function SettingsPage() {
                 Connect
               </a>
             )}
+          </GlassPanel>
           </motion.div>
         ))}
       </div>

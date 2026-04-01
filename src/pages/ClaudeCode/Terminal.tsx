@@ -5,6 +5,7 @@ import { useCCSession } from '@/hooks/useCCSession'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { CCSession } from '@/types/claudeCode'
 import { Send, Square } from 'lucide-react'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 
 interface TerminalProps {
   session: CCSession
@@ -60,7 +61,7 @@ export function CCTerminal({ session }: TerminalProps) {
       </div>
 
       {/* Terminal output with glass frame */}
-      <div className="glass rounded-3xl overflow-hidden">
+      <GlassPanel depth="elevated" className="overflow-hidden">
         <div
           ref={outputRef}
           className="h-[500px] overflow-y-auto bg-[#0F1419]/90 p-6 font-mono text-sm leading-relaxed text-primary-container"
@@ -72,7 +73,7 @@ export function CCTerminal({ session }: TerminalProps) {
             <span className="text-on-surface-muted/40">Awaiting output...</span>
           )}
         </div>
-      </div>
+      </GlassPanel>
 
       {(session.status === 'running' || session.status === 'awaiting_input') && (
         <form

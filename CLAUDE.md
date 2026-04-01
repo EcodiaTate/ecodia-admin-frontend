@@ -242,13 +242,37 @@ const layoutSpring = { type: 'spring', stiffness: 180, damping: 22 }
 ### Interaction Principles
 - **Hover:** Gently increases glass clarity and subtly lifts the element (-2px Y)
 - **Focus:** Soft `primary` glow ring, never a hard outline
-- **Page transitions:** Content fades up with staggered children (50ms delay between items)
+- **Scene transitions:** Directional 3D movement through the spatial canvas. No page loads — scenes slide in from the direction of travel using full viewport offsets.
 - **Data updates:** Numbers animate with spring counters, never snap
 - **Loading:** Use the "Aurora Pulse" — a soft, breathing glow in `primary-container` at 10% opacity. Never a spinner unless absolutely necessary (use `LoadingSpinner` only as fallback)
+
+### Motion Convention: Every UI State Change Must Be Animated
+
+**This is a core principle.** If something appears, disappears, expands, collapses, switches, or changes — it MUST be conveyed through motion. No instant show/hide. No CSS `display: none` toggles. Every state change is a spatial event.
+
+| UI Action | Motion Pattern |
+|---|---|
+| **Pane appears** | Spring scale from 0.95 + opacity from 0, originating from the trigger element |
+| **Pane disappears** | Spring scale to 0.95 + opacity to 0, shrinking toward where it came from |
+| **Pane expands** (click to show detail) | `layout` + `layoutId` — the pane grows from its collapsed size to its expanded size. Content fades in with stagger. |
+| **Pane collapses** | Reverse of expand — shrinks back to its origin |
+| **Dropdown opens** | `AnimatePresence` + spring from `scaleY: 0` (origin top) to `scaleY: 1` |
+| **Tab content switches** | `AnimatePresence` with directional slide based on tab index (left/right) |
+| **List item enters** | Staggered spring: `opacity: 0, y: 8` → `opacity: 1, y: 0` with `delay: i * 0.03` |
+| **Detail view opens** | `layoutId` shared with the list item — the item morphs into the detail view |
+| **Detail view closes** | Reverse morph back to the list item position |
+| **Toggle/switch** | Spring-based `layout` animation on the indicator |
+| **Filter pill activates** | Spring scale bump + background color transition |
+
+Use `AnimatePresence` for conditional rendering. Use `layout` and `layoutId` for elements that persist across states. Use `motion.div` with `initial`/`animate` for entrance animations. **Never render something conditionally without wrapping it in AnimatePresence.**
 
 ---
 
 ## 10. Component Specifications
+
+### Terminology: Panes, Not Cards
+
+We call them **panes** — as in glass panes. This is a holographic interface, not a card-based dashboard. Every container is a floating glass pane on the spatial canvas.
 
 ### Buttons
 | Variant | Style |
@@ -258,12 +282,15 @@ const layoutSpring = { type: 'spring', stiffness: 180, damping: 22 }
 | **Ghost** | No background. Text: `on-surface-variant`. Hover: `surface-container-low` fill. |
 | **Destructive** | Soft red glass. `error` text. Ghost style until hover, then soft red fill. |
 
-### Cards
-- **NEVER** have visible borders
-- Background: `surface-container-lowest` (glass treatment) against `surface` canvas
-- Roundedness: `rounded-2xl` (1.5rem) minimum, `rounded-3xl` (1.75rem) preferred
-- Internal padding: `p-8` minimum, `p-10` preferred
-- Separation between cards: `gap-8` minimum
+### Panes (Glass Containers)
+- Use `GlassPanel` component from `@/components/spatial/GlassPanel`
+- Depth tiers: `surface` (default), `elevated` (modals/prominent), `floating` (highest), `deep` (recessed/inset)
+- **NEVER** have visible borders — glass treatment only
+- Roundedness: `rounded-3xl` (1.75rem) preferred
+- Internal padding: `p-6` to `p-10` depending on content density
+- `parallax` prop for mouse-reactive tilt on important panes
+- `holo` prop for holographic prismatic border on hover
+- Separation between panes: `gap-6` minimum
 
 ### Input Fields
 - Forgo the "box" — use `surface-container-low` background with `rounded-xl`

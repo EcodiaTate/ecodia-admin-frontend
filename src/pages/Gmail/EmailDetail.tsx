@@ -5,6 +5,7 @@ import type { EmailThread } from '@/types/gmail'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import toast from 'react-hot-toast'
 import { Archive, Trash2, Eye, Sparkles } from 'lucide-react'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 
 interface EmailDetailProps {
   thread: EmailThread
@@ -45,7 +46,7 @@ export function EmailDetail({ thread, onUpdate }: EmailDetailProps) {
   const isHtml = thread.full_body ? thread.full_body.includes('<') : false
 
   return (
-    <div className="glass rounded-3xl p-10">
+    <GlassPanel depth="elevated" className="p-10">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
@@ -114,6 +115,6 @@ export function EmailDetail({ thread, onUpdate }: EmailDetailProps) {
           </p>
         )}
       </div>
-    </div>
+    </GlassPanel>
   )
 }

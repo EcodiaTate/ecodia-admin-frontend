@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { RefreshCw, Mail, AlertTriangle, AlertCircle, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 
 type Filter = {
   status?: string
@@ -90,20 +91,20 @@ export default function GmailPage() {
       {/* Stat cards */}
       <div className="mb-12 grid grid-cols-3 gap-6">
         {statCards.map((card, i) => (
-          <motion.button
+          <motion.div
             key={card.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.06 }}
-            onClick={card.onClick}
-            className="glass rounded-3xl p-8 text-left transition-all hover:shadow-glass-hover"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
-              <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
-            </div>
-            <p className={cn('mt-4 font-display text-[1.75rem] font-light', card.accent)}>{card.value}</p>
-          </motion.button>
+            <GlassPanel depth="elevated" parallax holo onClick={card.onClick} className="p-8 text-left">
+              <div className="flex items-center justify-between">
+                <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
+                <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
+              </div>
+              <p className={cn('mt-4 font-display text-[1.75rem] font-light', card.accent)}>{card.value}</p>
+            </GlassPanel>
+          </motion.div>
         ))}
       </div>
 

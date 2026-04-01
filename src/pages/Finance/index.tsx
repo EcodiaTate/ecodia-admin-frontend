@@ -7,6 +7,7 @@ import { ReconcilePanel } from './ReconcilePanel'
 import toast from 'react-hot-toast'
 import { RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function FinancePage() {
   const [tab, setTab] = useState<'all' | 'uncategorized'>('all')
@@ -23,8 +24,8 @@ export default function FinancePage() {
   })
 
   const tabs = [
-    { key: 'all' as const, label: 'Protocol Ledger' },
-    { key: 'uncategorized' as const, label: 'Uncategorized' },
+    { key: 'all' as const, label: 'Protocol Ledger', idx: 0 },
+    { key: 'uncategorized' as const, label: 'Uncategorized', idx: 1 },
   ]
 
   return (
@@ -41,14 +42,16 @@ export default function FinancePage() {
             Atmospheric oversight of capital flow and resource allocation across the Ecodia network.
           </p>
         </div>
-        <button
+        <motion.button
           onClick={() => sync.mutate()}
           disabled={sync.isPending}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${sync.isPending ? 'animate-spin' : ''}`} strokeWidth={1.75} />
           Sync Data
-        </button>
+        </motion.button>
       </div>
 
       <CategoryChart />
@@ -59,18 +62,35 @@ export default function FinancePage() {
             key={t.key}
             onClick={() => setTab(t.key)}
             className={cn(
-              'rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              'relative rounded-xl px-4 py-2 text-sm font-medium transition-colors',
               tab === t.key
-                ? 'bg-primary/10 text-primary'
+                ? 'text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
-            {t.label}
+            {tab === t.key && (
+              <motion.div
+                layoutId="finance-tab-bg"
+                className="absolute inset-0 rounded-xl bg-primary/10"
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              />
+            )}
+            <span className="relative z-10">{t.label}</span>
           </button>
         ))}
       </div>
 
-      {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, x: tab === 'uncategorized' ? 20 : -20, scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: tab === 'uncategorized' ? -20 : 20, scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+        >
+          {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }

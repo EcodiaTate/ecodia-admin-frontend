@@ -1,4 +1,5 @@
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 import type { Client } from '@/types/crm'
 
 interface ClientCardProps {
@@ -8,10 +9,7 @@ interface ClientCardProps {
 
 export function ClientCard({ client, onClick }: ClientCardProps) {
   return (
-    <div
-      onClick={onClick}
-      className="glass cursor-pointer rounded-2xl p-5 transition-all hover:shadow-glass-hover"
-    >
+    <GlassPanel depth="elevated" parallax holo onClick={onClick} className="p-5">
       <div className="flex items-start justify-between">
         <div>
           <p className="font-display text-sm font-medium text-on-surface">{client.name}</p>
@@ -28,6 +26,6 @@ export function ClientCard({ client, onClick }: ClientCardProps) {
           ))}
         </div>
       )}
-    </div>
+    </GlassPanel>
   )
 }

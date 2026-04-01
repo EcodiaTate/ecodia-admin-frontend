@@ -3,6 +3,7 @@ import { draftReply, sendDraft } from '@/api/gmail'
 import type { EmailThread } from '@/types/gmail'
 import toast from 'react-hot-toast'
 import { Send, Sparkles } from 'lucide-react'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 
 interface DraftReviewProps {
   thread: EmailThread
@@ -34,7 +35,7 @@ export function DraftReview({ thread, onUpdate }: DraftReviewProps) {
   })
 
   return (
-    <div className="glass rounded-3xl p-8">
+    <GlassPanel depth="surface" className="p-8">
       <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Compose Reply</h3>
 
       {thread.draft_reply ? (
@@ -71,6 +72,6 @@ export function DraftReview({ thread, onUpdate }: DraftReviewProps) {
           {draft.isPending ? 'Generating...' : 'Generate AI Draft Reply'}
         </button>
       )}
-    </div>
+    </GlassPanel>
   )
 }

@@ -183,7 +183,7 @@ export default function CortexPage() {
       </div>
 
       {/* Input bar — fixed at bottom */}
-      <div className="relative z-10 bg-surface/80 backdrop-blur-glass">
+      <div className="relative z-10">
         <div className="mx-auto max-w-3xl px-6 py-4">
           <div className="glass-elevated rounded-2xl transition-all focus-within:shadow-glass-hover">
             <div className="flex items-end gap-3 px-5 py-3.5">

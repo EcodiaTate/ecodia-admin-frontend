@@ -12,7 +12,8 @@ import { LinkedInSettings } from './LinkedInSettings'
 import type { LinkedInDM } from '@/types/linkedin'
 import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 import {
   MessageSquare, FileText, Calendar, Users, BarChart3, Settings,
   AlertTriangle, Target, UserPlus, PenSquare, Wifi, WifiOff, ArrowLeft,
@@ -84,20 +85,20 @@ export default function LinkedInPage() {
       {/* Stat Cards */}
       <div className="mb-12 grid grid-cols-5 gap-4">
         {statCards.map((card, i) => (
-          <motion.button
+          <motion.div
             key={card.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.05 }}
-            onClick={card.onClick}
-            className="glass rounded-2xl p-6 text-left transition-all hover:shadow-glass-hover"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
-              <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
-            </div>
-            <p className={cn('mt-3 font-display text-xl font-light', card.accent)}>{card.value}</p>
-          </motion.button>
+            <GlassPanel depth="elevated" parallax holo onClick={card.onClick} className="p-6 text-left">
+              <div className="flex items-center justify-between">
+                <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
+                <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
+              </div>
+              <p className={cn('mt-3 font-display text-xl font-light', card.accent)}>{card.value}</p>
+            </GlassPanel>
+          </motion.div>
         ))}
       </div>
 
@@ -120,43 +121,53 @@ export default function LinkedInPage() {
         ))}
       </div>
 
-      {/* Tab Content */}
-      {tab === 'dms' && (
-        selectedDM ? (
-          <div>
-            <button
-              onClick={() => setSelectedDM(null)}
-              className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to DMs
-            </button>
-            <DMDetail dmId={selectedDM.id} />
-          </div>
-        ) : (
-          <DMList onSelect={setSelectedDM} />
-        )
-      )}
+      {/* Tab Content — AnimatePresence for tab switches */}
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.div
+          key={tab + (tab === 'dms' && selectedDM ? '-detail' : '') + (tab === 'posts' && showComposer ? '-compose' : '')}
+          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.98, y: -10 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+        >
+          {tab === 'dms' && (
+            selectedDM ? (
+              <div>
+                <button
+                  onClick={() => setSelectedDM(null)}
+                  className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to DMs
+                </button>
+                <DMDetail dmId={selectedDM.id} />
+              </div>
+            ) : (
+              <DMList onSelect={setSelectedDM} />
+            )
+          )}
 
-      {tab === 'posts' && (
-        showComposer ? (
-          <div>
-            <button
-              onClick={() => setShowComposer(false)}
-              className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to posts
-            </button>
-            <PostComposer onSaved={() => setShowComposer(false)} />
-          </div>
-        ) : (
-          <PostList onCompose={() => setShowComposer(true)} />
-        )
-      )}
+          {tab === 'posts' && (
+            showComposer ? (
+              <div>
+                <button
+                  onClick={() => setShowComposer(false)}
+                  className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to posts
+                </button>
+                <PostComposer onSaved={() => setShowComposer(false)} />
+              </div>
+            ) : (
+              <PostList onCompose={() => setShowComposer(true)} />
+            )
+          )}
 
-      {tab === 'calendar' && <ContentCalendar />}
-      {tab === 'connections' && <ConnectionRequests />}
-      {tab === 'analytics' && <AnalyticsSummary />}
-      {tab === 'settings' && <LinkedInSettings />}
+          {tab === 'calendar' && <ContentCalendar />}
+          {tab === 'connections' && <ConnectionRequests />}
+          {tab === 'analytics' && <AnalyticsSummary />}
+          {tab === 'settings' && <LinkedInSettings />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }
