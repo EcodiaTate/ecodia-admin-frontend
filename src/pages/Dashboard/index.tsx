@@ -1,15 +1,9 @@
-import { motion } from 'framer-motion'
 import { KPICards } from './KPICards'
 import { ActivityFeed } from './ActivityFeed'
 
 export default function DashboardPage() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-      className="mx-auto max-w-5xl"
-    >
+    <div className="max-w-5xl">
       <div className="mb-16">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           Ecosystem Overview
@@ -27,6 +21,6 @@ export default function DashboardPage() {
       <div className="mt-16">
         <ActivityFeed />
       </div>
-    </motion.div>
+    </div>
   )
 }

@@ -26,7 +26,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="aurora-canvas flex h-screen items-center justify-center bg-surface">
+    <div className="relative flex h-screen items-center justify-center overflow-hidden bg-surface">
+      {/* Static aurora for login */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse 80% 60% at 20% 80%, rgba(16, 185, 129, 0.04), transparent),
+            radial-gradient(ellipse 60% 80% at 80% 20%, rgba(6, 182, 212, 0.05), transparent),
+            radial-gradient(ellipse 50% 50% at 50% 50%, rgba(245, 158, 11, 0.025), transparent)
+          `,
+        }}
+      />
       <motion.form
         onSubmit={handleSubmit}
         initial={{ opacity: 0, y: 16 }}

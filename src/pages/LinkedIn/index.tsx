@@ -56,12 +56,7 @@ export default function LinkedInPage() {
   ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-      className="mx-auto max-w-6xl"
-    >
+    <div className="max-w-6xl">
       {/* Header */}
       <div className="mb-12 flex items-start justify-between">
         <div>
@@ -162,6 +157,6 @@ export default function LinkedInPage() {
       {tab === 'connections' && <ConnectionRequests />}
       {tab === 'analytics' && <AnalyticsSummary />}
       {tab === 'settings' && <LinkedInSettings />}
-    </motion.div>
+    </div>
   )
 }

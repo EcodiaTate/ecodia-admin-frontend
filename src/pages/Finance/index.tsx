@@ -6,7 +6,6 @@ import { CategoryChart } from './CategoryChart'
 import { ReconcilePanel } from './ReconcilePanel'
 import toast from 'react-hot-toast'
 import { RefreshCw } from 'lucide-react'
-import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 export default function FinancePage() {
@@ -29,12 +28,7 @@ export default function FinancePage() {
   ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-      className="mx-auto max-w-5xl"
-    >
+    <div className="max-w-5xl">
       <div className="mb-16 flex items-start justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
@@ -77,6 +71,6 @@ export default function FinancePage() {
       </div>
 
       {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
-    </motion.div>
+    </div>
   )
 }

@@ -51,7 +51,7 @@ export default function GmailPage() {
         initial={{ opacity: 0, x: 12 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-        className="mx-auto max-w-4xl space-y-8"
+        className="max-w-4xl space-y-8"
       >
         <button
           onClick={() => { setSelected(null); queryClient.invalidateQueries({ queryKey: ['gmailThreads'] }) }}
@@ -67,12 +67,7 @@ export default function GmailPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-      className="mx-auto max-w-5xl"
-    >
+    <div className="max-w-5xl">
       <div className="mb-12 flex items-start justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
@@ -162,6 +157,6 @@ export default function GmailPage() {
         inbox={filter.inbox}
         onSelect={setSelected}
       />
-    </motion.div>
+    </div>
   )
 }

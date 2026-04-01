@@ -42,7 +42,7 @@ export default function ClaudeCodePage() {
         initial={{ opacity: 0, x: 12 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-        className="mx-auto max-w-5xl space-y-6"
+        className="max-w-5xl space-y-6"
       >
         <button
           onClick={() => setSelectedSession(null)}
@@ -56,12 +56,7 @@ export default function ClaudeCodePage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-      className="mx-auto max-w-5xl"
-    >
+    <div className="max-w-5xl">
       <div className="mb-12">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           AI Operations
@@ -101,6 +96,6 @@ export default function ClaudeCodePage() {
           <SessionList onSelect={setSelectedSession} />
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }

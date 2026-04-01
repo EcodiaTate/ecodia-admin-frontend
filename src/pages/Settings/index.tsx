@@ -38,12 +38,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-      className="mx-auto max-w-4xl"
-    >
+    <div className="max-w-4xl">
       <div className="mb-16">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           Neural Connections
@@ -113,6 +108,6 @@ export default function SettingsPage() {
           </motion.div>
         ))}
       </div>
-    </motion.div>
+    </div>
   )
 }

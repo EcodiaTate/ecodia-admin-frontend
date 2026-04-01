@@ -1,20 +1,33 @@
-import { Outlet } from 'react-router-dom'
-import { Sidebar } from './Sidebar'
-import { TopBar } from './TopBar'
 import { useWebSocket } from '@/hooks/useWebSocket'
+import { AuroraBackground } from '@/components/spatial/AuroraBackground'
+import { AmbientParticles } from '@/components/spatial/AmbientParticles'
+import { CursorGlow } from '@/components/spatial/CursorGlow'
+import { SpatialCanvas } from '@/components/spatial/SpatialCanvas'
+import { FloatingNav } from '@/components/spatial/FloatingNav'
+import { AmbientStatus } from '@/components/spatial/AmbientStatus'
 
 export function AppShell() {
   useWebSocket()
 
   return (
-    <div className="aurora-canvas flex h-screen overflow-hidden bg-surface">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <TopBar />
-        <main className="relative z-10 flex-1 overflow-y-auto px-10 py-8 lg:px-16 lg:py-10">
-          <Outlet />
-        </main>
-      </div>
+    <div className="h-screen w-screen overflow-hidden bg-surface">
+      {/* Layer 0: Reactive aurora */}
+      <AuroraBackground />
+
+      {/* Layer 1: Cursor glow */}
+      <CursorGlow />
+
+      {/* Layer 1.5: Ambient particles */}
+      <AmbientParticles />
+
+      {/* Layer 2: Scene content with spatial transitions */}
+      <SpatialCanvas />
+
+      {/* Layer 3: Floating navigation */}
+      <FloatingNav />
+
+      {/* Layer 4: Ambient status indicators */}
+      <AmbientStatus />
     </div>
   )
 }
