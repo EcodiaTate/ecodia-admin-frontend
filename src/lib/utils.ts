@@ -11,9 +11,13 @@ export function formatCurrency(amount: number) {
 }
 
 export function formatDate(date: string) {
-  return format(new Date(date), 'dd MMM yyyy')
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  return format(d, 'dd MMM yyyy')
 }
 
 export function formatRelative(date: string) {
-  return formatDistanceToNow(new Date(date), { addSuffix: true })
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
+  return formatDistanceToNow(d, { addSuffix: true })
 }
