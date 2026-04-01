@@ -26,14 +26,14 @@ export function Pipeline({ onSelectClient }: PipelineProps) {
   const stages = Object.keys(STAGE_LABELS) as PipelineStage[]
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex gap-5 overflow-x-auto pb-6">
       {stages.filter(s => s !== 'archived').map((stage) => (
-        <div key={stage} className="min-w-[220px] flex-shrink-0">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-zinc-400">{STAGE_LABELS[stage]}</h3>
-            <span className="text-xs text-zinc-600">{data?.[stage]?.length ?? 0}</span>
+        <div key={stage} className="min-w-[240px] flex-shrink-0">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">{STAGE_LABELS[stage]}</h3>
+            <span className="font-mono text-label-sm text-on-surface-muted">{data?.[stage]?.length ?? 0}</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {data?.[stage]?.map((client) => (
               <ClientCard key={client.id} client={client} onClick={() => onSelectClient(client)} />
             ))}

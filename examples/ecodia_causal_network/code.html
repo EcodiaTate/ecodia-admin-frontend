@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-dim": "#4d545a",
+              "on-secondary-container": "#445365",
+              "secondary-container": "#d4e4fa",
+              "on-surface-variant": "#566166",
+              "tertiary": "#596066",
+              "surface-container-highest": "#d9e4ea",
+              "primary-fixed-dim": "#c7d5ee",
+              "on-secondary-fixed": "#324052",
+              "on-error-container": "#752121",
+              "tertiary-fixed-dim": "#d2d8e0",
+              "background": "#f7f9fb",
+              "on-primary-container": "#455367",
+              "secondary-fixed": "#d4e4fa",
+              "secondary-dim": "#465467",
+              "surface": "#f7f9fb",
+              "surface-container-low": "#f0f4f7",
+              "error": "#9f403d",
+              "surface-dim": "#cfdce3",
+              "primary": "#515f74",
+              "inverse-surface": "#0b0f10",
+              "error-dim": "#4e0309",
+              "on-tertiary-fixed-variant": "#585e65",
+              "on-primary": "#f6f7ff",
+              "error-container": "#fe8983",
+              "on-tertiary": "#f6f9ff",
+              "inverse-primary": "#d5e3fd",
+              "tertiary-container": "#e0e6ee",
+              "primary-dim": "#455368",
+              "secondary-fixed-dim": "#c6d6ec",
+              "surface-bright": "#f7f9fb",
+              "inverse-on-surface": "#9a9d9f",
+              "on-secondary-fixed-variant": "#4e5d6f",
+              "on-error": "#fff7f6",
+              "surface-container-high": "#e1e9ee",
+              "on-background": "#2a3439",
+              "on-secondary": "#f7f9ff",
+              "surface-tint": "#515f74",
+              "on-primary-fixed": "#324054",
+              "on-tertiary-fixed": "#3b4248",
+              "surface-container-lowest": "#ffffff",
+              "surface-container": "#e8eff3",
+              "surface-variant": "#d9e4ea",
+              "primary-fixed": "#d5e3fd",
+              "on-surface": "#2a3439",
+              "secondary": "#526073",
+              "on-tertiary-container": "#4e545b",
+              "outline-variant": "#a9b4b9",
+              "outline": "#717c82",
+              "primary-container": "#d5e3fd",
+              "on-primary-fixed-variant": "#4e5c71",
+              "tertiary-fixed": "#e0e6ee"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .asymmetric-canvas { height: calc(100vh - 180px); }
+    </style>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-24 py-6 w-full bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl">
+<div class="text-lg font-light tracking-[0.2em] uppercase text-slate-800 dark:text-slate-100 font-inter tracking-tight">
+            Ecodia OS
+        </div>
+<div class="flex items-center space-x-12">
+<div class="flex space-x-8">
+<span class="text-slate-900 dark:text-slate-50 font-medium font-inter tracking-tight cursor-pointer hover:opacity-70 transition-opacity">Network</span>
+<span class="text-slate-400 dark:text-slate-600 font-inter tracking-tight cursor-pointer hover:opacity-70 transition-opacity">Resources</span>
+<span class="text-slate-400 dark:text-slate-600 font-inter tracking-tight cursor-pointer hover:opacity-70 transition-opacity">Vitals</span>
+</div>
+<div class="flex items-center space-x-6 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity">hub</span>
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity">account_balance_wallet</span>
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity">terminal</span>
+</div>
+</div>
+</nav>
+<!-- Side Navigation Bar (Guardian Identity) -->
+<aside class="fixed left-0 h-full w-20 hover:w-64 transition-all overflow-hidden z-40 flex flex-col py-12 px-4 h-full bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl shadow-2xl shadow-slate-900/5 duration-500 ease-in-out">
+<div class="mb-12 flex items-center px-2">
+<div class="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden">
+<img alt="Guardian Identity" class="w-full h-full object-cover" data-alt="Abstract iridescent geometric sphere floating in a serene white space with soft shadows and crystalline textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvIP8DvlWFoio0FLIWsnLVeUxniYFadV6sN05GQGZMc7wd0wfWWfO-lpCCp8YQVGQHvZG9BYRB7kqBYNN-0PGC2tLuYgrPloy98XyGlqihmXba5KhBKTfgLfSs_9p2f9Yvs_5zX2XD7TqOgbdZVF-TKpYlOwiq3_8WxZJ1bySHBG2PDHBDm7SxboHlveezcyxCv5mdj-b7PS9t3i9ZziOIDpymmubuvS-qg2ZZuQe0X5Iz9SVTIOOvvEeqeLpJn1xbV9iYDV_C9q8"/>
+</div>
+<div class="ml-4 opacity-0 hover:opacity-100 transition-opacity duration-300">
+<p class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest">Guardian</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter">Operational</p>
+</div>
+</div>
+<div class="flex flex-col space-y-6 flex-grow">
+<!-- Active Tab: Causal Network -->
+<div class="flex items-center p-3 cursor-pointer bg-slate-200/50 dark:bg-slate-800/50 text-slate-900 dark:text-white rounded-full transition-all duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bubble_chart</span>
+<span class="ml-4 text-sm font-inter tracking-wide whitespace-nowrap">Causal Network</span>
+</div>
+<div class="flex items-center p-3 cursor-pointer text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-300">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="ml-4 text-sm font-inter tracking-wide whitespace-nowrap">Financial Flow</span>
+</div>
+<div class="flex items-center p-3 cursor-pointer text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-300">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="ml-4 text-sm font-inter tracking-wide whitespace-nowrap">Autonomy Core</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-20 pt-32 px-24 pb-24 h-screen flex flex-col overflow-hidden">
+<!-- Hero Statement (The Digital Curator Approach) -->
+<header class="max-w-2xl mb-12">
+<h1 class="text-[3.5rem] leading-tight font-light tracking-tight text-slate-800 -ml-1">
+                Relational <span class="text-primary opacity-40 italic">Entropy</span>
+</h1>
+<p class="text-on-surface-variant font-light text-lg mt-4 max-w-md leading-relaxed">
+                Visualizing the neural architecture of stakeholder influence and autonomous resource distribution.
+            </p>
+</header>
+<!-- The Central Visualization (Neo4j Inspired Node Graph) -->
+<section class="relative flex-grow rounded-xl bg-surface-container-low flex items-center justify-center overflow-hidden">
+<!-- Background Image: Minimalist 3D Node Graph -->
+<div class="absolute inset-0 z-0">
+<img alt="Minimalist Node Graph" class="w-full h-full object-cover opacity-60 mix-blend-multiply" data-alt="Abstract 3D network of vibrant translucent glass spheres in cyan, amber, and green connected by thin glowing fibers on a soft white background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDT16w3KZSolR5klGmANKS6oTXEdgA-0ncVPLWtxiQV-0vE_xh0fVSIRKXyWwIecR_b1aC5RKUwxD5eeRIlUUBdJMFYi36BViyXU1eo1NRYb5H2uG14DdE2qnrm05-M0eVSBBjjmVCE9wzfCH28P8WePDk9mvMOWjKQ8nFcKN5zxokLhtXoVxfNNXNJrE--XBy4rcQSW4Fzfo9ZBBvEyD4XlvzQKTWq4nPQDGmwvqO4ws1A9CLKPcxfBNHuw5N70QZw5gakTFOoJE"/>
+</div>
+<!-- Foreground Interaction Layers (Floating Meta-Data) -->
+<div class="relative z-10 w-full h-full p-12 pointer-events-none">
+<!-- Floating Node Detail 1 -->
+<div class="absolute top-1/4 left-1/3 p-6 rounded-full glass-panel bg-white/70 shadow-sm border border-white/20 pointer-events-auto cursor-pointer hover:scale-105 transition-transform duration-500">
+<div class="flex items-center space-x-4">
+<div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-cyan-600 text-sm" style="font-variation-settings: 'FILL' 1;">vital_signs</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-widest text-slate-500">Alpha Nexus</p>
+<p class="text-sm font-semibold text-slate-800">Causal Logic Loop</p>
+</div>
+</div>
+</div>
+<!-- Floating Node Detail 2 -->
+<div class="absolute bottom-1/4 right-1/4 p-6 rounded-full glass-panel bg-white/70 shadow-sm border border-white/20 pointer-events-auto cursor-pointer hover:scale-105 transition-transform duration-500">
+<div class="flex items-center space-x-4">
+<div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-amber-600 text-sm" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-widest text-slate-500">Wealth Anchor</p>
+<p class="text-sm font-semibold text-slate-800">92.4 ETH Reserve</p>
+</div>
+</div>
+</div>
+<!-- Control Bar (Bottom Floating) -->
+<div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center space-x-4 pointer-events-auto">
+<button class="px-8 py-3 rounded-full bg-primary text-on-primary font-medium text-sm flex items-center space-x-2 shadow-xl shadow-primary/20 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">auto_graph</span>
+<span>Re-Cluster Network</span>
+</button>
+<button class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-slate-600 hover:bg-white transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Asymmetric Detail Panel -->
+<section class="mt-12 grid grid-cols-12 gap-24">
+<div class="col-span-4">
+<p class="label-sm text-slate-500 uppercase tracking-widest mb-4">Topology Health</p>
+<div class="space-y-6">
+<div class="flex items-end justify-between">
+<span class="text-4xl font-extralight text-slate-800">0.0042</span>
+<span class="text-xs text-emerald-600 font-medium mb-1 flex items-center">
+<span class="material-symbols-outlined text-sm">trending_up</span> 2.1%
+                        </span>
+</div>
+<div class="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-primary-dim rounded-full"></div>
+</div>
+<p class="text-sm text-on-surface-variant font-light leading-relaxed">
+                        Entropy levels are stable across primary autonomous clusters. No critical failures detected in causal threads.
+                    </p>
+</div>
+</div>
+<div class="col-span-8 flex justify-end items-end">
+<div class="flex space-x-12">
+<div class="text-right">
+<p class="label-sm text-slate-400 uppercase tracking-widest mb-1">Total Nodes</p>
+<p class="text-xl font-medium text-slate-700">12,842</p>
+</div>
+<div class="text-right">
+<p class="label-sm text-slate-400 uppercase tracking-widest mb-1">Active Edges</p>
+<p class="text-xl font-medium text-slate-700">451,092</p>
+</div>
+<div class="text-right">
+<p class="label-sm text-slate-400 uppercase tracking-widest mb-1">Latency</p>
+<p class="text-xl font-medium text-slate-700">14ms</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer: Ecosystem Health Status -->
+<footer class="fixed bottom-0 w-full flex justify-center items-center space-x-24 px-24 py-8 w-full font-medium bg-transparent text-slate-400 dark:text-slate-500 font-inter text-[10px] uppercase tracking-[0.1em] z-50">
+<div class="flex items-center space-x-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+<span class="text-slate-700 dark:text-slate-200 transition-colors duration-300 cursor-pointer hover:text-slate-900">Ecosystem Health: Optimal</span>
+</div>
+<div class="flex items-center space-x-12">
+<span class="hover:text-slate-900 dark:hover:text-slate-100 transition-colors duration-300 cursor-pointer">Active Vitals</span>
+<span class="hover:text-slate-900 dark:hover:text-slate-100 transition-colors duration-300 cursor-pointer">Guardian Log</span>
+<span class="hover:text-slate-900 dark:hover:text-slate-100 transition-colors duration-300 cursor-pointer">Ecodia OS v2.4</span>
+</div>
+</footer>
+<!-- Subtle Grain Overlay for Curator Look -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] z-[100]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCatfOR-JbG8c3JbBjipQCHcMWIH0ilUgdIlLBq5HkKVBCixktTYXnua3GVn0Ci9Uk3oEYou4S3t8mEi14HcWb5u9x_n2_y9qC1hVa4KFMYatuXfi3zQ1TlVLvUoRka1KAzP_Eit3XMD3oGhW70n7LzhWVhzzWzTUygPfBaH9Lz8BoBOgnl6m1gdh6HpzWFDC9LPl9ZYobzHPVWi3wRqfNa6IFMOE2QOUMpZFDbEu1pbbh0k4e71owRr7n1_RWTNL-O9xnCzluZ9q0');"></div>
+</body></html>

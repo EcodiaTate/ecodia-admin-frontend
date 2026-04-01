@@ -4,6 +4,7 @@ import { getSessionLogs, sendMessage, stopSession } from '@/api/claudeCode'
 import { useCCSession } from '@/hooks/useCCSession'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { CCSession } from '@/types/claudeCode'
+import { Send, Square } from 'lucide-react'
 
 interface TerminalProps {
   session: CCSession
@@ -39,29 +40,38 @@ export function CCTerminal({ session }: TerminalProps) {
   }, [allOutput.length])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <StatusBadge status={session.status} />
-          {session.project_name && <span className="text-sm text-zinc-400">{session.project_name}</span>}
+          {session.project_name && (
+            <span className="text-sm text-on-surface-muted">{session.project_name}</span>
+          )}
         </div>
         {(session.status === 'running' || session.status === 'awaiting_input') && (
           <button
             onClick={() => stop.mutate()}
-            className="rounded-md bg-red-600/20 px-3 py-1.5 text-sm text-red-400 hover:bg-red-600/30"
+            className="flex items-center gap-2 rounded-xl bg-error/10 px-4 py-2.5 text-sm text-error transition-colors hover:bg-error/20"
           >
+            <Square className="h-3.5 w-3.5" strokeWidth={1.75} />
             Stop
           </button>
         )}
       </div>
 
-      <div
-        ref={outputRef}
-        className="h-[500px] overflow-y-auto rounded-lg border border-zinc-800 bg-black p-4 font-mono text-sm text-green-400"
-      >
-        {allOutput.map((chunk, i) => (
-          <pre key={i} className="whitespace-pre-wrap">{chunk}</pre>
-        ))}
+      {/* Terminal output with glass frame */}
+      <div className="glass rounded-3xl overflow-hidden">
+        <div
+          ref={outputRef}
+          className="h-[500px] overflow-y-auto bg-[#0F1419]/90 p-6 font-mono text-sm leading-relaxed text-primary-container"
+        >
+          {allOutput.map((chunk, i) => (
+            <pre key={i} className="whitespace-pre-wrap">{chunk}</pre>
+          ))}
+          {allOutput.length === 0 && (
+            <span className="text-on-surface-muted/40">Awaiting output...</span>
+          )}
+        </div>
       </div>
 
       {(session.status === 'running' || session.status === 'awaiting_input') && (
@@ -73,19 +83,20 @@ export function CCTerminal({ session }: TerminalProps) {
               setInput('')
             }
           }}
-          className="flex gap-2"
+          className="flex gap-3"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Send message to session..."
-            className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+            className="flex-1 rounded-xl bg-surface-container-low px-5 py-3 font-mono text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
           />
           <button
             type="submit"
             disabled={!input.trim() || send.isPending}
-            className="rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+            className="btn-primary-gradient flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium disabled:opacity-40"
           >
+            <Send className="h-3.5 w-3.5" strokeWidth={1.75} />
             Send
           </button>
         </form>

@@ -6,8 +6,9 @@ import { EmailDetail } from './EmailDetail'
 import { DraftReview } from './DraftReview'
 import type { EmailThread } from '@/types/gmail'
 import toast from 'react-hot-toast'
-import { RefreshCw, Mail, AlertTriangle, AlertCircle } from 'lucide-react'
+import { RefreshCw, Mail, AlertTriangle, AlertCircle, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 type Filter = {
   status?: string
@@ -33,9 +34,9 @@ export default function GmailPage() {
   })
 
   const statCards = [
-    { label: 'Unread', value: stats?.unread ?? 0, icon: Mail, color: 'text-yellow-400', onClick: () => setFilter({ status: 'unread' }) },
-    { label: 'Urgent', value: stats?.urgent ?? 0, icon: AlertTriangle, color: 'text-red-400', onClick: () => setFilter({ priority: 'urgent' }) },
-    { label: 'High', value: stats?.high ?? 0, icon: AlertCircle, color: 'text-orange-400', onClick: () => setFilter({ priority: 'high' }) },
+    { label: 'Unread', value: stats?.unread ?? 0, icon: Mail, accent: 'text-tertiary', onClick: () => setFilter({ status: 'unread' }) },
+    { label: 'Urgent', value: stats?.urgent ?? 0, icon: AlertTriangle, accent: 'text-error', onClick: () => setFilter({ priority: 'urgent' }) },
+    { label: 'High', value: stats?.high ?? 0, icon: AlertCircle, accent: 'text-tertiary', onClick: () => setFilter({ priority: 'high' }) },
   ]
 
   const inboxTabs = [
@@ -46,76 +47,99 @@ export default function GmailPage() {
 
   if (selected) {
     return (
-      <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        className="mx-auto max-w-4xl space-y-8"
+      >
         <button
           onClick={() => { setSelected(null); queryClient.invalidateQueries({ queryKey: ['gmailThreads'] }) }}
-          className="text-sm text-zinc-400 hover:text-zinc-200"
+          className="flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
         >
-          &larr; Back to inbox
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
+          Back to inbox
         </button>
         <EmailDetail thread={selected} onUpdate={(t) => setSelected(t)} />
         <DraftReview thread={selected} onUpdate={(t) => setSelected(t)} />
-      </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-100">Email Command Center</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      className="mx-auto max-w-5xl"
+    >
+      <div className="mb-12 flex items-start justify-between">
+        <div>
+          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+            Communication Stream
+          </span>
+          <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+            Digital <em className="not-italic font-normal text-primary">Curator</em>
+          </h1>
+        </div>
         <button
           onClick={() => sync.mutate()}
           disabled={sync.isPending}
-          className="flex items-center gap-2 rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
         >
-          <RefreshCw className={cn('h-4 w-4', sync.isPending && 'animate-spin')} />
+          <RefreshCw className={cn('h-3.5 w-3.5', sync.isPending && 'animate-spin')} strokeWidth={1.75} />
           Sync All
         </button>
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-3">
-        {statCards.map((card) => (
-          <button
+      <div className="mb-12 grid grid-cols-3 gap-6">
+        {statCards.map((card, i) => (
+          <motion.button
             key={card.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.06 }}
             onClick={card.onClick}
-            className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 text-left transition-colors hover:bg-zinc-800/50"
+            className="glass rounded-3xl p-8 text-left transition-all hover:shadow-glass-hover"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">{card.label}</span>
-              <card.icon className={cn('h-4 w-4', card.color)} />
+              <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
+              <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
             </div>
-            <p className={cn('mt-1 text-2xl font-semibold', card.color)}>{card.value}</p>
-          </button>
+            <p className={cn('mt-4 font-display text-[1.75rem] font-light', card.accent)}>{card.value}</p>
+          </motion.button>
         ))}
       </div>
 
-      {/* Inbox tabs */}
-      <div className="flex items-center gap-2">
+      {/* Filter tabs */}
+      <div className="mb-6 flex items-center gap-1 flex-wrap">
         {inboxTabs.map((tab) => (
           <button
             key={tab.label}
             onClick={() => setFilter(f => ({ ...f, inbox: tab.value }))}
             className={cn(
-              'rounded-md px-3 py-1.5 text-sm',
-              filter.inbox === tab.value ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-400 hover:text-zinc-200'
+              'rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              filter.inbox === tab.value
+                ? 'bg-primary/10 text-primary'
+                : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
             {tab.label}
           </button>
         ))}
 
-        <div className="mx-2 h-4 w-px bg-zinc-800" />
+        <div className="mx-3 h-4 w-px bg-surface-container" />
 
         {['all', 'unread', 'triaged', 'replied'].map((s) => (
           <button
             key={s}
             onClick={() => setFilter(f => ({ ...f, status: s === 'all' ? undefined : s }))}
             className={cn(
-              'rounded-md px-3 py-1.5 text-sm',
+              'rounded-xl px-4 py-2 text-sm font-medium transition-colors',
               (s === 'all' && !filter.status) || filter.status === s
-                ? 'bg-zinc-800 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-primary/10 text-primary'
+                : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
             {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -125,9 +149,9 @@ export default function GmailPage() {
         {(filter.status || filter.priority || filter.inbox) && (
           <button
             onClick={() => setFilter({})}
-            className="ml-2 text-xs text-zinc-500 hover:text-zinc-300"
+            className="ml-2 text-xs text-on-surface-muted transition-colors hover:text-on-surface-variant"
           >
-            Clear filters
+            Clear
           </button>
         )}
       </div>
@@ -138,6 +162,6 @@ export default function GmailPage() {
         inbox={filter.inbox}
         onSelect={setSelected}
       />
-    </div>
+    </motion.div>
   )
 }

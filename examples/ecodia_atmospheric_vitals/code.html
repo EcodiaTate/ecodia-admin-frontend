@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-surface": "#2f3131",
+              "on-surface": "#1a1c1c",
+              "on-secondary": "#ffffff",
+              "on-secondary-fixed-variant": "#005236",
+              "on-background": "#1a1c1c",
+              "error": "#ba1a1a",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#f0f1f1",
+              "primary-container": "#06b6d4",
+              "primary-fixed": "#acedff",
+              "surface-dim": "#dadada",
+              "secondary-fixed-dim": "#4edea3",
+              "surface-container-high": "#e8e8e8",
+              "surface-container": "#eeeeee",
+              "outline-variant": "#bcc9cd",
+              "on-primary-fixed": "#001f26",
+              "tertiary-fixed": "#ffddb8",
+              "on-tertiary": "#ffffff",
+              "on-primary-fixed-variant": "#004e5c",
+              "surface-tint": "#00687a",
+              "secondary-container": "#6cf8bb",
+              "surface-container-highest": "#e2e2e2",
+              "on-tertiary-fixed-variant": "#653e00",
+              "on-secondary-fixed": "#002113",
+              "on-surface-variant": "#3d494c",
+              "primary-fixed-dim": "#4cd7f6",
+              "on-secondary-container": "#00714d",
+              "on-tertiary-container": "#563400",
+              "inverse-primary": "#4cd7f6",
+              "outline": "#6d797d",
+              "surface-container-lowest": "#ffffff",
+              "surface-variant": "#e2e2e2",
+              "surface-bright": "#f9f9f9",
+              "on-error-container": "#93000a",
+              "secondary-fixed": "#6ffbbe",
+              "on-tertiary-fixed": "#2a1700",
+              "surface": "#f9f9f9",
+              "tertiary": "#855300",
+              "error-container": "#ffdad6",
+              "background": "#f9f9f9",
+              "tertiary-container": "#e79400",
+              "on-error": "#ffffff",
+              "secondary": "#006c49",
+              "tertiary-fixed-dim": "#ffb95f",
+              "on-primary-container": "#00424f",
+              "primary": "#00687a",
+              "surface-container-low": "#f3f3f3"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f9f9f9;
+            overflow-x: hidden;
+        }
+        .aurora-blur {
+            filter: blur(120px);
+            opacity: 0.15;
+            z-index: -1;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+        }
+        .orb-gradient {
+            background: linear-gradient(135deg, #06b6d4 0%, #6cf8bb 50%, #ffb95f 100%);
+            filter: blur(60px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top Navigation Shell -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-28 py-10 bg-white/5 backdrop-blur-xl shadow-[0_64px_64px_-10px_rgba(0,104,122,0.04)]">
+<div class="text-lg font-light tracking-[0.4em] text-slate-800">ECODIA</div>
+<div class="flex items-center space-x-12">
+<button class="font-['Inter'] tracking-[0.2em] text-[10px] uppercase font-light text-slate-500 opacity-40 hover:opacity-100 transition-opacity duration-700 ease-in-out flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+</button>
+<button class="font-['Inter'] tracking-[0.2em] text-[10px] uppercase font-light text-slate-500 opacity-40 hover:opacity-100 transition-opacity duration-700 ease-in-out flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-lg" data-icon="hub">hub</span>
+</button>
+<button class="font-['Inter'] tracking-[0.2em] text-[10px] uppercase font-light text-cyan-600 border-b-0 hover:opacity-100 transition-opacity duration-700 ease-in-out flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-lg" data-icon="login">login</span>
+</button>
+</div>
+</nav>
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full z-40 flex flex-col items-center py-20 bg-white/10 backdrop-blur-2xl w-20 hover:w-64 transition-all duration-1000 ease-in-out group overflow-hidden">
+<div class="flex flex-col items-center space-y-16 mt-20 w-full">
+<!-- Active Tab: Atmosphere -->
+<div class="w-full flex items-center px-6 cursor-pointer hover:bg-cyan-500/5 transition-colors duration-500 group/item">
+<span class="material-symbols-outlined text-cyan-600 font-bold" data-icon="cloud">cloud</span>
+<span class="ml-6 font-['Inter'] tracking-[0.15em] text-xs font-medium text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Atmosphere</span>
+</div>
+<div class="w-full flex items-center px-6 cursor-pointer hover:bg-cyan-500/5 transition-colors duration-500 group/item">
+<span class="material-symbols-outlined text-slate-400" data-icon="eco">eco</span>
+<span class="ml-6 font-['Inter'] tracking-[0.15em] text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Biosphere</span>
+</div>
+<div class="w-full flex items-center px-6 cursor-pointer hover:bg-cyan-500/5 transition-colors duration-500 group/item">
+<span class="material-symbols-outlined text-slate-400" data-icon="water_drop">water_drop</span>
+<span class="ml-6 font-['Inter'] tracking-[0.15em] text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Hydrosphere</span>
+</div>
+<div class="w-full flex items-center px-6 cursor-pointer hover:bg-cyan-500/5 transition-colors duration-500 group/item">
+<span class="material-symbols-outlined text-slate-400" data-icon="public">public</span>
+<span class="ml-6 font-['Inter'] tracking-[0.15em] text-xs font-medium text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Geosphere</span>
+</div>
+</div>
+<div class="mt-auto mb-8 px-6 w-full flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a system operator in a clean white environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5Zj-V_4jQ-uLKWz5nksTKalZBDR3P_36ncFwqx7plhKc1wbyAhh3b4JVINA1X5-b9vD-282w4EsNk3nTpgA-jN-HWdMM4HCarDJoeMcZzvtYnP31wLY8XRRg7hzKXQSb0yONBMqXN_T02WX5q366Iwu_AmbDh3bKACuya0SzMyk9_8L8kd0Rnds16Jm2obokJ6c0pGWqF7SdVlaoy2dCImnDpNNPLzHyKyOh8EjNZTsKrqs25uBwKj0bWPGQS0s6uCF9NqoloCW8"/>
+</div>
+<div class="ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+<div class="font-['Inter'] tracking-[0.15em] text-[10px] font-bold text-slate-800">System Active</div>
+<div class="text-[8px] text-slate-400 uppercase tracking-tighter">Ecodia Control</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="relative min-h-screen flex items-center justify-center pt-32 pb-48 px-28">
+<!-- Ambient Aurora Backgrounds -->
+<div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary-container aurora-blur"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full bg-secondary-fixed aurora-blur"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-tertiary-fixed aurora-blur opacity-10"></div>
+<!-- Central Organic Hub -->
+<div class="relative z-10 flex flex-col items-center">
+<!-- Hero Data Headline -->
+<div class="mb-24 text-center">
+<span class="font-headline text-[0.75rem] uppercase tracking-[0.4em] text-on-surface-variant font-medium block mb-4">Atmospheric Integrity</span>
+<h1 class="font-headline text-[3.5rem] font-extralight tracking-tight text-on-surface">98.4<span class="text-primary-container">%</span></h1>
+</div>
+<!-- The Core Orb -->
+<div class="relative w-96 h-96 flex items-center justify-center">
+<!-- Fluid Shifting Orb -->
+<div class="absolute inset-0 orb-gradient rounded-full animate-pulse opacity-80" style="animation-duration: 8s;"></div>
+<!-- Glass Overlay Shield -->
+<div class="absolute inset-4 glass-card rounded-full shadow-[0_64px_64px_-10px_rgba(0,104,122,0.08)] flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover opacity-20 mix-blend-overlay" data-alt="abstract double exposure of a pine forest and soft morning mist inside a crystal sphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDohJNvKG42l9JBoPmv8xZ_Ss5amu30pW_jNZTKthpYzRWPXE_qDA_kFzu6T-LFI3uBL8ZlPpXDunjpyEGcTuItl5kxZcwBFlENpHTHnOHW1guZZqgZX1_LNl2GLJN5YdcAaeoY2Db4f0gTcf5WQ96p2Vs0tl2N16qROzNwgPSVIjp6pgdNxuj0nncpzhpR6rONNQE_zE1UHyxldxJwghYoLkyg9slKxaGhFDkLrUW-TXfRQMsHqmBaN4gyj41DRAvPcaZYEX-CeGw"/>
+<div class="absolute text-on-primary-container/60 font-light tracking-[0.8em] text-xs uppercase">Optimal</div>
+</div>
+<!-- Floating Vital Labels (Asymmetrical) -->
+<!-- Top Left -->
+<div class="absolute -top-12 -left-32 glass-card px-8 py-4 rounded-xl shadow-sm">
+<div class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold mb-1">Air Quality</div>
+<div class="text-sm font-medium text-slate-800 tracking-wide">Optimal Range</div>
+</div>
+<!-- Bottom Right -->
+<div class="absolute -bottom-8 -right-32 glass-card px-8 py-4 rounded-xl shadow-sm">
+<div class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold mb-1">Humidity</div>
+<div class="text-sm font-medium text-slate-800 tracking-wide">42% Rel.</div>
+</div>
+<!-- Center Right -->
+<div class="absolute top-1/4 -right-48 glass-card px-8 py-4 rounded-xl shadow-sm">
+<div class="text-[9px] uppercase tracking-[0.3em] text-slate-400 font-bold mb-1">Solar Gain</div>
+<div class="text-sm font-medium text-slate-800 tracking-wide">852W/m²</div>
+</div>
+</div>
+<!-- Secondary Detail Grouping (Asymmetric Space) -->
+<div class="mt-40 grid grid-cols-2 gap-32 w-full max-w-4xl">
+<div class="space-y-6">
+<h3 class="font-headline text-[10px] uppercase tracking-[0.3em] text-primary font-bold">Atmospheric Flux</h3>
+<div class="h-px w-12 bg-primary/20"></div>
+<p class="text-on-surface-variant text-sm font-light leading-relaxed max-w-xs">
+                        Thermal currents remain within the sanctuary threshold. Nitrogen cycles are recalibrating to the seasonal shift.
+                    </p>
+</div>
+<div class="flex flex-col justify-end items-end text-right">
+<div class="text-4xl font-extralight text-on-surface-variant tracking-tighter mb-2">22.4°C</div>
+<div class="text-[9px] uppercase tracking-[0.2em] text-slate-400">Surface Temperature</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Navigation Shell -->
+<footer class="fixed bottom-0 w-full z-50 flex justify-between items-center py-12 px-28 bg-transparent">
+<div class="flex space-x-12">
+<div class="flex items-center space-x-3">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(0,108,73,0.6)]"></div>
+<span class="font-['Inter'] tracking-[0.3em] text-[9px] uppercase font-bold text-cyan-500/60">ECOSYSTEM HEALTH: OPTIMAL</span>
+</div>
+</div>
+<div class="flex space-x-12">
+<a class="font-['Inter'] tracking-[0.3em] text-[9px] uppercase font-bold text-slate-400/30 hover:text-cyan-400 transition-all duration-500" href="#">System Logs</a>
+<a class="font-['Inter'] tracking-[0.3em] text-[9px] uppercase font-bold text-slate-400/30 hover:text-cyan-400 transition-all duration-500" href="#">Network Status</a>
+</div>
+</footer>
+<!-- Aurora Pulse Element (Floating Detail) -->
+<div class="fixed top-1/2 right-12 -translate-y-1/2 flex flex-col space-y-4">
+<div class="w-1 h-1 rounded-full bg-primary/40"></div>
+<div class="w-1 h-1 rounded-full bg-primary"></div>
+<div class="w-1 h-1 rounded-full bg-primary/40"></div>
+</div>
+</body></html>

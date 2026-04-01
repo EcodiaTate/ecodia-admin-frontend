@@ -1,0 +1,264 @@
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary-dim": "#4d545a",
+            "surface-container-high": "#e1e9ee",
+            "surface-container-highest": "#d9e4ea",
+            "on-tertiary-fixed-variant": "#585e65",
+            "on-tertiary": "#f6f9ff",
+            "tertiary-fixed-dim": "#d2d8e0",
+            "background": "#f7f9fb",
+            "on-surface": "#2a3439",
+            "on-secondary-container": "#445365",
+            "surface-container-lowest": "#ffffff",
+            "surface-tint": "#515f74",
+            "error-dim": "#4e0309",
+            "secondary-fixed": "#d4e4fa",
+            "on-primary-fixed-variant": "#4e5c71",
+            "on-secondary": "#f7f9ff",
+            "on-tertiary-fixed": "#3b4248",
+            "primary": "#515f74",
+            "on-background": "#2a3439",
+            "surface-variant": "#d9e4ea",
+            "primary-fixed": "#d5e3fd",
+            "on-secondary-fixed-variant": "#4e5d6f",
+            "tertiary-container": "#e0e6ee",
+            "inverse-primary": "#d5e3fd",
+            "secondary-dim": "#465467",
+            "surface": "#f7f9fb",
+            "primary-dim": "#455368",
+            "surface-bright": "#f7f9fb",
+            "on-primary-container": "#455367",
+            "secondary-fixed-dim": "#c6d6ec",
+            "inverse-on-surface": "#9a9d9f",
+            "on-error-container": "#752121",
+            "primary-container": "#d5e3fd",
+            "on-secondary-fixed": "#324052",
+            "secondary": "#526073",
+            "tertiary": "#596066",
+            "on-primary-fixed": "#324054",
+            "error-container": "#fe8983",
+            "on-primary": "#f6f7ff",
+            "secondary-container": "#d4e4fa",
+            "outline": "#717c82",
+            "outline-variant": "#a9b4b9",
+            "on-tertiary-container": "#4e545b",
+            "surface-container-low": "#f0f4f7",
+            "tertiary-fixed": "#e0e6ee",
+            "primary-fixed-dim": "#c7d5ee",
+            "surface-container": "#e8eff3",
+            "surface-dim": "#cfdce3",
+            "on-surface-variant": "#566166",
+            "inverse-surface": "#0b0f10",
+            "error": "#9f403d",
+            "on-error": "#fff7f6"
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .aurora-blur {
+      background: radial-gradient(circle at 20% 30%, rgba(103, 232, 249, 0.08) 0%, transparent 40%),
+                  radial-gradient(circle at 80% 70%, rgba(251, 191, 36, 0.06) 0%, transparent 40%);
+    }
+    .text-deep-slate { color: #334155; }
+    .glass-nav {
+      backdrop-filter: blur(20px);
+      background: rgba(247, 249, 251, 0.7);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container aurora-blur min-h-screen">
+<!-- TopNavBar (Fixed) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-24 py-6 bg-slate-50/70 dark:bg-slate-900/70 backdrop-blur-xl">
+<div class="text-lg font-light tracking-[0.2em] text-slate-400 dark:text-slate-500">Curator</div>
+<div class="flex items-center gap-8">
+<span class="material-symbols-outlined text-slate-500 hover:text-slate-900 transition-colors duration-500 cursor-pointer" data-icon="notifications_none">notifications_none</span>
+<span class="material-symbols-outlined text-slate-500 hover:text-slate-900 transition-colors duration-500 cursor-pointer" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<!-- SideNavBar (Hoverable) -->
+<aside class="fixed left-0 top-0 h-full w-20 hover:w-64 transition-all duration-700 ease-in-out z-40 flex flex-col py-24 px-6 bg-slate-50/10 dark:bg-slate-950/10 hover:bg-slate-50/90 dark:hover:bg-slate-900/90 backdrop-blur-2xl group">
+<div class="flex flex-col gap-12 mt-12">
+<div class="flex items-center gap-4 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 group-hover/item:text-slate-900 transition-all duration-500" data-icon="filter_hdr">filter_hdr</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 font-inter text-body-lg text-slate-400 dark:text-slate-600 group-hover:text-slate-900">Space</span>
+</div>
+<div class="flex items-center gap-4 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-900 dark:text-white font-semibold" data-icon="collections">collections</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 font-inter text-body-lg text-slate-900 dark:text-white font-semibold">Curation</span>
+</div>
+<div class="flex items-center gap-4 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 group-hover/item:text-slate-900 transition-all duration-500" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 font-inter text-body-lg text-slate-400 dark:text-slate-600 group-hover:text-slate-900">Archive</span>
+</div>
+<div class="mt-auto flex items-center gap-4 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 group-hover/item:text-slate-900 transition-all duration-500" data-icon="settings">settings</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 font-inter text-body-lg text-slate-400 dark:text-slate-600 group-hover:text-slate-900">Settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="pl-24 pr-24 pt-32 pb-24 min-h-screen">
+<!-- Editorial Navigation Grid -->
+<nav class="grid grid-cols-6 gap-4 mb-24 max-w-5xl mx-auto">
+<a class="text-label-sm tracking-[0.25em] uppercase font-semibold text-deep-slate border-b border-deep-slate pb-2 w-fit" href="#">DMs</a>
+<a class="text-label-sm tracking-[0.25em] uppercase text-on-surface-variant hover:text-deep-slate transition-colors duration-500 pb-2 w-fit" href="#">Posts</a>
+<a class="text-label-sm tracking-[0.25em] uppercase text-on-surface-variant hover:text-deep-slate transition-colors duration-500 pb-2 w-fit" href="#">Calendar</a>
+<a class="text-label-sm tracking-[0.25em] uppercase text-on-surface-variant hover:text-deep-slate transition-colors duration-500 pb-2 w-fit" href="#">Connections</a>
+<a class="text-label-sm tracking-[0.25em] uppercase text-on-surface-variant hover:text-deep-slate transition-colors duration-500 pb-2 w-fit" href="#">Analytics</a>
+<a class="text-label-sm tracking-[0.25em] uppercase text-on-surface-variant hover:text-deep-slate transition-colors duration-500 pb-2 w-fit" href="#">Settings</a>
+</nav>
+<section class="grid grid-cols-12 gap-16 items-start">
+<!-- Left Sidebar: DM List -->
+<div class="col-span-3 space-y-12">
+<div class="space-y-8">
+<h2 class="headline-md font-light text-deep-slate">Priority</h2>
+<div class="space-y-6">
+<!-- DM Item -->
+<div class="group cursor-pointer flex items-center gap-4 transition-all duration-500 p-4 -ml-4 hover:bg-surface-container-low rounded-xl">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-700" data-alt="close-up studio portrait of a middle-aged man with short hair and calm expression, soft cinematic lighting, neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDevKQcfvCEwzfLcZ8RzBHvXTSoZQ8sWmjlYnwYYkjg0bF_D0HWcJoPamCRBdgm_nc1YrmZnrAfIvVl22SRzJ6Wfqd4vB-D4UgV80NBES99PBTU7qPI7Uejp1gcm73zzm_nFVoNC1fofWLaangR0HkTm4KNMAb8cViKIHILnerlFIs9-I47m6o_2KfmMMUG5ys2d9jXPXv2u4N_Hv6XysNBfD27SmAwUKtgMQsEPMWLFMLssgNhRD0O3Fry7KLy_2nNFYJPl9RaxcQ"/>
+<div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full shadow-[0_0_12px_rgba(74,222,128,0.6)]"></div>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-body-lg font-medium text-deep-slate truncate">Julian Vane</p>
+<p class="text-label-sm text-on-surface-variant truncate">Executive Summary Attached...</p>
+</div>
+</div>
+<!-- DM Item -->
+<div class="group cursor-pointer flex items-center gap-4 transition-all duration-500 p-4 -ml-4 hover:bg-surface-container-low rounded-xl">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-700" data-alt="professional portrait of a young woman with a thoughtful gaze, soft natural morning light through a window, minimalist aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8OxfU2c8-eqzhoK9F982971uJAplNo8JnNM2j7oodYAmvQSRsviAHT4N8ZCjGLhF0oIxJ9N08Gmi27Ck7WLGUWVc1qKhH6pTQBHQQt-2XkWY6AStY361EB5FuMWb5QZK8x54evmtlZRZLiUwc80uMlCrYLOHusswBt_Nu0H29DgJTEt7eDCLvAVcu0o8QBELI2xGQoLlLC4vJ7yy5cmcWIn26jdHuBpqCUwU3NSA7jc5ySLcXUt0hNlrotf6kwLXKtbbJhrgKkEE"/>
+<div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full shadow-[0_0_12px_rgba(74,222,128,0.6)]"></div>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-body-lg font-medium text-deep-slate truncate">Elara Thorne</p>
+<p class="text-label-sm text-on-surface-variant truncate">The quarterly vision looks solid.</p>
+</div>
+</div>
+<!-- DM Item -->
+<div class="group cursor-pointer flex items-center gap-4 transition-all duration-500 p-4 -ml-4 hover:bg-surface-container-low rounded-xl">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-700" data-alt="headshot of a man with minimalist glasses and a clean-shaven face, bright high-key lighting, modern professional vibe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAN1yZFN3tEFAFQs3wiWwhV7rl7jFsjSnxiNhKpP_e2bhhHB8cN-Uo22Mp8WqIwsRfQn6suL-02EtQcwUJHqCGP2Y6_evt2K4wmDnmPqCrbPqURy0uMME404SQ4xp1VnDK8EqNEODtI57-FEVxPkj63p749cPb89GOf3VUAnpCq_1ph8_gEqY6eg8b9Nw4GCBP3vYtUwj-6SSRO1kcyG3SQkn5ttNMTcqFHrAm9AvFpEVdZZABZY9Iw_Ya3Tua4cp4DS6q6lX_NSR4"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-body-lg font-medium text-deep-slate truncate">Marcus Chen</p>
+<p class="text-label-sm text-on-surface-variant truncate">Can we sync at 4 PM?</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Network Orb Visualization -->
+<div class="pt-12">
+<div class="w-full aspect-square relative flex items-center justify-center">
+<div class="absolute inset-0 bg-gradient-to-tr from-cyan-50/20 to-amber-50/20 blur-3xl animate-pulse"></div>
+<div class="w-48 h-48 rounded-full bg-gradient-to-br from-white via-surface-container-lowest to-surface-container-high shadow-[0_20px_50px_rgba(0,0,0,0.03)] flex items-center justify-center relative overflow-hidden border border-white/50">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-cyan-100/30 via-transparent to-transparent"></div>
+<div class="text-center z-10">
+<p class="text-display-lg text-deep-slate font-thin tracking-tighter">92</p>
+<p class="text-label-sm uppercase tracking-widest text-on-surface-variant">Influence</p>
+</div>
+<!-- Floating nodes suggestion -->
+<div class="absolute top-10 left-10 w-2 h-2 bg-amber-200 rounded-full blur-[1px]"></div>
+<div class="absolute bottom-12 right-14 w-1.5 h-1.5 bg-cyan-200 rounded-full blur-[1px]"></div>
+</div>
+</div>
+<p class="text-label-sm text-center mt-6 text-on-surface-variant italic font-light">Network resonance is optimal.</p>
+</div>
+</div>
+<!-- Center: Conversation View -->
+<div class="col-span-9 bg-white/40 backdrop-blur-md rounded-xl p-16 space-y-16 shadow-[40px_0_40px_rgba(42,52,57,0.02)] min-h-[700px] flex flex-col relative">
+<!-- Header -->
+<div class="flex justify-between items-end border-b border-outline-variant/10 pb-8">
+<div>
+<h1 class="display-lg text-deep-slate font-extralight tracking-tight">Julian Vane</h1>
+<p class="text-body-lg text-on-surface-variant">Chief Design Officer at Arca</p>
+</div>
+<div class="flex gap-6 pb-2">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-deep-slate cursor-pointer transition-colors" data-icon="search">search</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-deep-slate cursor-pointer transition-colors" data-icon="more_vert">more_vert</span>
+</div>
+</div>
+<!-- Chat History -->
+<div class="flex-1 space-y-12">
+<!-- Date Separator -->
+<div class="flex justify-center">
+<span class="text-label-sm uppercase tracking-[0.2em] text-on-surface-variant/40">Today — 09:42 AM</span>
+</div>
+<!-- Message Inbound -->
+<div class="flex gap-8 max-w-2xl">
+<img class="w-8 h-8 rounded-full grayscale" data-alt="Julian Vane small avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNT471SkSZOIb1qEX6SSPEbRxSyj0c3V-DzEwK0gCwGNKfo8zKMtckpFZbjxgmv5NHtmt059z2k2qseRIzuabcpxhT-6OyO-lYDLy_pep9dAGnMJll5HrLT_3tg-YwI1o_sjuUvewDfLVis1bSKT2O7X3wQEquDqNeAfiVf60jplXHRWVluGI3Mhmt3g0TJjfLi_U0_6Kb34VPsEhCexLFLd099CUso96rEN_A6CaSPJG3w8fI4JEIfRrD6AgMo6Mto9CuXh-h-SM"/>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-8 rounded-lg rounded-tl-none text-deep-slate leading-relaxed">
+                Hello, Curator. I’ve just finished reviewing the Ecodia ecosystem draft you shared on LinkedIn yesterday. The spatial curation approach is fascinating. Have you considered how this scales for enterprise-level data orchestration?
+              </div>
+<div class="bg-surface-container-low p-8 rounded-lg text-deep-slate leading-relaxed">
+                I’ve attached our latest internal findings on ambient feedback loops. Would love your perspective.
+              </div>
+</div>
+</div>
+<!-- Message Outbound -->
+<div class="flex flex-row-reverse gap-8 max-w-2xl ml-auto group relative">
+<div class="space-y-4 text-right">
+<div class="bg-primary text-on-primary p-8 rounded-lg rounded-tr-none leading-relaxed text-left">
+                Julian, appreciate the deep dive. Scaling for enterprise was our primary hurdle. We solved it by offloading the "structural noise" to the background layer, allowing the orchestration to feel as light as a single-user task.
+              </div>
+<p class="text-label-sm text-on-surface-variant">Read 10:15 AM</p>
+</div>
+<!-- Floating AI Hover Actions -->
+<div class="absolute -left-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+<button class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center hover:bg-white transition-colors shadow-sm" title="AI Triage">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="auto_fix_high">auto_fix_high</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center hover:bg-white transition-colors shadow-sm" title="Draft Reply">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="edit_note">edit_note</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="mt-auto pt-12">
+<div class="relative group">
+<textarea class="w-full bg-surface-container-low border-none rounded-lg p-8 pr-32 focus:ring-0 focus:bg-surface-container-highest transition-all duration-500 resize-none h-32 font-body text-deep-slate placeholder:text-on-surface-variant/40" placeholder="Compose a response..."></textarea>
+<div class="absolute bottom-6 right-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-deep-slate cursor-pointer" data-icon="attach_file">attach_file</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-deep-slate cursor-pointer" data-icon="mood">mood</span>
+<button class="bg-deep-slate text-white px-8 py-3 rounded-full text-label-sm uppercase tracking-widest hover:opacity-90 transition-opacity">Send</button>
+</div>
+</div>
+</div>
+<!-- Subtle Sunlight Shadow Element -->
+<div class="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-surface-bright/20 to-transparent pointer-events-none"></div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full flex justify-between items-center px-24 py-8 bg-transparent text-slate-400 dark:text-slate-600 font-inter text-[10px] tracking-widest uppercase opacity-40">
+<div>System Vitals: Optimal. Harmony: 98%.</div>
+<div class="flex gap-12">
+<a class="hover:opacity-100 transition-opacity duration-1000" href="#">Ecosystem Status</a>
+<a class="hover:opacity-100 transition-opacity duration-1000" href="#">Privacy Architecture</a>
+</div>
+</footer>
+</body></html>

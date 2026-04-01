@@ -20,11 +20,11 @@ export function SessionList({ onSelect }: SessionListProps) {
 
   const columns = [
     { key: 'status', header: 'Status', render: (r: CCSession) => <StatusBadge status={r.status} />, className: 'w-28' },
-    { key: 'initial_prompt', header: 'Prompt', render: (r: CCSession) => <span className="line-clamp-1">{r.initial_prompt}</span> },
-    { key: 'project_name', header: 'Project', render: (r: CCSession) => r.project_name || '-' },
-    { key: 'triggered_by', header: 'Trigger' },
-    { key: 'started_at', header: 'Started', render: (r: CCSession) => formatRelative(r.started_at) },
-    { key: 'cc_cost_usd', header: 'Cost', render: (r: CCSession) => r.cc_cost_usd ? `$${r.cc_cost_usd.toFixed(4)}` : '-' },
+    { key: 'initial_prompt', header: 'Prompt', render: (r: CCSession) => <span className="line-clamp-1 text-on-surface">{r.initial_prompt}</span> },
+    { key: 'project_name', header: 'Project', render: (r: CCSession) => <span className="text-on-surface-muted">{r.project_name || '\u2014'}</span> },
+    { key: 'triggered_by', header: 'Trigger', render: (r: CCSession) => <span className="text-on-surface-muted">{r.triggered_by}</span> },
+    { key: 'started_at', header: 'Started', render: (r: CCSession) => <span className="font-mono text-label-sm text-on-surface-muted">{formatRelative(r.started_at)}</span> },
+    { key: 'cc_cost_usd', header: 'Cost', render: (r: CCSession) => <span className="font-mono text-on-surface-muted">{r.cc_cost_usd ? `$${r.cc_cost_usd.toFixed(4)}` : '\u2014'}</span> },
   ]
 
   return <DataTable columns={columns} data={data?.sessions ?? []} onRowClick={onSelect} />

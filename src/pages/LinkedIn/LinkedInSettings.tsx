@@ -54,15 +54,22 @@ export function LinkedInSettings() {
   const isActive = status?.status === 'active' || status?.status === 'inactive'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Session status */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+      <div className="glass rounded-2xl p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {isActive ? <Wifi className="h-5 w-5 text-green-400" /> : <WifiOff className="h-5 w-5 text-red-400" />}
+            {isActive ? (
+              <div className="relative">
+                <Wifi className="h-5 w-5 text-secondary" strokeWidth={1.75} />
+                <div className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-secondary animate-pulse-glow" />
+              </div>
+            ) : (
+              <WifiOff className="h-5 w-5 text-error" strokeWidth={1.75} />
+            )}
             <div>
-              <h3 className="text-sm font-medium text-zinc-200">Session Status</h3>
-              <p className="text-xs text-zinc-500">
+              <h3 className="font-display text-sm font-medium text-on-surface">Session Status</h3>
+              <p className="text-xs text-on-surface-muted">
                 {status?.status === 'active' && 'Connected'}
                 {status?.status === 'inactive' && 'Cookie set, ready to connect'}
                 {status?.status === 'suspended' && `Suspended: ${status.reason}`}
@@ -70,45 +77,42 @@ export function LinkedInSettings() {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
-            {(status?.status === 'suspended' || status?.status === 'captcha') && (
-              <button
-                onClick={() => resume.mutate()}
-                disabled={resume.isPending}
-                className="flex items-center gap-1.5 rounded-md bg-emerald-600/20 px-3 py-1.5 text-sm text-emerald-400 hover:bg-emerald-600/30"
-              >
-                <RefreshCw className="h-3.5 w-3.5" /> Resume
-              </button>
-            )}
-          </div>
+          {(status?.status === 'suspended' || status?.status === 'captcha') && (
+            <button
+              onClick={() => resume.mutate()}
+              disabled={resume.isPending}
+              className="flex items-center gap-2 rounded-xl bg-secondary/10 px-4 py-2.5 text-sm text-secondary transition-colors hover:bg-secondary/20"
+            >
+              <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} /> Resume
+            </button>
+          )}
         </div>
-
         {status?.lastActive && (
-          <p className="mt-2 text-xs text-zinc-500">Last active: {formatRelative(status.lastActive)}</p>
+          <p className="mt-3 font-mono text-label-sm text-on-surface-muted">Last active: {formatRelative(status.lastActive)}</p>
         )}
       </div>
 
       {/* Cookie input */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+      <div className="glass rounded-2xl p-6">
         <div className="flex items-center gap-2">
-          <Key className="h-4 w-4 text-zinc-400" />
-          <h3 className="text-sm font-medium text-zinc-200">LinkedIn Cookie (li_at)</h3>
+          <Key className="h-4 w-4 text-on-surface-muted" strokeWidth={1.75} />
+          <h3 className="font-display text-sm font-medium text-on-surface">LinkedIn Cookie (li_at)</h3>
         </div>
-        <p className="mt-1 text-xs text-zinc-500">
+        <p className="mt-2 text-xs text-on-surface-muted">
           Get this from your browser: LinkedIn.com &rarr; Developer Tools &rarr; Application &rarr; Cookies &rarr; li_at
         </p>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-4 flex gap-2">
           <input
             type="password"
             value={cookie}
             onChange={(e) => setCookie(e.target.value)}
             placeholder="Paste li_at cookie value..."
-            className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-300 placeholder-zinc-500 outline-none"
+            className="flex-1 rounded-xl bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
           />
           <button
             onClick={() => saveCookie.mutate()}
             disabled={!cookie.trim() || saveCookie.isPending}
-            className="rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+            className="rounded-xl bg-surface-container-high px-5 py-3 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
           >
             Save
           </button>
@@ -117,23 +121,23 @@ export function LinkedInSettings() {
 
       {/* Budget usage */}
       {status?.budgetUsage && (
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+        <div className="glass rounded-2xl p-6">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-zinc-400" />
-            <h3 className="text-sm font-medium text-zinc-200">Daily Budget Usage</h3>
+            <Shield className="h-4 w-4 text-on-surface-muted" strokeWidth={1.75} />
+            <h3 className="font-display text-sm font-medium text-on-surface">Daily Budget Usage</h3>
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-3">
+          <div className="mt-4 grid grid-cols-3 gap-3">
             {Object.entries(status.budgetUsage).map(([key, budget]) => (
-              <div key={key} className="rounded bg-zinc-800/50 p-3">
+              <div key={key} className="rounded-xl bg-surface-container-low p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-400">{key.replace(/_/g, ' ')}</span>
-                  <span className="text-xs text-zinc-500">{budget.used}/{budget.limit}</span>
+                  <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">{key.replace(/_/g, ' ')}</span>
+                  <span className="font-mono text-label-sm text-on-surface-muted">{budget.used}/{budget.limit}</span>
                 </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-700">
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-container">
                   <div
-                    className={cn('h-full rounded-full',
-                      budget.remaining === 0 ? 'bg-red-400' :
-                      budget.remaining < budget.limit * 0.2 ? 'bg-yellow-400' : 'bg-emerald-400'
+                    className={cn('h-full rounded-full transition-all',
+                      budget.remaining === 0 ? 'bg-error' :
+                      budget.remaining < budget.limit * 0.2 ? 'bg-tertiary' : 'bg-secondary',
                     )}
                     style={{ width: `${(budget.used / budget.limit) * 100}%` }}
                   />
@@ -141,62 +145,62 @@ export function LinkedInSettings() {
               </div>
             ))}
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-3 font-mono text-label-sm text-on-surface-muted">
             Sessions today: {status.sessionsToday}/{status.maxSessionsPerDay}
           </p>
         </div>
       )}
 
       {/* Manual triggers */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-        <h3 className="text-sm font-medium text-zinc-200">Manual Triggers</h3>
-        <p className="mt-1 text-xs text-zinc-500">Run a scrape job manually. Jobs run in the background.</p>
-        <div className="mt-3 grid grid-cols-5 gap-2">
+      <div className="glass rounded-2xl p-6">
+        <h3 className="font-display text-sm font-medium text-on-surface">Manual Triggers</h3>
+        <p className="mt-1 text-xs text-on-surface-muted">Run a scrape job manually. Jobs run in the background.</p>
+        <div className="mt-4 grid grid-cols-5 gap-3">
           {JOB_TYPES.map((job) => (
             <button
               key={job.key}
               onClick={() => trigger.mutate(job.key)}
               disabled={trigger.isPending || !isActive}
-              className="flex flex-col items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-800/30 p-3 text-center transition-colors hover:bg-zinc-800/60 disabled:opacity-50"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-surface-container-low p-4 text-center transition-colors hover:bg-surface-container disabled:opacity-40"
             >
-              <Play className="h-4 w-4 text-zinc-400" />
-              <span className="text-xs font-medium text-zinc-300">{job.label}</span>
-              <span className="text-[10px] text-zinc-500">{job.schedule}</span>
+              <Play className="h-4 w-4 text-on-surface-muted" strokeWidth={1.75} />
+              <span className="text-xs font-medium text-on-surface-variant">{job.label}</span>
+              <span className="font-mono text-label-sm text-on-surface-muted">{job.schedule}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Scrape logs */}
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-        <h3 className="text-sm font-medium text-zinc-200">Recent Scrape Logs</h3>
+      <div className="glass rounded-2xl p-6">
+        <h3 className="font-display text-sm font-medium text-on-surface">Recent Scrape Logs</h3>
         {loadingLogs ? <LoadingSpinner /> : (
-          <div className="mt-3 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-zinc-800 text-zinc-500">
-                  <th className="px-2 py-2 text-left">Job</th>
-                  <th className="px-2 py-2 text-left">Status</th>
-                  <th className="px-2 py-2 text-left">Items</th>
-                  <th className="px-2 py-2 text-left">Duration</th>
-                  <th className="px-2 py-2 text-left">Time</th>
-                  <th className="px-2 py-2 text-left">Error</th>
+                <tr className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">
+                  <th className="px-3 py-3 text-left">Job</th>
+                  <th className="px-3 py-3 text-left">Status</th>
+                  <th className="px-3 py-3 text-left">Items</th>
+                  <th className="px-3 py-3 text-left">Duration</th>
+                  <th className="px-3 py-3 text-left">Time</th>
+                  <th className="px-3 py-3 text-left">Error</th>
                 </tr>
               </thead>
               <tbody>
-                {(logs ?? []).map((log: ScrapeLog) => (
-                  <tr key={log.id} className="border-b border-zinc-800/30">
-                    <td className="px-2 py-2 text-zinc-300">{log.job_type}</td>
-                    <td className="px-2 py-2"><StatusBadge status={log.status} /></td>
-                    <td className="px-2 py-2 text-zinc-400">{log.items_found}</td>
-                    <td className="px-2 py-2 text-zinc-400">{log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : '-'}</td>
-                    <td className="px-2 py-2 text-zinc-500">{formatRelative(log.created_at)}</td>
-                    <td className="px-2 py-2 text-red-400/70 truncate max-w-[200px]">{log.error_message || '-'}</td>
+                {(logs ?? []).map((log: ScrapeLog, i: number) => (
+                  <tr key={log.id} className={i % 2 === 0 ? 'bg-transparent' : 'bg-surface-container-low/40'}>
+                    <td className="px-3 py-3 text-on-surface-variant">{log.job_type}</td>
+                    <td className="px-3 py-3"><StatusBadge status={log.status} /></td>
+                    <td className="px-3 py-3 font-mono text-on-surface-muted">{log.items_found}</td>
+                    <td className="px-3 py-3 font-mono text-on-surface-muted">{log.duration_ms ? `${(log.duration_ms / 1000).toFixed(1)}s` : '\u2014'}</td>
+                    <td className="px-3 py-3 font-mono text-on-surface-muted">{formatRelative(log.created_at)}</td>
+                    <td className="px-3 py-3 text-error/70 truncate max-w-[200px]">{log.error_message || '\u2014'}</td>
                   </tr>
                 ))}
                 {(logs ?? []).length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-2 py-4 text-center text-zinc-500">No logs yet</td>
+                    <td colSpan={6} className="px-3 py-8 text-center text-on-surface-muted">No logs yet</td>
                   </tr>
                 )}
               </tbody>

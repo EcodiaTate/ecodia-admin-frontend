@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ecodia OS - Knowledge Explorer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-error": "#ffffff",
+              "on-secondary": "#ffffff",
+              "tertiary": "#855300",
+              "on-primary-fixed": "#001f26",
+              "surface-container-high": "#e8e8e8",
+              "inverse-surface": "#2f3131",
+              "inverse-primary": "#4cd7f6",
+              "primary-container": "#06b6d4",
+              "on-surface": "#1a1c1c",
+              "on-primary-container": "#00424f",
+              "surface": "#f9f9f9",
+              "primary": "#00687a",
+              "on-secondary-fixed": "#002113",
+              "error": "#ba1a1a",
+              "secondary": "#006c49",
+              "on-surface-variant": "#3d494c",
+              "on-tertiary-container": "#563400",
+              "on-secondary-container": "#00714d",
+              "error-container": "#ffdad6",
+              "primary-fixed": "#acedff",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#4cd7f6",
+              "surface-container-low": "#f3f3f3",
+              "surface-bright": "#f9f9f9",
+              "on-background": "#1a1c1c",
+              "tertiary-fixed": "#ffddb8",
+              "on-tertiary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#bcc9cd",
+              "surface-container": "#eeeeee",
+              "surface-dim": "#dadada",
+              "surface-variant": "#e2e2e2",
+              "tertiary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed-variant": "#653e00",
+              "on-primary-fixed-variant": "#004e5c",
+              "on-tertiary-fixed": "#2a1700",
+              "on-secondary-fixed-variant": "#005236",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#f0f1f1",
+              "secondary-container": "#6cf8bb",
+              "tertiary-container": "#e79400",
+              "outline": "#6d797d",
+              "surface-container-highest": "#e2e2e2",
+              "background": "#f9f9f9",
+              "surface-tint": "#00687a"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .aurora-blur {
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="text-on-surface selection:bg-primary-container/30 overflow-hidden">
+<!-- Aurora Atmosphere Background -->
+<div class="fixed inset-0 z-0 overflow-hidden">
+<div class="absolute -top-1/4 -left-1/4 w-[80vw] h-[819px] bg-tertiary-container aurora-blur rounded-full"></div>
+<div class="absolute top-1/2 -right-1/4 w-[60vw] h-[614px] bg-primary-container aurora-blur rounded-full"></div>
+</div>
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-28 py-10 bg-white/60 dark:bg-slate-950/60 backdrop-blur-3xl">
+<div class="text-lg font-light tracking-[0.2em] text-slate-900 dark:text-slate-100 uppercase">
+            Ecodia OS
+        </div>
+<!-- Minimal Search Bar Logic -->
+<div class="flex-1 flex justify-center px-12 group">
+<div class="w-full max-w-xs transition-all duration-700 ease-in-out border-b border-transparent focus-within:border-outline-variant/30 flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant/40 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-[10px] tracking-widest uppercase font-medium text-on-surface placeholder:text-on-surface-variant/20 py-2" placeholder="Search the weave..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-10">
+<div class="flex gap-8 items-center">
+<span class="material-symbols-outlined text-slate-400 hover:text-cyan-500 transition-colors cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-slate-400 hover:text-cyan-500 transition-colors cursor-pointer" data-icon="search">search</span>
+</div>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZGyBk_IZtLOQnVIFvVJcByuOshGJv42M6_bmvqt34o2W3brS6zaSO9WyHb3tvZZdVtyEXqlA7-z02tfhSglQmU4FNGggVg_u2930VVhlx5queYTUGZZeKtoMQkH68lrjAnpiY8xq3EsQJXxW7tlSCLr14gzXsjf5gB9j0tyPiPxuubT5y9TWYXqjOKWZ-HgcB8nlPw8YiW-2L6h6GPEliGg6sWZ5Y8QfNs-LrYROtw3HHoMo9yo_TAOzQLLnothnUFe108OSjGB0"/>
+</div>
+</nav>
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 bottom-0 w-20 hover:w-64 z-40 flex flex-col py-20 transition-all duration-700 ease-in-out overflow-hidden bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-r-3xl my-auto h-[819px] group/sidebar shadow-[64px_0_64px_-10px_rgba(6,182,212,0.04)]">
+<div class="px-6 mb-12 flex items-center gap-4 opacity-0 group-hover/sidebar:opacity-100 transition-opacity duration-500">
+<div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="hub">hub</span>
+</div>
+<div>
+<div class="text-sm font-medium">Ecodia OS</div>
+<div class="text-[10px] opacity-50 uppercase tracking-tighter">V1.0 Ambient</div>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<!-- Active Tab: Knowledge -->
+<div class="flex items-center gap-6 px-6 py-4 text-slate-900 font-medium border-r-2 border-cyan-500 transition-all bg-cyan-50/20">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="text-sm font-['Inter'] font-light tracking-normal opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap">Knowledge</span>
+</div>
+<div class="flex items-center gap-6 px-6 py-4 text-slate-400 hover:bg-cyan-50/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="checklist">checklist</span>
+<span class="text-sm font-['Inter'] font-light tracking-normal opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap">Tasks</span>
+</div>
+<div class="flex items-center gap-6 px-6 py-4 text-slate-400 hover:bg-cyan-50/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-['Inter'] font-light tracking-normal opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap">Settings</span>
+</div>
+<div class="flex items-center gap-6 px-6 py-4 text-slate-400 hover:bg-cyan-50/50 transition-all cursor-pointer">
+<span class="material-symbols-outlined" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+<span class="text-sm font-['Inter'] font-light tracking-normal opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap">History</span>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="relative z-10 w-full h-screen flex flex-col items-center justify-center pointer-events-none">
+<!-- Knowledge Graph Centerpiece -->
+<div class="relative w-[600px] h-[600px] flex items-center justify-center pointer-events-auto">
+<!-- Central Node -->
+<div class="w-32 h-32 rounded-full bg-white/40 backdrop-blur-3xl shadow-[0_0_80px_rgba(6,182,212,0.1)] border border-white/20 flex items-center justify-center z-20">
+<div class="w-4 h-4 bg-primary rounded-full animate-pulse"></div>
+</div>
+<!-- Orbiting Nodes & Threads (Simulated) -->
+<div class="absolute inset-0 flex items-center justify-center">
+<!-- Threads SVG Layer -->
+<svg class="absolute inset-0 w-full h-full stroke-current text-primary/10" viewbox="0 0 600 600">
+<line stroke-width="0.5" x1="300" x2="150" y1="300" y2="200"></line>
+<line stroke-width="0.5" x1="300" x2="450" y1="300" y2="250"></line>
+<line stroke-width="0.5" x1="300" x2="350" y1="300" y2="450"></line>
+<line stroke-width="0.5" x1="300" x2="200" y1="300" y2="400"></line>
+<line stroke-dasharray="2,4" stroke-width="0.3" x1="150" x2="100" y1="200" y2="100"></line>
+<line stroke-dasharray="2,4" stroke-width="0.3" x1="450" x2="520" y1="250" y2="280"></line>
+</svg>
+<!-- Orb: Cyan -->
+<div class="absolute top-[180px] left-[130px] w-12 h-12 rounded-full bg-primary-container/20 backdrop-blur-xl border border-white/30 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer group">
+<div class="w-2 h-2 bg-primary-container rounded-full shadow-[0_0_10px_#06b6d4]"></div>
+<div class="absolute -top-8 text-[8px] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Core Logic</div>
+</div>
+<!-- Orb: Amber -->
+<div class="absolute top-[230px] right-[130px] w-16 h-16 rounded-full bg-tertiary-container/20 backdrop-blur-xl border border-white/30 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer group">
+<div class="w-2 h-2 bg-tertiary-container rounded-full shadow-[0_0_10px_#e79400]"></div>
+<div class="absolute -top-8 text-[8px] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Heuristics</div>
+</div>
+<!-- Orb: Mint -->
+<div class="absolute bottom-[130px] right-[220px] w-14 h-14 rounded-full bg-secondary-container/20 backdrop-blur-xl border border-white/30 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer group">
+<div class="w-2 h-2 bg-secondary rounded-full shadow-[0_0_10px_#006c49]"></div>
+<div class="absolute -bottom-8 text-[8px] tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Ecosystem</div>
+</div>
+<!-- Orb: Small Glass -->
+<div class="absolute bottom-[180px] left-[180px] w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:scale-110 transition-transform cursor-pointer group">
+<div class="w-1 h-1 bg-on-surface-variant rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Floating Context Label (Editorial Style) -->
+<div class="absolute left-1/2 -translate-x-1/2 bottom-32 text-center pointer-events-auto">
+<div class="text-[10px] tracking-[0.4em] uppercase text-on-surface-variant/40 mb-4 font-medium">Neural Synapse Map</div>
+<h1 class="text-4xl font-extralight tracking-tight text-on-surface flex items-baseline gap-4">
+                12,402 <span class="text-xs uppercase tracking-[0.2em] font-medium text-primary">Active Nodes</span>
+</h1>
+</div>
+</main>
+<!-- Right Sidebar: Insight Cards (Asymmetric Bento) -->
+<section class="fixed right-20 top-1/2 -translate-y-1/2 w-72 flex flex-col gap-12 z-20">
+<div class="p-8 bg-surface-container-lowest/40 backdrop-blur-xl rounded-3xl group cursor-crosshair transition-all hover:bg-surface-container-lowest/60">
+<div class="text-[8px] tracking-[0.3em] uppercase text-on-surface-variant/60 mb-6">Trending Node</div>
+<div class="flex items-center gap-4 mb-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-sm" data-icon="bolt">bolt</span>
+</div>
+<div>
+<div class="text-sm font-medium">Bio-Latency</div>
+<div class="text-[10px] opacity-40">0.02ms Response</div>
+</div>
+</div>
+<div class="h-[2px] w-full bg-surface-container overflow-hidden rounded-full">
+<div class="h-full bg-tertiary-container w-2/3"></div>
+</div>
+</div>
+<div class="p-8 bg-surface-container-lowest/40 backdrop-blur-xl rounded-3xl group transition-all hover:bg-surface-container-lowest/60">
+<div class="text-[8px] tracking-[0.3em] uppercase text-on-surface-variant/60 mb-6">Cluster Health</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-[10px] tracking-wider uppercase font-medium">Stability</span>
+<span class="text-[10px] font-bold text-secondary">99.8%</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-[10px] tracking-wider uppercase font-medium">Growth</span>
+<span class="text-[10px] font-bold text-primary">+12%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer (Shared Component) -->
+<footer class="fixed bottom-0 w-full px-28 py-12 flex justify-between items-center z-30 bg-transparent">
+<div class="flex gap-12">
+<div class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-emerald-500 flex items-center gap-2">
+<div class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                Ecosystem Health: Optimal
+            </div>
+</div>
+<div class="flex gap-12 font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-slate-400">
+<a class="hover:opacity-100 transition-opacity" href="#">Status: Bio-Luminescent</a>
+<a class="hover:opacity-100 transition-opacity" href="#">Node: Aurora-1</a>
+</div>
+</footer>
+<!-- Subtle Grain Texture Overlay -->
+<div class="fixed inset-0 pointer-events-none z-50 opacity-[0.03] mix-blend-overlay" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC0yYWs0Qlb3ZFotGMS3FgiFgSAX96whHt4lB2LWHFZoR0fUpNQl7avLuod0FR6jHHiGTVrHw8guzl3ZYJZCCRetK01tbD5mKwevjaouCt07Vfwlv1q46JOG4_NC13ve76VOeJ15XF8ym3Pk1GLBLpOtZBCbkyfBqFKTMhLE121xhrQdIrJ4jyokTaJMyKsa7k4GYtk1ffYBzGCPFvJMkJILU2lr0cYNdvHko7JEy928igZVKhlBQS2bmotECk-XwwMHqvcYKT3kDg');"></div>
+</body></html>

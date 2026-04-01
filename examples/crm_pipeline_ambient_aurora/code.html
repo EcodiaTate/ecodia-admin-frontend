@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#06B6D4",
+              "on-surface": "#2A3439",
+              "on-surface-variant": "#64748B",
+              "surface-container-low": "rgba(255, 255, 255, 0.4)",
+              "surface-container-highest": "rgba(0, 0, 0, 0.05)",
+              "background": "#FAFAFA"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {
+                "DEFAULT": "0.5rem",
+                "lg": "1rem",
+                "xl": "1.5rem",
+                "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #FAFAFA;
+            overflow-x: hidden;
+        }
+        .aurora-wash {
+            position: fixed;
+            top: -20%;
+            left: -20%;
+            width: 140%;
+            height: 140%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 1) 0%, transparent 100%);
+            filter: blur(100px);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        .cyan-glow {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+        }
+        .amber-glow {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface">
+<!-- Background Aurora -->
+<div class="aurora-wash"></div>
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full bg-white/10 backdrop-blur-md flex justify-between items-center px-12 md:px-24 py-8 z-50">
+<div class="text-xs font-light tracking-[0.4em] uppercase text-on-surface/40">Curator</div>
+<div class="flex gap-10 items-center">
+<span class="material-symbols-outlined text-on-surface/30 cursor-pointer hover:text-on-surface transition-colors duration-500" data-icon="notifications_none">notifications_none</span>
+<span class="material-symbols-outlined text-on-surface/30 cursor-pointer hover:text-on-surface transition-colors duration-500" data-icon="account_circle">account_circle</span>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-20 hover:w-64 transition-all duration-700 ease-in-out bg-white/5 hover:bg-white/40 backdrop-blur-sm group flex flex-col py-32 px-6 z-40 border-r border-white/20">
+<div class="flex flex-col gap-14">
+<div class="flex items-center gap-8 px-3 py-4 rounded-lg text-on-surface/30 group-hover:text-on-surface/60 transition-all duration-500">
+<span class="material-symbols-outlined" data-icon="filter_hdr">filter_hdr</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 text-xs tracking-widest uppercase">Space</span>
+</div>
+<div class="flex items-center gap-8 px-3 py-4 rounded-lg text-primary transition-all duration-500">
+<span class="material-symbols-outlined" data-icon="collections">collections</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 text-xs tracking-widest uppercase font-medium">Curation</span>
+</div>
+<div class="flex items-center gap-8 px-3 py-4 rounded-lg text-on-surface/30 group-hover:text-on-surface/60 transition-all duration-500">
+<span class="material-symbols-outlined" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 text-xs tracking-widest uppercase">Archive</span>
+</div>
+<div class="mt-auto flex items-center gap-8 px-3 py-4 rounded-lg text-on-surface/30 group-hover:text-on-surface/60 transition-all duration-500">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity duration-700 text-xs tracking-widest uppercase">Settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Content: CRM Pipeline -->
+<main class="pt-40 pl-40 pr-12 md:pr-24 pb-32 min-h-screen">
+<header class="mb-32">
+<h1 class="text-6xl font-extralight tracking-tighter text-on-surface mb-4 opacity-70">Pipeline.</h1>
+<p class="text-[10px] tracking-[0.5em] uppercase text-on-surface-variant font-light">Client Flow &amp; Engagement Matrix</p>
+</header>
+<!-- Kanban Board -->
+<div class="flex gap-12 overflow-x-auto pb-20 scrollbar-hide">
+<!-- Stage: Lead -->
+<section class="flex-shrink-0 w-80">
+<h2 class="text-[10px] tracking-[0.4em] uppercase text-on-surface-variant/60 mb-12 px-2">Lead</h2>
+<div class="space-y-8">
+<div class="glass-card cyan-glow p-8 rounded-2xl cursor-pointer">
+<div class="flex justify-between items-center">
+<span class="text-base font-light tracking-tight">Solstice Lab</span>
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+</div>
+</div>
+<div class="glass-card amber-glow p-8 rounded-2xl cursor-pointer">
+<div class="flex justify-between items-center">
+<span class="text-base font-light tracking-tight">Aether Inc</span>
+<div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Stage: Proposal -->
+<section class="flex-shrink-0 w-80">
+<h2 class="text-[10px] tracking-[0.4em] uppercase text-on-surface-variant/60 mb-12 px-2">Proposal</h2>
+<div class="space-y-8">
+<div class="glass-card cyan-glow p-8 rounded-2xl cursor-pointer">
+<div class="flex justify-between items-center">
+<span class="text-base font-light tracking-tight">Nova Dynamics</span>
+<div class="w-1.5 h-1.5 rounded-full bg-primary opacity-60"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Stage: Contract -->
+<section class="flex-shrink-0 w-80">
+<h2 class="text-[10px] tracking-[0.4em] uppercase text-on-surface-variant/60 mb-12 px-2">Contract</h2>
+<div class="space-y-8">
+<div class="glass-card cyan-glow p-8 rounded-2xl cursor-pointer">
+<div class="flex justify-between items-center">
+<span class="text-base font-light tracking-tight">Lumina Tech</span>
+<div class="w-1.5 h-1.5 rounded-full bg-primary opacity-60"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Stage: Fulfilled -->
+<section class="flex-shrink-0 w-80">
+<h2 class="text-[10px] tracking-[0.4em] uppercase text-on-surface-variant/60 mb-12 px-2">Fulfilled</h2>
+<div class="space-y-8">
+<div class="glass-card p-8 rounded-2xl cursor-pointer opacity-30 grayscale hover:opacity-100 hover:grayscale-0">
+<div class="flex justify-between items-center">
+<span class="text-base font-light tracking-tight">Orion Creative</span>
+<div class="w-1.5 h-1.5 rounded-full bg-on-surface/20"></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Central Detail View -->
+<div class="mt-32 max-w-5xl mx-auto">
+<div class="glass-card p-16 md:p-24 rounded-[3rem] relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary/10"></div>
+<div class="flex flex-col lg:flex-row justify-between items-start gap-20">
+<div class="flex-1">
+<div class="mb-16">
+<span class="text-[10px] tracking-[0.4em] uppercase text-primary/60 mb-4 block font-medium">Current Focus</span>
+<h3 class="text-5xl font-extralight tracking-tight text-on-surface leading-[1.1]">Solstice Laboratory Rebranding</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+<div>
+<h4 class="text-[10px] tracking-[0.3em] uppercase text-on-surface-variant mb-6 font-medium">Project Info</h4>
+<p class="text-sm text-on-surface-variant/80 leading-relaxed font-light">End-to-end identity systems for deep-tech venture based in Stockholm. Delivery expected Q3.</p>
+</div>
+<div>
+<h4 class="text-[10px] tracking-[0.3em] uppercase text-on-surface-variant mb-6 font-medium">Tech Stack</h4>
+<div class="flex flex-wrap gap-3">
+<span class="px-5 py-2 bg-white/40 rounded-full text-[10px] tracking-widest text-on-surface-variant font-medium">REACT</span>
+<span class="px-5 py-2 bg-white/40 rounded-full text-[10px] tracking-widest text-on-surface-variant font-medium">THREE.JS</span>
+<span class="px-5 py-2 bg-white/40 rounded-full text-[10px] tracking-widest text-on-surface-variant font-medium">TAILWIND</span>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full lg:w-72 space-y-10">
+<div class="glass-card p-10 rounded-3xl text-center bg-white/10">
+<p class="text-[10px] uppercase tracking-[0.4em] text-on-surface-variant/60 mb-4">Lead Value</p>
+<p class="text-3xl font-extralight text-on-surface">$42,000</p>
+</div>
+<button class="w-full py-6 rounded-full bg-on-surface text-white text-[10px] tracking-[0.5em] uppercase hover:bg-on-surface/90 transition-all duration-700 shadow-2xl shadow-on-surface/10 font-medium">
+                            Update Stage
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full flex justify-between items-center px-12 md:px-24 py-10 bg-transparent text-on-surface/30 font-light text-[9px] tracking-[0.4em] uppercase cursor-default z-50">
+<div>System Vitals: Optimal. Harmony: 98%.</div>
+<div class="flex gap-12">
+<a class="hover:text-on-surface transition-colors duration-700" href="#">Ecosystem</a>
+<a class="hover:text-on-surface transition-colors duration-700" href="#">Architecture</a>
+</div>
+</footer>
+</body></html>

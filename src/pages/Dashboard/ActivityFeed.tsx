@@ -1,25 +1,36 @@
 import { useNotifications } from '@/hooks/useNotifications'
 import { formatRelative } from '@/lib/utils'
 import { StatusBadge } from '@/components/shared/StatusBadge'
+import { motion } from 'framer-motion'
 
 export function ActivityFeed() {
   const { notifications } = useNotifications()
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-      <h2 className="mb-4 text-sm font-medium text-zinc-400">Recent Activity</h2>
-      <div className="space-y-3">
-        {notifications.slice(0, 10).map((n) => (
-          <div key={n.id} className="flex items-start gap-3 text-sm">
+    <div>
+      <h2 className="mb-8 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">
+        System Pulsations
+      </h2>
+      <div className="space-y-1">
+        {notifications.slice(0, 10).map((n, i) => (
+          <motion.div
+            key={n.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.04 }}
+            className="flex items-start gap-4 rounded-2xl px-5 py-4 transition-colors hover:bg-surface-container-low/50"
+          >
             <StatusBadge status={n.type} />
             <div className="flex-1">
-              <p className="text-zinc-300">{n.message}</p>
-              <p className="mt-0.5 text-xs text-zinc-500">{formatRelative(n.timestamp)}</p>
+              <p className="text-sm text-on-surface-variant">{n.message}</p>
+              <p className="mt-1 font-mono text-label-sm text-on-surface-muted">{formatRelative(n.timestamp)}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
         {notifications.length === 0 && (
-          <p className="text-sm text-zinc-500">No recent activity</p>
+          <p className="py-12 text-center text-sm text-on-surface-muted">
+            Ecosystem quiet. No recent pulsations.
+          </p>
         )}
       </div>
     </div>

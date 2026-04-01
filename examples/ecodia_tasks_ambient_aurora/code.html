@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-error": "#ffffff",
+              "on-secondary": "#ffffff",
+              "tertiary": "#855300",
+              "on-primary-fixed": "#001f26",
+              "surface-container-high": "#e8e8e8",
+              "inverse-surface": "#2f3131",
+              "inverse-primary": "#4cd7f6",
+              "primary-container": "#06b6d4",
+              "on-surface": "#1a1c1c",
+              "on-primary-container": "#00424f",
+              "surface": "#f9f9f9",
+              "primary": "#00687a",
+              "on-secondary-fixed": "#002113",
+              "error": "#ba1a1a",
+              "secondary": "#006c49",
+              "on-surface-variant": "#3d494c",
+              "on-tertiary-container": "#563400",
+              "on-secondary-container": "#00714d",
+              "error-container": "#ffdad6",
+              "primary-fixed": "#acedff",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#4cd7f6",
+              "surface-container-low": "#f3f3f3",
+              "surface-bright": "#f9f9f9",
+              "on-background": "#1a1c1c",
+              "tertiary-fixed": "#ffddb8",
+              "on-tertiary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#bcc9cd",
+              "surface-container": "#eeeeee",
+              "surface-dim": "#dadada",
+              "surface-variant": "#e2e2e2",
+              "tertiary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed-variant": "#653e00",
+              "on-primary-fixed-variant": "#004e5c",
+              "on-tertiary-fixed": "#2a1700",
+              "on-secondary-fixed-variant": "#005236",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#f0f1f1",
+              "secondary-container": "#6cf8bb",
+              "tertiary-container": "#e79400",
+              "outline": "#6d797d",
+              "surface-container-highest": "#e2e2e2",
+              "background": "#f9f9f9",
+              "surface-tint": "#00687a"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #FAFAFA;
+        }
+        .aurora-glow {
+            background: radial-gradient(circle at bottom right, rgba(111, 251, 190, 0.15) 0%, rgba(249, 249, 249, 0) 50%);
+        }
+        .task-item:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body class="font-body selection:bg-primary-container/30 overflow-x-hidden min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-28 py-10 bg-white/60 dark:bg-slate-950/60 backdrop-blur-3xl">
+<div class="text-lg font-light tracking-[0.2em] text-slate-900 dark:text-slate-100 uppercase">Ecodia OS</div>
+<div class="flex items-center gap-12">
+<div class="flex gap-10 items-center">
+<span class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 cursor-pointer">Knowledge</span>
+<span class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-cyan-600 dark:text-cyan-400 font-semibold hover:text-cyan-500 transition-colors duration-500 cursor-pointer">Tasks</span>
+<span class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 cursor-pointer">History</span>
+</div>
+<div class="flex gap-6 items-center border-l border-slate-200 pl-6">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-500 transition-colors">search</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-500 transition-colors">notifications</span>
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
+<img alt="User profile" data-alt="Close up portrait of a professional man in a minimalist grey studio setting with soft directional lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTNhHeEJXbmu6mV37-jlt3VfAigZ9_gpRXA7ZBo3QydKCvr8Peh6CzsLQEd9omg3pyDOZrV3QTLHaM15Z2EB7eLY4xGffWmELldkMQP8HoQ9Q3p7xcdOd6cH7R9M3zGtCKArTQIbDIovSBM2DwjgIoz6z2khliuXkwtVMNqrVOEpRbxVP_xOq7jd3z-03p-pvQvVYDQK4LqbK0tWNi0yNerOKA4uITkEnLuOck6TFkikYVOEbATIA6c3q06h00qv5Uc1rwcrYUZzA"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 bottom-0 w-20 hover:w-64 z-40 flex flex-col py-20 transition-all duration-700 ease-in-out overflow-hidden bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-r-3xl my-auto shadow-[64px_0_64px_-10px_rgba(6,182,212,0.04)] group">
+<div class="flex flex-col gap-12 px-6">
+<div class="flex items-center gap-4 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mb-10">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div class="whitespace-nowrap">
+<p class="text-slate-900 font-medium text-sm">Ecodia OS</p>
+<p class="text-slate-400 text-xs">V1.0 Ambient</p>
+</div>
+</div>
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-6 px-2 text-slate-400 hover:bg-cyan-50/50 transition-all cursor-pointer py-2 rounded-lg">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-light tracking-normal text-sm opacity-0 group-hover:opacity-100 whitespace-nowrap">Knowledge</span>
+</div>
+<div class="flex items-center gap-6 px-2 text-slate-900 font-medium border-r-2 border-cyan-500 py-2 rounded-lg bg-cyan-50/20">
+<span class="material-symbols-outlined">checklist</span>
+<span class="font-light tracking-normal text-sm opacity-0 group-hover:opacity-100 whitespace-nowrap">Tasks</span>
+</div>
+<div class="flex items-center gap-6 px-2 text-slate-400 hover:bg-cyan-50/50 transition-all cursor-pointer py-2 rounded-lg">
+<span class="material-symbols-outlined">auto_awesome_motion</span>
+<span class="font-light tracking-normal text-sm opacity-0 group-hover:opacity-100 whitespace-nowrap">History</span>
+</div>
+<div class="flex items-center gap-6 px-2 text-slate-400 hover:bg-cyan-50/50 transition-all cursor-pointer py-2 rounded-lg">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-light tracking-normal text-sm opacity-0 group-hover:opacity-100 whitespace-nowrap">Settings</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="relative min-h-screen pt-40 pb-40 px-28 aurora-glow">
+<div class="max-w-3xl mx-auto flex flex-col gap-24">
+<!-- Header Section with High Negative Space -->
+<header class="text-center mb-16">
+<p class="font-['Inter'] text-[10px] tracking-[0.4em] uppercase text-slate-400 mb-6">Auto-Curated from Gmail</p>
+<h1 class="text-5xl font-light tracking-tight text-slate-900">Current Intentions</h1>
+</header>
+<!-- Task List -->
+<div class="flex flex-col">
+<!-- Task Item 1 -->
+<div class="task-item group flex items-center justify-between py-12 transition-all cursor-pointer border-b border-slate-100/50 last:border-0">
+<div class="flex items-center gap-10">
+<span class="text-slate-300 font-light text-sm tracking-widest">01</span>
+<span class="text-on-surface-variant font-light text-xl tracking-wide group-hover:text-primary transition-colors">Review Q3 Biodiversity Strategy Proposal</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-4 py-1 rounded-full bg-cyan-50 text-[10px] font-semibold tracking-widest uppercase text-cyan-600 shadow-[0_0_15px_rgba(6,182,212,0.15)]">Action</span>
+<span class="material-symbols-outlined text-slate-200 group-hover:text-cyan-500 transition-colors">arrow_forward</span>
+</div>
+</div>
+<!-- Task Item 2 -->
+<div class="task-item group flex items-center justify-between py-12 transition-all cursor-pointer border-b border-slate-100/50 last:border-0">
+<div class="flex items-center gap-10">
+<span class="text-slate-300 font-light text-sm tracking-widest">02</span>
+<span class="text-on-surface-variant font-light text-xl tracking-wide group-hover:text-primary transition-colors">Emergency: Sensor Failure in Sector Aurora-1</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-4 py-1 rounded-full bg-amber-50 text-[10px] font-semibold tracking-widest uppercase text-amber-600 shadow-[0_0_15px_rgba(245,158,11,0.15)]">Urgent</span>
+<span class="material-symbols-outlined text-slate-200 group-hover:text-cyan-500 transition-colors">arrow_forward</span>
+</div>
+</div>
+<!-- Task Item 3 -->
+<div class="task-item group flex items-center justify-between py-12 transition-all cursor-pointer border-b border-slate-100/50 last:border-0">
+<div class="flex items-center gap-10">
+<span class="text-slate-300 font-light text-sm tracking-widest">03</span>
+<span class="text-on-surface-variant font-light text-xl tracking-wide group-hover:text-primary transition-colors">Approve Reforestation Funding Allocation</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-4 py-1 rounded-full bg-cyan-50 text-[10px] font-semibold tracking-widest uppercase text-cyan-600 shadow-[0_0_15px_rgba(6,182,212,0.15)]">Action</span>
+<span class="material-symbols-outlined text-slate-200 group-hover:text-cyan-500 transition-colors">arrow_forward</span>
+</div>
+</div>
+<!-- Task Item 4 -->
+<div class="task-item group flex items-center justify-between py-12 transition-all cursor-pointer border-b border-slate-100/50 last:border-0">
+<div class="flex items-center gap-10">
+<span class="text-slate-300 font-light text-sm tracking-widest">04</span>
+<span class="text-on-surface-variant font-light text-xl tracking-wide group-hover:text-primary transition-colors">Synchronize Node: Aurora-1 with Core Hub</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-4 py-1 rounded-full bg-slate-100 text-[10px] font-semibold tracking-widest uppercase text-slate-500">Queued</span>
+<span class="material-symbols-outlined text-slate-200 group-hover:text-cyan-500 transition-colors">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Footer Stats / Subtle Affirmation -->
+<div class="mt-20 flex justify-center opacity-30 hover:opacity-80 transition-opacity duration-700">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+<p class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase text-slate-400">Biological latency: 12ms</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full px-28 py-12 flex justify-between items-center z-30 bg-transparent">
+<div class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-emerald-500 dark:text-emerald-400 animate-pulse">
+            Ecosystem Health: Optimal
+        </div>
+<div class="flex gap-20">
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-slate-400 hover:opacity-100 transition-opacity cursor-default">Status: Bio-Luminescent</span>
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-slate-400 hover:opacity-100 transition-opacity cursor-default">Node: Aurora-1</span>
+</div>
+</footer>
+<!-- Decorative Aurora Element -->
+<div class="fixed -bottom-24 -right-24 w-96 h-96 bg-secondary-container/20 blur-[120px] rounded-full -z-10 pointer-events-none"></div>
+</body></html>

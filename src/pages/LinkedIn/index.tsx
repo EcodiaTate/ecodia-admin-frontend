@@ -12,9 +12,10 @@ import { LinkedInSettings } from './LinkedInSettings'
 import type { LinkedInDM } from '@/types/linkedin'
 import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 import {
   MessageSquare, FileText, Calendar, Users, BarChart3, Settings,
-  AlertTriangle, Target, UserPlus, PenSquare, Wifi, WifiOff,
+  AlertTriangle, Target, UserPlus, PenSquare, Wifi, WifiOff, ArrowLeft,
 } from 'lucide-react'
 
 type Tab = 'dms' | 'posts' | 'calendar' | 'connections' | 'analytics' | 'settings'
@@ -32,15 +33,15 @@ export default function LinkedInPage() {
   const isWorkerActive = workerStatus?.status === 'active' || workerStatus?.status === 'inactive'
 
   const statCards = [
-    { label: 'Unread DMs', value: dmStats?.unread ?? 0, icon: MessageSquare, color: 'text-yellow-400', onClick: () => setTab('dms') },
-    { label: 'Leads', value: dmStats?.leads ?? 0, icon: Target, color: 'text-emerald-400', onClick: () => setTab('dms') },
-    { label: 'Pending Connections', value: connRequests?.length ?? 0, icon: UserPlus, color: 'text-blue-400', onClick: () => setTab('connections') },
-    { label: 'Posts This Week', value: posts?.length ?? 0, icon: PenSquare, color: 'text-purple-400', onClick: () => setTab('posts') },
+    { label: 'Unread DMs', value: dmStats?.unread ?? 0, icon: MessageSquare, accent: 'text-tertiary', onClick: () => setTab('dms') },
+    { label: 'Leads', value: dmStats?.leads ?? 0, icon: Target, accent: 'text-secondary', onClick: () => setTab('dms') },
+    { label: 'Pending', value: connRequests?.length ?? 0, icon: UserPlus, accent: 'text-primary', onClick: () => setTab('connections') },
+    { label: 'Posts', value: posts?.length ?? 0, icon: PenSquare, accent: 'text-primary-container', onClick: () => setTab('posts') },
     {
       label: 'Worker',
       value: isWorkerActive ? 'Active' : workerStatus?.status ?? 'Unknown',
       icon: isWorkerActive ? Wifi : WifiOff,
-      color: isWorkerActive ? 'text-green-400' : 'text-red-400',
+      accent: isWorkerActive ? 'text-secondary' : 'text-error',
       onClick: () => setTab('settings'),
     },
   ]
@@ -55,17 +56,29 @@ export default function LinkedInPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      className="mx-auto max-w-6xl"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-100">LinkedIn Intelligence</h1>
+      <div className="mb-12 flex items-start justify-between">
+        <div>
+          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+            Network Intelligence
+          </span>
+          <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+            Social <em className="not-italic font-normal text-primary">Resonance</em>
+          </h1>
+        </div>
         {workerStatus?.status === 'suspended' && (
           <div className="flex items-center gap-3">
-            <AlertTriangle className="h-4 w-4 text-red-400" />
-            <span className="text-sm text-red-400">Suspended: {workerStatus.reason}</span>
+            <AlertTriangle className="h-4 w-4 text-error" strokeWidth={1.75} />
+            <span className="text-sm text-error">{workerStatus.reason}</span>
             <button
               onClick={async () => { await resumeWorker(); toast.success('Worker resumed') }}
-              className="rounded-md bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+              className="rounded-xl bg-secondary/10 px-3 py-1.5 text-sm font-medium text-secondary transition-colors hover:bg-secondary/20"
             >
               Resume
             </button>
@@ -74,36 +87,39 @@ export default function LinkedInPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-5 gap-3">
-        {statCards.map((card) => (
-          <button
+      <div className="mb-12 grid grid-cols-5 gap-4">
+        {statCards.map((card, i) => (
+          <motion.button
             key={card.label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.05 }}
             onClick={card.onClick}
-            className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 text-left transition-colors hover:bg-zinc-800/50"
+            className="glass rounded-2xl p-6 text-left transition-all hover:shadow-glass-hover"
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">{card.label}</span>
-              <card.icon className={cn('h-4 w-4', card.color)} />
+              <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">{card.label}</span>
+              <card.icon className={cn('h-4 w-4', card.accent)} strokeWidth={1.75} />
             </div>
-            <p className={cn('mt-1 text-2xl font-semibold', card.color)}>{card.value}</p>
-          </button>
+            <p className={cn('mt-3 font-display text-xl font-light', card.accent)}>{card.value}</p>
+          </motion.button>
         ))}
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-zinc-800 pb-px">
+      <div className="mb-8 flex items-center gap-1">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => { setTab(t.key); setSelectedDM(null); setShowComposer(false) }}
             className={cn(
-              'flex items-center gap-1.5 rounded-t-md px-3 py-2 text-sm transition-colors',
+              'flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors',
               tab === t.key
-                ? 'border-b-2 border-blue-500 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-primary/10 text-primary'
+                : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
             )}
           >
-            <t.icon className="h-3.5 w-3.5" />
+            <t.icon className="h-3.5 w-3.5" strokeWidth={1.75} />
             {t.label}
           </button>
         ))}
@@ -113,7 +129,12 @@ export default function LinkedInPage() {
       {tab === 'dms' && (
         selectedDM ? (
           <div>
-            <button onClick={() => setSelectedDM(null)} className="mb-4 text-sm text-zinc-400 hover:text-zinc-200">&larr; Back to DMs</button>
+            <button
+              onClick={() => setSelectedDM(null)}
+              className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to DMs
+            </button>
             <DMDetail dmId={selectedDM.id} />
           </div>
         ) : (
@@ -124,7 +145,12 @@ export default function LinkedInPage() {
       {tab === 'posts' && (
         showComposer ? (
           <div>
-            <button onClick={() => setShowComposer(false)} className="mb-4 text-sm text-zinc-400 hover:text-zinc-200">&larr; Back to posts</button>
+            <button
+              onClick={() => setShowComposer(false)}
+              className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to posts
+            </button>
             <PostComposer onSaved={() => setShowComposer(false)} />
           </div>
         ) : (
@@ -136,6 +162,6 @@ export default function LinkedInPage() {
       {tab === 'connections' && <ConnectionRequests />}
       {tab === 'analytics' && <AnalyticsSummary />}
       {tab === 'settings' && <LinkedInSettings />}
-    </div>
+    </motion.div>
   )
 }

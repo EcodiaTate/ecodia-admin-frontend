@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-error": "#ffffff",
+              "on-secondary": "#ffffff",
+              "tertiary": "#855300",
+              "on-primary-fixed": "#001f26",
+              "surface-container-high": "#e8e8e8",
+              "inverse-surface": "#2f3131",
+              "inverse-primary": "#4cd7f6",
+              "primary-container": "#06b6d4",
+              "on-surface": "#1a1c1c",
+              "on-primary-container": "#00424f",
+              "surface": "#f9f9f9",
+              "primary": "#00687a",
+              "on-secondary-fixed": "#002113",
+              "error": "#ba1a1a",
+              "secondary": "#006c49",
+              "on-surface-variant": "#3d494c",
+              "on-tertiary-container": "#563400",
+              "on-secondary-container": "#00714d",
+              "error-container": "#ffdad6",
+              "primary-fixed": "#acedff",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#4cd7f6",
+              "surface-container-low": "#f3f3f3",
+              "surface-bright": "#f9f9f9",
+              "on-background": "#1a1c1c",
+              "tertiary-fixed": "#ffddb8",
+              "on-tertiary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#bcc9cd",
+              "surface-container": "#eeeeee",
+              "surface-dim": "#dadada",
+              "surface-variant": "#e2e2e2",
+              "tertiary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed-variant": "#653e00",
+              "on-primary-fixed-variant": "#004e5c",
+              "on-tertiary-fixed": "#2a1700",
+              "on-secondary-fixed-variant": "#005236",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#f0f1f1",
+              "secondary-container": "#6cf8bb",
+              "tertiary-container": "#e79400",
+              "outline": "#6d797d",
+              "surface-container-highest": "#e2e2e2",
+              "background": "#f9f9f9",
+              "surface-tint": "#00687a"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #FAFAFA;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            font-size: 18px;
+        }
+        .aurora-blur {
+            filter: blur(120px);
+            opacity: 0.4;
+        }
+        .leaf-shadow {
+            background: radial-gradient(circle at center, rgba(0,0,0,0.03) 0%, transparent 70%);
+            filter: blur(40px);
+            transform: rotate(-15deg);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Ambient Background Elements -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+<div class="absolute -top-[20%] -right-[10%] w-[60%] h-[60%] bg-primary-fixed-dim/20 aurora-blur rounded-full"></div>
+<div class="absolute top-[40%] -left-[5%] w-[40%] h-[50%] bg-secondary-container/10 aurora-blur rounded-full"></div>
+<!-- Natural Sunlight Shadow Suggestion -->
+<div class="absolute top-10 right-20 w-96 h-96 leaf-shadow"></div>
+<div class="absolute bottom-20 left-10 w-80 h-80 leaf-shadow"></div>
+</div>
+<!-- Top Navigation Shell -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-28 py-10 bg-white/60 dark:bg-slate-950/60 backdrop-blur-3xl">
+<div class="text-lg font-light tracking-[0.2em] text-slate-900 dark:text-slate-100">Ecodia OS</div>
+<div class="flex items-center gap-12">
+<div class="flex gap-10 items-center">
+<span class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 cursor-pointer">Knowledge</span>
+<span class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 cursor-pointer">Tasks</span>
+<span class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-cyan-600 dark:text-cyan-400 font-semibold cursor-pointer">History</span>
+</div>
+<div class="flex gap-6 items-center">
+<span class="material-symbols-outlined text-slate-400" data-icon="search">search</span>
+<span class="material-symbols-outlined text-cyan-600" data-icon="notifications">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Minimalist professional portrait of a person with soft lighting and clean aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDI5wiBKWrde0ZecHN9PMdAPLaXPfkzz756UYZEuZnYtNdcroNVlc-y5_lF30IBYZHZXQBiLWWe6hstFj5IcBnVEhJsUDSOp6uHBDpOrgWGjtLVHb-ENvciLsOz9sN_mwUH4VLErW9_BduZ6amLCz0USNfOwKb3GKoEG728IXr_HJNfCuKmDY_tz3uvUx0zpY_yk1CeW5kPkcxmlKIqFE7wtVDQeZIXUUi7h-HB1cY0kXUmC54HtA9lrt_Skxa9r51WWr_e6ZBROxM"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Side Navigation Shell (Hidden/Collapsed State) -->
+<aside class="fixed left-0 top-0 bottom-0 w-20 hover:w-64 z-40 flex flex-col py-20 transition-all overflow-hidden bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-r-3xl h-[819px] my-auto shadow-[64px_0_64px_-10px_rgba(6,182,212,0.04)]">
+<div class="flex flex-col gap-12 px-6">
+<div class="flex items-center gap-4 transition-all opacity-0 group-hover:opacity-100 whitespace-nowrap">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm" data-icon="hub">hub</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-medium">Ecodia OS</span>
+<span class="text-[10px] opacity-50">V1.0 Ambient</span>
+</div>
+</div>
+<div class="flex flex-col gap-8 pt-10">
+<div class="flex items-center gap-6 cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-cyan-500" data-icon="hub">hub</span>
+<span class="font-['Inter'] font-light tracking-normal text-sm text-slate-400 whitespace-nowrap">Knowledge</span>
+</div>
+<div class="flex items-center gap-6 cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-cyan-500" data-icon="checklist">checklist</span>
+<span class="font-['Inter'] font-light tracking-normal text-sm text-slate-400 whitespace-nowrap">Tasks</span>
+</div>
+<div class="flex items-center gap-6 cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-cyan-500" data-icon="settings">settings</span>
+<span class="font-['Inter'] font-light tracking-normal text-sm text-slate-400 whitespace-nowrap">Settings</span>
+</div>
+<div class="flex items-center gap-6 cursor-pointer group border-r-2 border-cyan-500">
+<span class="material-symbols-outlined text-slate-900" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+<span class="font-['Inter'] font-medium tracking-normal text-sm text-slate-900 whitespace-nowrap">History</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="relative z-10 min-h-screen flex flex-col items-center pt-52 pb-40 px-20">
+<!-- Section Header -->
+<header class="w-full max-w-4xl mb-24 text-center">
+<span class="font-['Inter'] text-[10px] tracking-[0.4em] uppercase text-on-surface-variant/40 mb-4 block">Archive Logs</span>
+<h1 class="text-4xl font-extralight tracking-tight text-on-surface/80">System Pulsations</h1>
+</header>
+<!-- Chronological List -->
+<section class="w-full max-w-2xl flex flex-col gap-20">
+<!-- Daily Grouping -->
+<div class="flex flex-col gap-12">
+<div class="flex items-center gap-8 mb-4">
+<span class="h-[1px] flex-grow bg-outline-variant/10"></span>
+<span class="font-['Inter'] text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/30">Cycle: 14.02.24</span>
+<span class="h-[1px] flex-grow bg-outline-variant/10"></span>
+</div>
+<div class="flex flex-col gap-10">
+<!-- Notification Item -->
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1">
+<span class="text-sm font-light text-secondary-container bg-secondary-container/5 px-3 py-1 rounded-full">System Vital Check: Optimal</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">08:42</span>
+</div>
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1">
+<span class="text-sm font-light text-primary-container bg-primary-container/5 px-3 py-1 rounded-full">New Connection: Node Alpha</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">09:15</span>
+</div>
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1">
+<span class="text-sm font-light text-secondary-container bg-secondary-container/5 px-3 py-1 rounded-full">System Vital Check: Optimal</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">12:00</span>
+</div>
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1">
+<span class="text-sm font-light text-primary-container bg-primary-container/5 px-3 py-1 rounded-full">New Connection: Node Alpha</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">14:22</span>
+</div>
+</div>
+</div>
+<!-- Daily Grouping -->
+<div class="flex flex-col gap-12">
+<div class="flex items-center gap-8 mb-4">
+<span class="h-[1px] flex-grow bg-outline-variant/10"></span>
+<span class="font-['Inter'] text-[10px] tracking-[0.2em] uppercase text-on-surface-variant/30">Cycle: 13.02.24</span>
+<span class="h-[1px] flex-grow bg-outline-variant/10"></span>
+</div>
+<div class="flex flex-col gap-10">
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1">
+<span class="text-sm font-light text-secondary-container bg-secondary-container/5 px-3 py-1 rounded-full">System Vital Check: Optimal</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">10:00</span>
+</div>
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1 opacity-60">
+<span class="text-sm font-light text-primary-container bg-primary-container/5 px-3 py-1 rounded-full">New Connection: Node Alpha</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">11:30</span>
+</div>
+<div class="group flex justify-between items-center transition-all duration-700 hover:translate-x-1 opacity-60">
+<span class="text-sm font-light text-secondary-container bg-secondary-container/5 px-3 py-1 rounded-full">System Vital Check: Optimal</span>
+<span class="font-['Inter'] text-[9px] tracking-widest uppercase text-on-surface-variant/20 group-hover:text-on-surface-variant/40 transition-colors">22:10</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Decorative Spacer -->
+<div class="mt-40 mb-20">
+<div class="w-1 h-1 bg-cyan-400 rounded-full animate-pulse"></div>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="fixed bottom-0 w-full px-28 py-12 flex justify-between items-center z-30 bg-transparent">
+<div class="flex items-center gap-6">
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-emerald-500">Ecosystem Health: Optimal</span>
+<div class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"></div>
+</div>
+<div class="flex gap-12 font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-slate-400">
+<span class="hover:opacity-100 transition-opacity cursor-pointer">Status: Bio-Luminescent</span>
+<span class="hover:opacity-100 transition-opacity cursor-pointer">Node: Aurora-1</span>
+</div>
+</footer>
+</body></html>

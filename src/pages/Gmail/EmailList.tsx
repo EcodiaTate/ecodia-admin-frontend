@@ -5,6 +5,7 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatRelative } from '@/lib/utils'
 import { Archive, Eye } from 'lucide-react'
 import type { EmailThread } from '@/types/gmail'
+import { motion } from 'framer-motion'
 
 interface EmailListProps {
   status?: string
@@ -42,45 +43,48 @@ export function EmailList({ status, priority, inbox, onSelect }: EmailListProps)
   const threads = data?.threads ?? []
 
   return (
-    <div className="space-y-1">
-      {threads.map((thread) => (
-        <div
+    <div className="space-y-2">
+      {threads.map((thread, i) => (
+        <motion.div
           key={thread.id}
-          className="group flex items-start gap-3 rounded-lg border border-zinc-800/50 bg-zinc-900/30 p-3 transition-colors hover:bg-zinc-800/50"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+          className="group flex items-start gap-4 rounded-2xl px-5 py-4 transition-colors hover:bg-surface-container-low/60"
         >
           {/* Priority indicator */}
-          <div className="mt-1 flex-shrink-0">
+          <div className="mt-0.5 flex-shrink-0">
             <StatusBadge status={thread.triage_priority} />
           </div>
 
-          {/* Main content — clickable */}
+          {/* Main content */}
           <div className="min-w-0 flex-1 cursor-pointer" onClick={() => onSelect(thread)}>
             <div className="flex items-center gap-2">
               {thread.status === 'unread' && (
-                <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-400" />
+                <div className="h-2 w-2 flex-shrink-0 rounded-full bg-primary-container" />
               )}
-              <span className={`text-sm font-medium ${thread.status === 'unread' ? 'text-zinc-100' : 'text-zinc-400'}`}>
+              <span className={`text-sm font-medium ${thread.status === 'unread' ? 'text-on-surface' : 'text-on-surface-variant'}`}>
                 {thread.from_name || thread.from_email}
               </span>
               {thread.inbox && (
-                <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500">
+                <span className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
                   {thread.inbox.split('@')[0]}@
                 </span>
               )}
-              <span className="ml-auto flex-shrink-0 text-xs text-zinc-600">
+              <span className="ml-auto flex-shrink-0 font-mono text-label-sm text-on-surface-muted">
                 {thread.received_at ? formatRelative(thread.received_at) : ''}
               </span>
             </div>
-            <p className={`mt-0.5 text-sm ${thread.status === 'unread' ? 'text-zinc-200' : 'text-zinc-400'}`}>
+            <p className={`mt-1 text-sm ${thread.status === 'unread' ? 'text-on-surface' : 'text-on-surface-variant'}`}>
               {thread.subject || '(no subject)'}
             </p>
             {thread.triage_summary ? (
-              <p className="mt-0.5 text-xs text-zinc-500">{thread.triage_summary}</p>
+              <p className="mt-1 text-xs text-on-surface-muted">{thread.triage_summary}</p>
             ) : thread.snippet ? (
-              <p className="mt-0.5 truncate text-xs text-zinc-600">{thread.snippet}</p>
+              <p className="mt-1 truncate text-xs text-on-surface-muted">{thread.snippet}</p>
             ) : null}
             {thread.triage_action && (
-              <span className="mt-1 inline-block rounded bg-zinc-800/80 px-1.5 py-0.5 text-[10px] text-zinc-500">
+              <span className="mt-1.5 inline-block rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
                 {thread.triage_action}
               </span>
             )}
@@ -91,24 +95,26 @@ export function EmailList({ status, priority, inbox, onSelect }: EmailListProps)
             {thread.status === 'unread' && (
               <button
                 onClick={(e) => { e.stopPropagation(); read.mutate(thread.id) }}
-                className="rounded p-1.5 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300"
+                className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container hover:text-on-surface-variant"
                 title="Mark read"
               >
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
               </button>
             )}
             <button
               onClick={(e) => { e.stopPropagation(); archive.mutate(thread.id) }}
-              className="rounded p-1.5 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300"
+              className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container hover:text-on-surface-variant"
               title="Archive"
             >
-              <Archive className="h-3.5 w-3.5" />
+              <Archive className="h-3.5 w-3.5" strokeWidth={1.75} />
             </button>
           </div>
-        </div>
+        </motion.div>
       ))}
       {threads.length === 0 && (
-        <p className="py-8 text-center text-sm text-zinc-500">No emails match filters</p>
+        <p className="py-16 text-center text-sm text-on-surface-muted">
+          No signals match current filters
+        </p>
       )}
     </div>
   )

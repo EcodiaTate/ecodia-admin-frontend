@@ -34,29 +34,29 @@ export function DraftReview({ thread, onUpdate }: DraftReviewProps) {
   })
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-      <h3 className="text-sm font-medium text-zinc-400">Reply</h3>
+    <div className="glass rounded-3xl p-8">
+      <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Compose Reply</h3>
 
       {thread.draft_reply ? (
-        <div className="mt-3">
-          <div className="rounded-md border border-zinc-700/50 bg-zinc-800/50 p-4">
-            <p className="whitespace-pre-wrap text-sm text-zinc-300">{thread.draft_reply}</p>
+        <div className="mt-6">
+          <div className="rounded-2xl bg-surface-container-low p-6">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-on-surface-variant">{thread.draft_reply}</p>
           </div>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-4 flex gap-2">
             <button
               onClick={() => send.mutate()}
               disabled={send.isPending}
-              className="flex items-center gap-1.5 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="btn-primary-gradient flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium disabled:opacity-40"
             >
-              <Send className="h-3.5 w-3.5" />
+              <Send className="h-3.5 w-3.5" strokeWidth={1.75} />
               {send.isPending ? 'Sending...' : `Send from ${thread.inbox || 'code@ecodia.au'}`}
             </button>
             <button
               onClick={() => draft.mutate()}
               disabled={draft.isPending}
-              className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
               Regenerate
             </button>
           </div>
@@ -65,9 +65,9 @@ export function DraftReview({ thread, onUpdate }: DraftReviewProps) {
         <button
           onClick={() => draft.mutate()}
           disabled={draft.isPending}
-          className="mt-3 flex items-center gap-1.5 rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+          className="mt-6 flex items-center gap-2 rounded-xl bg-surface-container-high px-5 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
         >
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
           {draft.isPending ? 'Generating...' : 'Generate AI Draft Reply'}
         </button>
       )}

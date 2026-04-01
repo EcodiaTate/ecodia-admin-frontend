@@ -11,16 +11,16 @@ export function ProjectDetail({ clientId }: { clientId: string }) {
   })
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-zinc-400">Projects</h3>
+    <div className="space-y-4">
+      <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Projects</h3>
       {projects?.map((p: Project) => (
-        <div key={p.id} className="rounded-md border border-zinc-800 bg-zinc-900/50 p-4">
+        <div key={p.id} className="glass rounded-2xl p-6">
           <div className="flex items-center justify-between">
-            <p className="font-medium text-zinc-200">{p.name}</p>
+            <p className="font-display text-sm font-medium text-on-surface">{p.name}</p>
             <StatusBadge status={p.status} />
           </div>
-          {p.description && <p className="mt-1 text-sm text-zinc-400">{p.description}</p>}
-          <div className="mt-2 flex gap-4 text-xs text-zinc-500">
+          {p.description && <p className="mt-2 text-sm leading-relaxed text-on-surface-muted">{p.description}</p>}
+          <div className="mt-3 flex gap-4 font-mono text-label-sm text-on-surface-muted">
             {p.tech_stack.length > 0 && <span>{p.tech_stack.join(', ')}</span>}
             {p.budget_aud && <span>Budget: {formatCurrency(p.budget_aud)}</span>}
             {p.hourly_rate && <span>Rate: {formatCurrency(p.hourly_rate)}/hr</span>}
@@ -28,7 +28,7 @@ export function ProjectDetail({ clientId }: { clientId: string }) {
         </div>
       ))}
       {(!projects || projects.length === 0) && (
-        <p className="text-sm text-zinc-500">No projects</p>
+        <p className="py-12 text-center text-sm text-on-surface-muted">No projects</p>
       )}
     </div>
   )

@@ -40,16 +40,22 @@ export function EmailDetail({ thread, onUpdate }: EmailDetailProps) {
     onError: () => toast.error('Triage failed'),
   })
 
+  // Sanitize HTML email body to prevent XSS — DOMPurify strips all dangerous content
+  const sanitizedBody = thread.full_body ? DOMPurify.sanitize(thread.full_body) : ''
+  const isHtml = thread.full_body ? thread.full_body.includes('<') : false
+
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="glass rounded-3xl p-10">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <h2 className="text-lg font-medium text-zinc-100">{thread.subject || '(no subject)'}</h2>
-          <div className="mt-1 flex items-center gap-2 text-sm text-zinc-400">
-            <span>{thread.from_name || thread.from_email}</span>
+          <h2 className="font-display text-headline-md font-light text-on-surface">
+            {thread.subject || '(no subject)'}
+          </h2>
+          <div className="mt-2 flex items-center gap-3 text-sm text-on-surface-muted">
+            <span className="text-on-surface-variant">{thread.from_name || thread.from_email}</span>
             {thread.inbox && (
-              <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-500">
+              <span className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm">
                 to {thread.inbox}
               </span>
             )}
@@ -63,47 +69,47 @@ export function EmailDetail({ thread, onUpdate }: EmailDetailProps) {
 
       {/* AI Triage */}
       {thread.triage_summary && (
-        <div className="mt-4 rounded-md border border-zinc-700/50 bg-zinc-800/50 p-3">
+        <div className="mt-8 rounded-2xl bg-primary/5 p-6">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-            <span className="text-xs font-medium text-purple-400">AI Triage</span>
+            <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={1.75} />
+            <span className="text-label-md uppercase tracking-[0.05em] text-primary">Neural Triage</span>
           </div>
-          <p className="mt-1 text-sm text-zinc-300">{thread.triage_summary}</p>
+          <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{thread.triage_summary}</p>
           {thread.triage_action && (
-            <p className="mt-1 text-xs text-zinc-500">Suggested: {thread.triage_action}</p>
+            <p className="mt-2 text-label-sm text-on-surface-muted">Suggested: {thread.triage_action}</p>
           )}
         </div>
       )}
 
       {/* Actions */}
-      <div className="mt-4 flex gap-2">
+      <div className="mt-6 flex gap-2">
         {thread.status === 'unread' && (
-          <button onClick={() => read.mutate()} className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700">
-            <Eye className="h-3.5 w-3.5" /> Mark read
+          <button onClick={() => read.mutate()} className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container">
+            <Eye className="h-3.5 w-3.5" strokeWidth={1.75} /> Mark read
           </button>
         )}
-        <button onClick={() => archive.mutate()} className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700">
-          <Archive className="h-3.5 w-3.5" /> Archive
+        <button onClick={() => archive.mutate()} className="flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2.5 text-sm text-on-surface-variant transition-colors hover:bg-surface-container">
+          <Archive className="h-3.5 w-3.5" strokeWidth={1.75} /> Archive
         </button>
-        <button onClick={() => trash.mutate()} className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 text-sm text-red-400 hover:bg-zinc-700">
-          <Trash2 className="h-3.5 w-3.5" /> Trash
+        <button onClick={() => trash.mutate()} className="flex items-center gap-2 rounded-xl bg-error/5 px-4 py-2.5 text-sm text-error transition-colors hover:bg-error/10">
+          <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} /> Trash
         </button>
         {thread.triage_status !== 'complete' && (
-          <button onClick={() => triage.mutate()} disabled={triage.isPending} className="flex items-center gap-1.5 rounded-md bg-purple-600/20 px-3 py-1.5 text-sm text-purple-400 hover:bg-purple-600/30 disabled:opacity-50">
-            <Sparkles className="h-3.5 w-3.5" /> {triage.isPending ? 'Triaging...' : 'AI Triage'}
+          <button onClick={() => triage.mutate()} disabled={triage.isPending} className="btn-primary-gradient flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium disabled:opacity-40">
+            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} /> {triage.isPending ? 'Triaging...' : 'AI Triage'}
           </button>
         )}
       </div>
 
       {/* Body */}
-      <div className="mt-4">
-        {thread.full_body && thread.full_body.includes('<') ? (
+      <div className="mt-10">
+        {isHtml ? (
           <div
-            className="prose prose-invert prose-sm max-w-none text-zinc-300 [&_a]:text-blue-400 [&_img]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.full_body) }}
+            className="prose prose-sm max-w-none text-on-surface-variant prose-headings:text-on-surface prose-a:text-primary-container [&_img]:max-w-full"
+            dangerouslySetInnerHTML={{ __html: sanitizedBody }}
           />
         ) : (
-          <p className="whitespace-pre-wrap text-sm text-zinc-300">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-on-surface-variant">
             {thread.full_body || thread.snippet || 'No content'}
           </p>
         )}

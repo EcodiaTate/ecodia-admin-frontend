@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import type { LinkedInPost } from '@/types/linkedin'
 import toast from 'react-hot-toast'
 import { Plus, Trash2, Eye, BarChart3 } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface PostListProps {
   onCompose: () => void
@@ -41,16 +42,18 @@ export function PostList({ onCompose }: PostListProps) {
   if (isLoading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           {STATUS_TABS.map((t) => (
             <button
               key={t.label}
               onClick={() => setStatus(t.value)}
               className={cn(
-                'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-                status === t.value ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-800/50 text-zinc-400 hover:text-zinc-200'
+                'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+                status === t.value
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
               )}
             >
               {t.label}
@@ -59,42 +62,52 @@ export function PostList({ onCompose }: PostListProps) {
         </div>
         <button
           onClick={onCompose}
-          className="flex items-center gap-1.5 rounded-md bg-blue-600/20 px-3 py-1.5 text-sm text-blue-400 hover:bg-blue-600/30"
+          className="btn-primary-gradient flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium"
         >
-          <Plus className="h-3.5 w-3.5" /> New Post
+          <Plus className="h-3.5 w-3.5" strokeWidth={1.75} /> New Post
         </button>
       </div>
 
-      <div className="space-y-2">
-        {(posts ?? []).map((post: LinkedInPost) => (
-          <div key={post.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+      <div className="space-y-3">
+        {(posts ?? []).map((post: LinkedInPost, i: number) => (
+          <motion.div
+            key={post.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+            className="glass rounded-2xl p-6"
+          >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <StatusBadge status={post.status} />
                   <StatusBadge status={post.post_type} />
-                  {post.theme && <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-500">{post.theme}</span>}
-                  {post.ai_generated && <span className="text-[10px] text-purple-400">AI</span>}
+                  {post.theme && (
+                    <span className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">{post.theme}</span>
+                  )}
+                  {post.ai_generated && (
+                    <span className="text-label-sm text-primary-container">AI</span>
+                  )}
                 </div>
-                <p className="mt-2 text-sm text-zinc-300 line-clamp-3">{post.content}</p>
+                <p className="mt-3 text-sm leading-relaxed text-on-surface-variant line-clamp-3">{post.content}</p>
                 {post.hashtags?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
+                  <div className="mt-2 flex flex-wrap gap-1.5">
                     {post.hashtags.map((tag) => (
-                      <span key={tag} className="text-xs text-blue-400">{tag}</span>
+                      <span key={tag} className="text-xs text-primary-container">{tag}</span>
                     ))}
                   </div>
                 )}
               </div>
 
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-3">
                 {post.status === 'posted' && post.impressions != null && (
-                  <div className="flex items-center gap-3 text-xs text-zinc-500">
-                    <span title="Impressions"><Eye className="mr-1 inline h-3 w-3" />{post.impressions}</span>
-                    <span title="Reactions">{post.reactions ?? 0} reactions</span>
-                    <span title="Comments">{post.comments_count ?? 0} comments</span>
+                  <div className="flex items-center gap-3 text-xs text-on-surface-muted">
+                    <span title="Impressions"><Eye className="mr-1 inline h-3 w-3" strokeWidth={1.75} />{post.impressions}</span>
+                    <span>{post.reactions ?? 0} reactions</span>
+                    <span>{post.comments_count ?? 0} comments</span>
                     {post.engagement_rate != null && (
-                      <span title="Engagement rate" className="flex items-center gap-0.5">
-                        <BarChart3 className="h-3 w-3" />
+                      <span className="flex items-center gap-0.5">
+                        <BarChart3 className="h-3 w-3" strokeWidth={1.75} />
                         {(post.engagement_rate * 100).toFixed(1)}%
                       </span>
                     )}
@@ -103,24 +116,24 @@ export function PostList({ onCompose }: PostListProps) {
                 {(post.status === 'draft' || post.status === 'scheduled') && (
                   <button
                     onClick={() => remove.mutate(post.id)}
-                    className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"
+                    className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-error/10 hover:text-error"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="mt-2 text-xs text-zinc-500">
+            <div className="mt-3 font-mono text-label-sm text-on-surface-muted">
               {post.scheduled_at && `Scheduled: ${formatDate(post.scheduled_at)}`}
               {post.posted_at && `Posted: ${formatRelative(post.posted_at)}`}
               {!post.scheduled_at && !post.posted_at && `Created: ${formatRelative(post.created_at)}`}
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {(posts ?? []).length === 0 && (
-          <p className="py-8 text-center text-sm text-zinc-500">No posts found</p>
+          <p className="py-16 text-center text-sm text-on-surface-muted">No posts found</p>
         )}
       </div>
     </div>

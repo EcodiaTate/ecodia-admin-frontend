@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@300;400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-dim": "#4d545a",
+                        "on-secondary-container": "#445365",
+                        "secondary-container": "#d4e4fa",
+                        "on-surface-variant": "#566166",
+                        "tertiary": "#596066",
+                        "surface-container-highest": "#d9e4ea",
+                        "primary-fixed-dim": "#c7d5ee",
+                        "on-secondary-fixed": "#324052",
+                        "on-error-container": "#752121",
+                        "tertiary-fixed-dim": "#d2d8e0",
+                        "background": "#f7f9fb",
+                        "on-primary-container": "#455367",
+                        "secondary-fixed": "#d4e4fa",
+                        "secondary-dim": "#465467",
+                        "surface": "#f7f9fb",
+                        "surface-container-low": "#f0f4f7",
+                        "error": "#9f403d",
+                        "surface-dim": "#cfdce3",
+                        "primary": "#515f74",
+                        "inverse-surface": "#0b0f10",
+                        "error-dim": "#4e0309",
+                        "on-tertiary-fixed-variant": "#585e65",
+                        "on-primary": "#f6f7ff",
+                        "error-container": "#fe8983",
+                        "on-tertiary": "#f6f9ff",
+                        "inverse-primary": "#d5e3fd",
+                        "tertiary-container": "#e0e6ee",
+                        "primary-dim": "#455368",
+                        "secondary-fixed-dim": "#c6d6ec",
+                        "surface-bright": "#f7f9fb",
+                        "inverse-on-surface": "#9a9d9f",
+                        "on-secondary-fixed-variant": "#4e5d6f",
+                        "on-error": "#fff7f6",
+                        "surface-container-high": "#e1e9ee",
+                        "on-background": "#2a3439",
+                        "on-secondary": "#f7f9ff",
+                        "surface-tint": "#515f74",
+                        "on-primary-fixed": "#324054",
+                        "on-tertiary-fixed": "#3b4248",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#e8eff3",
+                        "surface-variant": "#d9e4ea",
+                        "primary-fixed": "#d5e3fd",
+                        "on-surface": "#2a3439",
+                        "secondary": "#526073",
+                        "on-tertiary-container": "#4e545b",
+                        "outline-variant": "#a9b4b9",
+                        "outline": "#717c82",
+                        "primary-container": "#d5e3fd",
+                        "on-primary-fixed-variant": "#4e5c71",
+                        "tertiary-fixed": "#e0e6ee",
+                        "oceanic-cyan": "#06B6D4",
+                        "vivid-mint": "#10B981"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #FAFAFA;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e1e9ee;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface antialiased overflow-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full bg-slate-50/70 dark:bg-slate-950/70 backdrop-blur-xl flex justify-between items-center px-24 py-6 w-full z-50">
+<div class="text-lg font-light tracking-[0.2em] uppercase text-slate-800 dark:text-slate-100 font-inter">Ecodia OS</div>
+<div class="flex items-center space-x-12">
+<nav class="hidden md:flex space-x-12 font-inter tracking-tight text-slate-400 dark:text-slate-600">
+<a class="hover:opacity-70 transition-opacity" href="#">Ecosystem Health</a>
+<a class="hover:opacity-70 transition-opacity" href="#">Financial Flow</a>
+<a class="text-slate-900 dark:text-slate-50 font-medium hover:opacity-70 transition-opacity" href="#">Autonomy Core</a>
+</nav>
+<div class="flex items-center space-x-6 text-slate-600 dark:text-slate-400">
+<button class="material-symbols-outlined hover:opacity-70 transition-opacity scale-95 duration-300">hub</button>
+<button class="material-symbols-outlined hover:opacity-70 transition-opacity scale-95 duration-300">account_balance_wallet</button>
+<button class="material-symbols-outlined hover:opacity-70 transition-opacity scale-95 duration-300">terminal</button>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Hidden/Peek) -->
+<aside class="fixed left-0 h-full w-20 hover:w-64 transition-all duration-500 ease-in-out overflow-hidden bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl flex flex-col py-12 px-4 h-full shadow-2xl shadow-slate-900/5 z-40 group">
+<div class="flex items-center space-x-4 mb-16 px-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">shield</span>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+<div class="font-inter text-sm font-semibold tracking-wide">Guardian</div>
+<div class="font-inter text-[10px] uppercase tracking-widest text-slate-500">Operational</div>
+</div>
+</div>
+<nav class="flex flex-col space-y-4 flex-1">
+<a class="flex items-center space-x-4 p-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-full group-hover:px-4" href="#">
+<span class="material-symbols-outlined">bubble_chart</span>
+<span class="opacity-0 group-hover:opacity-100 font-inter text-sm tracking-wide">Causal Network</span>
+</a>
+<a class="flex items-center space-x-4 p-3 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-full group-hover:px-4" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="opacity-0 group-hover:opacity-100 font-inter text-sm tracking-wide">Financial Flow</span>
+</a>
+<a class="flex items-center space-x-4 p-3 bg-slate-200/50 dark:bg-slate-800/50 text-slate-900 dark:text-white transition-all rounded-full px-3 group-hover:px-4" href="#">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="opacity-0 group-hover:opacity-100 font-inter text-sm tracking-wide">Autonomy Core</span>
+</a>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="min-h-screen pt-32 pb-24 px-24 md:pl-48">
+<div class="max-w-7xl mx-auto flex flex-col items-center">
+<!-- Curated Heading -->
+<section class="w-full mb-16">
+<h1 class="text-[3.5rem] font-light tracking-[-0.02em] leading-tight text-primary mb-4">
+                    Autonomous <br/> <span class="font-extrabold">Synthesis</span>
+</h1>
+<p class="text-on-surface-variant body-lg max-w-xl">
+                    The core directive of Ecodia is proceeding without human oversight. Current threads are optimizing for Woodfordia long-term equilibrium.
+                </p>
+</section>
+<!-- Serene Terminal Centerpiece -->
+<div class="w-full h-[614px] flex items-center justify-center relative">
+<!-- Background decorative elements -->
+<div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[30rem]">terminal</span>
+</div>
+<!-- Terminal Surface -->
+<div class="w-full max-w-5xl h-full bg-surface-container-low rounded-xl p-12 overflow-hidden flex flex-col shadow-sm border-none">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center space-x-3">
+<div class="w-2 h-2 rounded-full bg-oceanic-cyan animate-pulse"></div>
+<span class="label-sm uppercase tracking-widest text-on-surface-variant font-medium">Session: Claude Code v4.1</span>
+</div>
+<div class="flex space-x-4">
+<span class="material-symbols-outlined text-slate-400">unfold_more</span>
+<span class="material-symbols-outlined text-slate-400">close_fullscreen</span>
+</div>
+</div>
+<div class="flex-1 font-mono text-[1.1rem] leading-relaxed text-on-surface-variant overflow-y-auto custom-scrollbar">
+<div class="space-y-4">
+<p class="text-slate-400"><span class="text-primary font-bold">~</span> initializing_environment...</p>
+<p class="text-slate-400"><span class="text-primary font-bold">~</span> checking ecosystem health metrics</p>
+<p class="text-oceanic-cyan animate-pulse">● processing causal link [woodfordia.eth -&gt; reforestation_logic]</p>
+<p class="flex items-center text-vivid-mint">
+<span class="material-symbols-outlined mr-2">check_circle</span>
+                                Woodfordia App integrated successfully
+                            </p>
+<p class="text-slate-400"><span class="text-primary font-bold">~</span> optimizing resource allocation strategy</p>
+<p class="text-slate-400"><span class="text-primary font-bold">~</span> scanning autonomous agent availability</p>
+<p class="text-oceanic-cyan animate-pulse">● scaling computational resources for batch execution</p>
+<p class="text-slate-300">/ user_input: "Proceed with full autonomy mode"</p>
+<p class="text-slate-400"><span class="text-primary font-bold">~</span> authorization confirmed</p>
+<p class="flex items-center text-vivid-mint">
+<span class="material-symbols-outlined mr-2">check_circle</span>
+                                Global Equilibrium Vitals: Stable (1.002v)
+                            </p>
+<p class="text-slate-400"><span class="text-primary font-bold">~</span> monitoring node #827-lambda</p>
+<p class="text-oceanic-cyan animate-pulse">● active_deployment: financial_bridge_v2.0</p>
+<p class="text-slate-500 mt-8 italic">// awaiting further instruction from guardian identity</p>
+<div class="flex items-center mt-4">
+<span class="text-primary font-bold mr-3">❯</span>
+<span class="w-2 h-5 bg-primary/20 animate-pulse"></span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Dashboard Metadata Asymmetric Grid -->
+<section class="w-full mt-24 grid grid-cols-12 gap-8 mb-24">
+<div class="col-span-12 md:col-span-4 bg-surface-container-lowest p-10 rounded-xl">
+<span class="label-sm uppercase tracking-widest text-slate-400 mb-2 block">System Vitality</span>
+<div class="text-4xl font-light text-primary mb-4">98.4%</div>
+<div class="h-1 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full w-[98.4%] bg-vivid-mint"></div>
+</div>
+<p class="mt-6 text-sm text-on-surface-variant">Optimal computational flow. No latency detected in causal pathways.</p>
+</div>
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest p-10 rounded-xl flex items-center">
+<div class="w-1/3">
+<span class="label-sm uppercase tracking-widest text-slate-400 mb-2 block">Active Guardian</span>
+<div class="text-xl font-medium text-on-surface">Alpha One</div>
+<div class="mt-4 flex -space-x-2">
+<div class="w-8 h-8 rounded-full bg-slate-200 border-2 border-surface-container-lowest"></div>
+<div class="w-8 h-8 rounded-full bg-slate-300 border-2 border-surface-container-lowest"></div>
+<div class="w-8 h-8 rounded-full bg-slate-400 border-2 border-surface-container-lowest"></div>
+</div>
+</div>
+<div class="w-2/3 pl-10 border-l border-surface-container-low">
+<span class="label-sm uppercase tracking-widest text-slate-400 mb-2 block">Recent Successes</span>
+<ul class="space-y-3">
+<li class="flex items-center text-sm text-on-surface">
+<span class="material-symbols-outlined text-vivid-mint mr-2 text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Carbon Credits Minted (0.428 BTC equiv.)
+                            </li>
+<li class="flex items-center text-sm text-on-surface">
+<span class="material-symbols-outlined text-vivid-mint mr-2 text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Protocol Upgrade: Causal-Chain v2.4
+                            </li>
+</ul>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full bg-transparent flex justify-center items-center space-x-24 px-24 py-8 w-full font-medium z-50">
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-vivid-mint text-[16px]">sensors</span>
+<span class="font-inter text-[10px] uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">Ecosystem Health: Optimal</span>
+</div>
+<div class="hidden md:flex space-x-12">
+<a class="font-inter text-[10px] uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors duration-300" href="#">Active Vitals</a>
+<a class="font-inter text-[10px] uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 transition-colors duration-300" href="#">Guardian Log</a>
+</div>
+<div class="font-inter text-[10px] uppercase tracking-[0.1em] text-slate-400 dark:text-slate-500">
+            Ecodia OS v2.4
+        </div>
+</footer>
+</body></html>

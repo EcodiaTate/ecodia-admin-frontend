@@ -6,6 +6,8 @@ import { SessionList } from './SessionList'
 import { CCTerminal } from './Terminal'
 import type { CCSession } from '@/types/claudeCode'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
+import { ArrowLeft, Sparkles } from 'lucide-react'
 
 export default function ClaudeCodePage() {
   const { sessionId } = useParams()
@@ -36,39 +38,69 @@ export default function ClaudeCodePage() {
 
   if (session) {
     return (
-      <div className="space-y-6">
-        <button onClick={() => setSelectedSession(null)} className="text-sm text-zinc-400 hover:text-zinc-200">
-          &larr; Back to sessions
+      <motion.div
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        className="mx-auto max-w-5xl space-y-6"
+      >
+        <button
+          onClick={() => setSelectedSession(null)}
+          className="flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to sessions
         </button>
         <CCTerminal session={session} />
-      </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-zinc-100">Claude Code</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      className="mx-auto max-w-5xl"
+    >
+      <div className="mb-12">
+        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+          AI Operations
+        </span>
+        <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+          Autonomy <em className="not-italic font-normal text-primary">Core</em>
+        </h1>
+        <p className="mt-3 max-w-lg text-sm leading-relaxed text-on-surface-muted">
+          Deploying ambient logic structures across the Ecodia network. Monitoring autonomous nodes and resource allocation.
+        </p>
+      </div>
 
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 className="mb-3 text-sm font-medium text-zinc-400">New Session</h2>
-        <div className="flex gap-2">
+      <div className="glass rounded-3xl p-8">
+        <h2 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">New Decision</h2>
+        <div className="mt-4 flex gap-3">
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Enter initial prompt for CC..."
-            className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+            placeholder="Enter initial prompt for autonomous session..."
+            className="flex-1 rounded-xl bg-surface-container-low px-5 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
+            onKeyDown={(e) => e.key === 'Enter' && prompt.trim() && create.mutate()}
           />
           <button
             onClick={() => create.mutate()}
             disabled={!prompt.trim() || create.isPending}
-            className="rounded-md bg-zinc-100 px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-200 disabled:opacity-50"
+            className="btn-primary-gradient flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-medium disabled:opacity-40"
           >
-            Start
+            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+            Deploy
           </button>
         </div>
       </div>
 
-      <SessionList onSelect={setSelectedSession} />
-    </div>
+      <div className="mt-10">
+        <h2 className="mb-6 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Recent Decisions</h2>
+        <div className="glass rounded-3xl overflow-hidden">
+          <SessionList onSelect={setSelectedSession} />
+        </div>
+      </div>
+    </motion.div>
   )
 }

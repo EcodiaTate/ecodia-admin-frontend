@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import api from '@/api/client'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 
 export default function LoginPage() {
   const [password, setPassword] = useState('')
@@ -25,25 +26,40 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-zinc-950">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6 rounded-lg border border-zinc-800 bg-zinc-900 p-8">
-        <h1 className="text-2xl font-semibold text-zinc-100">Ecodia Admin</h1>
+    <div className="aurora-canvas flex h-screen items-center justify-center bg-surface">
+      <motion.form
+        onSubmit={handleSubmit}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        className="relative z-10 w-full max-w-sm glass-elevated rounded-3xl p-10"
+      >
+        <div className="mb-10">
+          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+            Ecodia OS
+          </span>
+          <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+            Welcome
+          </h1>
+        </div>
+
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+          className="w-full rounded-xl bg-surface-container-low px-5 py-3 text-sm text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
           autoFocus
         />
+
         <button
           type="submit"
           disabled={loading || !password}
-          className="w-full rounded-md bg-zinc-100 px-4 py-2.5 text-sm font-medium text-zinc-900 hover:bg-zinc-200 disabled:opacity-50"
+          className="btn-primary-gradient mt-6 w-full rounded-2xl px-6 py-3 text-sm font-medium text-white transition-opacity disabled:opacity-40"
         >
-          {loading ? 'Signing in...' : 'Sign in'}
+          {loading ? 'Authenticating...' : 'Enter'}
         </button>
-      </form>
+      </motion.form>
     </div>
   )
 }

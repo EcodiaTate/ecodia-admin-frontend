@@ -7,11 +7,11 @@ export function AppShell() {
   useWebSocket()
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="aurora-canvas flex h-screen overflow-hidden bg-surface">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopBar />
-        <main className="flex-1 overflow-y-auto bg-zinc-950 p-6">
+        <main className="relative z-10 flex-1 overflow-y-auto px-10 py-8 lg:px-16 lg:py-10">
           <Outlet />
         </main>
       </div>

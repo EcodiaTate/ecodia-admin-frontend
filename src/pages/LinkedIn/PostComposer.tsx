@@ -70,21 +70,23 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-lg font-medium text-zinc-100">Compose Post</h2>
+    <div className="space-y-8">
+      <h2 className="font-display text-headline-md font-light text-on-surface">Compose Post</h2>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-8">
         {/* Editor */}
-        <div className="col-span-2 space-y-4">
+        <div className="col-span-2 space-y-6">
           {/* Post type */}
-          <div className="flex gap-2">
+          <div className="flex gap-1">
             {POST_TYPES.map((t) => (
               <button
                 key={t.value}
                 onClick={() => setPostType(t.value)}
                 className={cn(
-                  'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-                  postType === t.value ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-800/50 text-zinc-400'
+                  'rounded-xl px-4 py-2 text-xs font-medium transition-colors',
+                  postType === t.value
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
                 )}
               >
                 {t.label}
@@ -99,14 +101,14 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
               onChange={(e) => setContent(e.target.value.slice(0, MAX_CHARS))}
               placeholder="Write your LinkedIn post..."
               rows={10}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-sm text-zinc-100 placeholder-zinc-500 focus:border-zinc-600 focus:outline-none"
+              className="w-full rounded-2xl bg-surface-container-low px-6 py-4 text-sm leading-relaxed text-on-surface placeholder-on-surface-muted transition-colors focus:bg-surface-container-lowest focus:outline-none"
             />
-            <div className="mt-1 flex items-center justify-between">
-              <span className={cn('text-xs', content.length > MAX_CHARS * 0.9 ? 'text-yellow-400' : 'text-zinc-500')}>
+            <div className="mt-2 flex items-center justify-between">
+              <span className={cn('text-label-sm', content.length > MAX_CHARS * 0.9 ? 'text-tertiary' : 'text-on-surface-muted')}>
                 {content.length}/{MAX_CHARS}
               </span>
               {content.length > 0 && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-label-sm text-on-surface-muted">
                   ~{Math.ceil(content.length / 200)} min read
                 </span>
               )}
@@ -114,27 +116,25 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
           </div>
 
           {/* Hashtags */}
-          <div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {hashtags.map((tag) => (
-                <span key={tag} className="flex items-center gap-1 rounded-full bg-blue-600/10 px-2 py-0.5 text-xs text-blue-400">
-                  {tag}
-                  <button onClick={() => setHashtags(hashtags.filter(h => h !== tag))} className="text-blue-500 hover:text-blue-300">
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-              <div className="flex items-center gap-1 rounded-md border border-zinc-800 bg-zinc-900/50 px-2 py-1">
-                <Hash className="h-3 w-3 text-zinc-500" />
-                <input
-                  type="text"
-                  placeholder="Add hashtag"
-                  value={hashtagInput}
-                  onChange={(e) => setHashtagInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addHashtag())}
-                  className="bg-transparent text-xs text-zinc-300 placeholder-zinc-500 outline-none"
-                />
-              </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {hashtags.map((tag) => (
+              <span key={tag} className="flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs text-primary">
+                {tag}
+                <button onClick={() => setHashtags(hashtags.filter(h => h !== tag))} className="text-primary/60 hover:text-primary">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+            <div className="flex items-center gap-1.5 rounded-xl bg-surface-container-low px-3 py-1.5">
+              <Hash className="h-3 w-3 text-on-surface-muted" strokeWidth={1.75} />
+              <input
+                type="text"
+                placeholder="Add hashtag"
+                value={hashtagInput}
+                onChange={(e) => setHashtagInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addHashtag())}
+                className="bg-transparent text-xs text-on-surface placeholder-on-surface-muted outline-none"
+              />
             </div>
           </div>
 
@@ -143,56 +143,56 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
             <button
               onClick={() => save.mutate()}
               disabled={!content.trim() || save.isPending}
-              className="rounded-md bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+              className="rounded-xl bg-surface-container-high px-5 py-2.5 text-sm font-medium text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
             >
               {scheduledAt ? 'Schedule' : 'Save Draft'}
             </button>
             <button
               onClick={() => setShowAI(!showAI)}
-              className="flex items-center gap-1.5 rounded-md bg-purple-600/20 px-4 py-2 text-sm text-purple-400 hover:bg-purple-600/30"
+              className="btn-primary-gradient flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium"
             >
-              <Sparkles className="h-3.5 w-3.5" /> AI Generate
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} /> AI Generate
             </button>
           </div>
         </div>
 
         {/* Sidebar: Schedule + Theme */}
-        <div className="space-y-4">
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-            <h3 className="text-sm font-medium text-zinc-400">Schedule</h3>
-            <div className="mt-2">
+        <div className="space-y-6">
+          <div className="glass rounded-2xl p-6">
+            <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Schedule</h3>
+            <div className="mt-3">
               <div className="flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 text-zinc-500" />
+                <Clock className="h-3.5 w-3.5 text-on-surface-muted" strokeWidth={1.75} />
                 <input
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="flex-1 rounded bg-zinc-800 px-2 py-1.5 text-xs text-zinc-300 outline-none"
+                  className="flex-1 rounded-lg bg-surface-container-low px-3 py-2 text-xs text-on-surface outline-none"
                 />
               </div>
               {scheduledAt && (
-                <button onClick={() => setScheduledAt('')} className="mt-1 text-xs text-zinc-500 hover:text-zinc-300">
-                  Clear schedule (save as draft)
+                <button onClick={() => setScheduledAt('')} className="mt-2 text-xs text-on-surface-muted hover:text-on-surface-variant">
+                  Clear schedule
                 </button>
               )}
             </div>
           </div>
 
-          <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-            <h3 className="text-sm font-medium text-zinc-400">Theme</h3>
+          <div className="glass rounded-2xl p-6">
+            <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Theme</h3>
             <input
               type="text"
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
               placeholder="e.g. Technical Tuesday"
-              className="mt-2 w-full rounded bg-zinc-800 px-2 py-1.5 text-xs text-zinc-300 placeholder-zinc-500 outline-none"
+              className="mt-3 w-full rounded-lg bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder-on-surface-muted outline-none"
             />
           </div>
 
           {content && (
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-              <h3 className="text-sm font-medium text-zinc-400">Preview</h3>
-              <div className="mt-2 max-h-40 overflow-y-auto text-xs text-zinc-400 whitespace-pre-wrap">
+            <div className="glass rounded-2xl p-6">
+              <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Preview</h3>
+              <div className="mt-3 max-h-40 overflow-y-auto text-xs leading-relaxed text-on-surface-muted whitespace-pre-wrap">
                 {content.slice(0, 100)}...
               </div>
             </div>
@@ -202,44 +202,44 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
 
       {/* AI Generator Panel */}
       {showAI && (
-        <div className="rounded-lg border border-purple-800/30 bg-purple-900/10 p-5">
-          <h3 className="text-sm font-medium text-purple-400">AI Content Generator</h3>
-          <div className="mt-3 flex gap-2">
+        <div className="rounded-2xl bg-primary/5 p-8">
+          <h3 className="text-label-md uppercase tracking-[0.05em] text-primary">AI Content Generator</h3>
+          <div className="mt-4 flex gap-3">
             <input
               type="text"
               value={aiTheme}
               onChange={(e) => setAITheme(e.target.value)}
               placeholder="Topic or theme (e.g. 'building software for nonprofits')"
-              className="flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-300 placeholder-zinc-500 outline-none"
+              className="flex-1 rounded-xl bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder-on-surface-muted outline-none"
             />
             <button
               onClick={() => generate.mutate()}
               disabled={!aiTheme.trim() || generate.isPending}
-              className="flex items-center gap-1.5 rounded-md bg-purple-600/30 px-4 py-2 text-sm text-purple-300 hover:bg-purple-600/40 disabled:opacity-50"
+              className="btn-primary-gradient flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium disabled:opacity-40"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
               {generate.isPending ? 'Generating...' : 'Generate 3 Variations'}
             </button>
           </div>
 
           {aiVariations.length > 0 && (
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
               {aiVariations.map((v, i) => (
-                <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/80 p-3">
+                <div key={i} className="glass rounded-2xl p-5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-medium uppercase text-purple-400">{v.angle}</span>
-                    <span className="text-[10px] text-zinc-500">{v.characterCount} chars</span>
+                    <span className="text-label-sm uppercase text-primary">{v.angle}</span>
+                    <span className="font-mono text-label-sm text-on-surface-muted">{v.characterCount}</span>
                   </div>
-                  <p className="mt-1 text-xs font-medium text-zinc-300">{v.hookLine}</p>
-                  <p className="mt-2 max-h-32 overflow-y-auto text-xs text-zinc-400 whitespace-pre-wrap">{v.content.slice(0, 300)}...</p>
+                  <p className="mt-2 text-xs font-medium text-on-surface">{v.hookLine}</p>
+                  <p className="mt-2 max-h-32 overflow-y-auto text-xs leading-relaxed text-on-surface-muted whitespace-pre-wrap">{v.content.slice(0, 300)}...</p>
                   <div className="mt-2 flex flex-wrap gap-1">
                     {v.hashtags.map((tag) => (
-                      <span key={tag} className="text-[10px] text-blue-400">{tag}</span>
+                      <span key={tag} className="text-label-sm text-primary-container">{tag}</span>
                     ))}
                   </div>
                   <button
                     onClick={() => useVariation(v)}
-                    className="mt-2 w-full rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-300 hover:bg-zinc-700"
+                    className="mt-3 w-full rounded-xl bg-surface-container-high px-3 py-2 text-xs font-medium text-on-surface-variant transition-colors hover:bg-surface-container"
                   >
                     Use this
                   </button>

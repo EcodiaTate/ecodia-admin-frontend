@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ecodia OS Dashboard</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#4edea3",
+              "primary-fixed": "#acedff",
+              "on-error": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "inverse-surface": "#2f3131",
+              "tertiary-fixed": "#ffddb8",
+              "tertiary-container": "#e79400",
+              "secondary": "#006c49",
+              "tertiary-fixed-dim": "#ffb95f",
+              "on-primary-container": "#00424f",
+              "primary-container": "#06b6d4",
+              "on-secondary-fixed-variant": "#005236",
+              "tertiary": "#855300",
+              "on-tertiary-container": "#563400",
+              "on-tertiary-fixed-variant": "#653e00",
+              "surface-container": "#eeeeee",
+              "outline": "#6d797d",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#001f26",
+              "on-tertiary-fixed": "#2a1700",
+              "on-secondary": "#ffffff",
+              "surface": "#fafafa",
+              "on-error-container": "#93000a",
+              "surface-bright": "#f9f9f9",
+              "inverse-on-surface": "#f0f1f1",
+              "primary-fixed-dim": "#4cd7f6",
+              "on-surface": "#1a1c1c",
+              "on-tertiary": "#ffffff",
+              "surface-container-low": "#f3f3f3",
+              "on-primary-fixed-variant": "#004e5c",
+              "surface-dim": "#dadada",
+              "surface-tint": "#00687a",
+              "surface-container-high": "#e8e8e8",
+              "secondary-fixed": "#6ffbbe",
+              "primary": "#00687a",
+              "on-background": "#1a1c1c",
+              "on-secondary-fixed": "#002113",
+              "error-container": "#ffdad6",
+              "outline-variant": "#bcc9cd",
+              "surface-variant": "#e2e2e2",
+              "on-surface-variant": "#3d494c",
+              "on-secondary-container": "#00714d",
+              "inverse-primary": "#4cd7f6",
+              "surface-container-highest": "#e2e2e2",
+              "secondary-container": "#6cf8bb",
+              "background": "#fafafa",
+              "error": "#ba1a1a"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 20;
+        }
+        .aurora-blur {
+            background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, rgba(250, 250, 250, 0) 60%);
+        }
+        .nav-hover-trigger:hover .nav-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container min-h-screen overflow-hidden">
+<!-- TopNavBar (Minimalist Hidden Corner Menu) -->
+<nav class="fixed top-0 right-0 z-50 p-8 group nav-hover-trigger">
+<div class="flex flex-col items-end gap-6">
+<div class="w-6 h-6 flex flex-col justify-center items-end gap-1.5 cursor-pointer opacity-20 group-hover:opacity-100 transition-opacity duration-500">
+<div class="w-full h-[1px] bg-slate-900"></div>
+<div class="w-4 h-[1px] bg-slate-900"></div>
+</div>
+<div class="nav-content opacity-0 translate-y-2 transition-all duration-700 flex flex-col items-end gap-4 pointer-events-none group-hover:pointer-events-auto">
+<a class="font-['Inter'] tracking-[0.2em] uppercase text-[9px] font-medium text-slate-400 hover:text-cyan-500 transition-colors" href="#">Overview</a>
+<a class="font-['Inter'] tracking-[0.2em] uppercase text-[9px] font-medium text-cyan-600" href="#">Dashboard</a>
+<a class="font-['Inter'] tracking-[0.2em] uppercase text-[9px] font-medium text-slate-400 hover:text-cyan-500 transition-colors" href="#">Ecosystem</a>
+<div class="h-8"></div>
+<div class="flex items-center gap-4 text-slate-400">
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-primary transition-colors" data-icon="search">search</span>
+<span class="material-symbols-outlined text-sm cursor-pointer hover:text-primary transition-colors" data-icon="settings">settings</span>
+<div class="w-6 h-6 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
+<img alt="User profile" data-alt="Close-up professional studio portrait of a person with a serene expression, soft high-key lighting, minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB0uXNysy8S-xMLMYn9Xos2QhXt0Hix6_O9892FZecqG1Bm0dr0tm4C38rgo3WdNisu50AApkfOjgbl4VqCFi2SZTtZa3lq9L2Z79vLZi7uyNPNcw2HIzTJKLsw4_zlb_XzbYjX2bNMIbzSbgoY2yPG6a4pBU4Z2i6UBxFntJTrNcTNpoDafpmaowszECa-DayIgRZgrfuleQ7MGS8RbdR_J3nxLITaVWwMNN89aUklUMR4IF3BBJMC9SLqxsLtj3_ZhyjxJe5mQE"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Canvas -->
+<main class="h-screen w-full relative flex flex-col items-center justify-center p-12">
+<!-- Aurora Background Element -->
+<div class="absolute inset-0 aurora-blur -z-10"></div>
+<!-- Central Focal Point -->
+<div class="relative flex flex-col items-center">
+<!-- Floating Secondary Stats -->
+<div class="absolute -left-32 top-1/2 -translate-y-1/2 flex flex-col items-end space-y-1 opacity-20 hover:opacity-100 transition-opacity duration-1000">
+<span class="text-[8px] tracking-[0.4em] uppercase text-on-surface-variant font-bold">Income</span>
+<span class="text-xs font-light text-slate-400">$42,900</span>
+</div>
+<div class="absolute -right-32 top-1/2 -translate-y-1/2 flex flex-col items-start space-y-1 opacity-20 hover:opacity-100 transition-opacity duration-1000">
+<span class="text-[8px] tracking-[0.4em] uppercase text-on-surface-variant font-bold">Expenses</span>
+<span class="text-xs font-light text-slate-400">$24,500</span>
+</div>
+<!-- Primary KPI -->
+<div class="text-center group">
+<p class="font-['Inter'] text-[9px] tracking-[0.5em] uppercase text-primary/40 mb-8 font-bold group-hover:text-primary transition-colors duration-1000">Net MTD</p>
+<h1 class="text-[12rem] font-black tracking-tighter text-on-surface leading-none mb-4 selection:bg-primary-container selection:text-on-primary-container">18.4<span class="text-6xl font-light text-slate-200">k</span></h1>
+<div class="flex items-center justify-center gap-4">
+<div class="h-[1px] w-8 bg-slate-100"></div>
+<span class="text-[9px] tracking-[0.3em] uppercase text-secondary font-bold">Stability High</span>
+<div class="h-[1px] w-8 bg-slate-100"></div>
+</div>
+</div>
+</div>
+<!-- Minimal Activity Feed (Bottom) -->
+<section class="absolute bottom-24 w-full max-w-xs opacity-30 hover:opacity-80 transition-opacity duration-1000">
+<div class="space-y-6">
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-[14px] text-slate-400" data-icon="bolt">bolt</span>
+<div class="flex-1 flex justify-between items-baseline gap-4">
+<p class="text-[10px] text-slate-500 font-light truncate">Solar Grid Calibration</p>
+<span class="text-[7px] uppercase tracking-widest text-slate-300 font-bold whitespace-nowrap">2m</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-[14px] text-slate-400" data-icon="payments">payments</span>
+<div class="flex-1 flex justify-between items-baseline gap-4">
+<p class="text-[10px] text-slate-500 font-light truncate">Passive Yield Harvest</p>
+<span class="text-[7px] uppercase tracking-widest text-slate-300 font-bold whitespace-nowrap">1h</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-[14px] text-slate-400" data-icon="eco">eco</span>
+<div class="flex-1 flex justify-between items-baseline gap-4">
+<p class="text-[10px] text-slate-500 font-light truncate">Atmosphere Integrity</p>
+<span class="text-[7px] uppercase tracking-widest text-slate-300 font-bold whitespace-nowrap">4h</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer (Shared Component - Subtle) -->
+<footer class="fixed bottom-0 w-full z-50 flex justify-between items-center px-12 py-8 opacity-0 hover:opacity-40 transition-opacity duration-1000 pointer-events-none hover:pointer-events-auto">
+<div class="font-['Inter'] text-[8px] tracking-[0.2em] uppercase font-bold text-slate-400">System Harmony 98%</div>
+<div class="flex gap-8">
+<a class="font-['Inter'] text-[8px] tracking-[0.2em] uppercase font-bold text-slate-400 hover:text-cyan-400 transition-colors" href="#">Global</a>
+<a class="font-['Inter'] text-[8px] tracking-[0.2em] uppercase font-bold text-slate-400 hover:text-cyan-400 transition-colors" href="#">Registry</a>
+<a class="font-['Inter'] text-[8px] tracking-[0.2em] uppercase font-bold text-slate-400 hover:text-cyan-400 transition-colors" href="#">Protocol</a>
+</div>
+</footer>
+</main>
+</body></html>

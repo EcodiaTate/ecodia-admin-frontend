@@ -15,20 +15,42 @@ export function TransactionList({ status }: { status?: string }) {
   if (isLoading) return <LoadingSpinner />
 
   const columns = [
-    { key: 'date', header: 'Date', render: (r: Transaction) => formatDate(r.date) },
-    { key: 'description', header: 'Description' },
+    {
+      key: 'date',
+      header: 'Date',
+      render: (r: Transaction) => (
+        <span className="font-mono text-label-sm text-on-surface-muted">{formatDate(r.date)}</span>
+      ),
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      render: (r: Transaction) => (
+        <span className="text-on-surface">{r.description}</span>
+      ),
+    },
     {
       key: 'amount_aud',
       header: 'Amount',
       render: (r: Transaction) => (
-        <span className={r.type === 'credit' ? 'text-green-400' : 'text-red-400'}>
-          {formatCurrency(r.amount_aud)}
+        <span className={`font-mono font-medium ${r.type === 'credit' ? 'text-secondary' : 'text-on-surface-variant'}`}>
+          {r.type === 'credit' ? '+' : ''}{formatCurrency(r.amount_aud)}
         </span>
       ),
     },
-    { key: 'category', header: 'Category', render: (r: Transaction) => r.category || '-' },
+    {
+      key: 'category',
+      header: 'Category',
+      render: (r: Transaction) => (
+        <span className="text-on-surface-muted">{r.category || '\u2014'}</span>
+      ),
+    },
     { key: 'status', header: 'Status', render: (r: Transaction) => <StatusBadge status={r.status} /> },
   ]
 
-  return <DataTable columns={columns} data={data?.transactions ?? []} />
+  return (
+    <div className="glass rounded-3xl overflow-hidden">
+      <DataTable columns={columns} data={data?.transactions ?? []} />
+    </div>
+  )
 }

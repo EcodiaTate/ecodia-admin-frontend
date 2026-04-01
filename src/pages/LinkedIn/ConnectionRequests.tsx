@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import type { ConnectionRequest } from '@/types/linkedin'
 import toast from 'react-hot-toast'
 import { Check, X, Users, Building2, CheckSquare, Square } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export function ConnectionRequests() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -54,57 +55,61 @@ export function ConnectionRequests() {
   if (isLoading) return <LoadingSpinner />
 
   const getRelevanceColor = (score: number | null) => {
-    if (score == null) return 'text-zinc-500'
-    if (score >= 0.7) return 'text-emerald-400'
-    if (score >= 0.4) return 'text-yellow-400'
-    return 'text-zinc-500'
+    if (score == null) return 'text-on-surface-muted'
+    if (score >= 0.7) return 'text-secondary'
+    if (score >= 0.4) return 'text-tertiary'
+    return 'text-on-surface-muted'
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Batch toolbar */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/80 p-3">
-          <span className="text-sm text-zinc-400">{selected.size} selected</span>
+        <div className="glass-elevated flex items-center gap-3 rounded-2xl p-4">
+          <span className="text-sm text-on-surface-muted">{selected.size} selected</span>
           <button
             onClick={() => batchAction.mutate({ ids: [...selected], action: 'accept' })}
             disabled={batchAction.isPending}
-            className="flex items-center gap-1 rounded-md bg-emerald-600/20 px-3 py-1.5 text-sm text-emerald-400 hover:bg-emerald-600/30"
+            className="flex items-center gap-1.5 rounded-xl bg-secondary/10 px-3 py-2 text-sm text-secondary transition-colors hover:bg-secondary/20"
           >
-            <Check className="h-3.5 w-3.5" /> Accept All
+            <Check className="h-3.5 w-3.5" strokeWidth={1.75} /> Accept All
           </button>
           <button
             onClick={() => batchAction.mutate({ ids: [...selected], action: 'decline' })}
             disabled={batchAction.isPending}
-            className="flex items-center gap-1 rounded-md bg-red-600/20 px-3 py-1.5 text-sm text-red-400 hover:bg-red-600/30"
+            className="flex items-center gap-1.5 rounded-xl bg-error/10 px-3 py-2 text-sm text-error transition-colors hover:bg-error/20"
           >
-            <X className="h-3.5 w-3.5" /> Decline All
+            <X className="h-3.5 w-3.5" strokeWidth={1.75} /> Decline All
           </button>
-          <button onClick={() => setSelected(new Set())} className="text-xs text-zinc-500 hover:text-zinc-300">Clear</button>
+          <button onClick={() => setSelected(new Set())} className="text-xs text-on-surface-muted hover:text-on-surface-variant">Clear</button>
         </div>
       )}
 
-      {/* Header with select all */}
-      <div className="flex items-center gap-2">
-        <button onClick={toggleAll} className="text-zinc-500 hover:text-zinc-300">
-          {selected.size === (requests?.length ?? 0) ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={toggleAll} className="text-on-surface-muted transition-colors hover:text-on-surface-variant">
+          {selected.size === (requests?.length ?? 0) ? <CheckSquare className="h-4 w-4" strokeWidth={1.75} /> : <Square className="h-4 w-4" strokeWidth={1.75} />}
         </button>
-        <span className="text-sm text-zinc-400">{requests?.length ?? 0} pending requests</span>
+        <span className="text-sm text-on-surface-muted">{requests?.length ?? 0} pending requests</span>
       </div>
 
       {/* Request list */}
       <div className="space-y-2">
-        {(requests ?? []).map((req: ConnectionRequest) => (
-          <div key={req.id} className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
-            {/* Checkbox */}
-            <button onClick={() => toggleSelect(req.id)} className="text-zinc-500 hover:text-zinc-300">
-              {selected.has(req.id) ? <CheckSquare className="h-4 w-4 text-blue-400" /> : <Square className="h-4 w-4" />}
+        {(requests ?? []).map((req: ConnectionRequest, i: number) => (
+          <motion.div
+            key={req.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+            className="flex items-center gap-4 rounded-2xl px-5 py-4 transition-colors hover:bg-surface-container-low/60"
+          >
+            <button onClick={() => toggleSelect(req.id)} className="text-on-surface-muted transition-colors hover:text-on-surface-variant">
+              {selected.has(req.id) ? <CheckSquare className="h-4 w-4 text-primary" strokeWidth={1.75} /> : <Square className="h-4 w-4" strokeWidth={1.75} />}
             </button>
 
-            {/* Profile info */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-zinc-200">{req.name}</span>
+                <span className="text-sm font-medium text-on-surface">{req.name}</span>
                 {req.relevance_score != null && (
                   <span className={cn('text-xs font-medium', getRelevanceColor(req.relevance_score))}>
                     {Math.round(req.relevance_score * 100)}% relevant
@@ -112,32 +117,31 @@ export function ConnectionRequests() {
                 )}
               </div>
               {(req.headline || req.profile_headline) && (
-                <p className="text-xs text-zinc-400">{req.headline || req.profile_headline}</p>
+                <p className="text-xs text-on-surface-muted">{req.headline || req.profile_headline}</p>
               )}
-              <div className="mt-1 flex items-center gap-3 text-xs text-zinc-500">
-                {(req.profile_company) && (
-                  <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />{req.profile_company}</span>
+              <div className="mt-1 flex items-center gap-3 text-xs text-on-surface-muted">
+                {req.profile_company && (
+                  <span className="flex items-center gap-1"><Building2 className="h-3 w-3" strokeWidth={1.75} />{req.profile_company}</span>
                 )}
                 {req.profile_mutual != null && req.profile_mutual > 0 && (
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" />{req.profile_mutual} mutual</span>
+                  <span className="flex items-center gap-1"><Users className="h-3 w-3" strokeWidth={1.75} />{req.profile_mutual} mutual</span>
                 )}
               </div>
               {req.message && (
-                <p className="mt-1 text-xs text-zinc-400 italic">"{req.message}"</p>
+                <p className="mt-1 text-xs italic text-on-surface-muted">"{req.message}"</p>
               )}
               {req.relevance_reason && (
-                <p className="mt-1 text-[10px] text-zinc-500">{req.relevance_reason}</p>
+                <p className="mt-1 text-label-sm text-on-surface-muted">{req.relevance_reason}</p>
               )}
             </div>
 
-            {/* Relevance bar */}
             {req.relevance_score != null && (
               <div className="w-16">
-                <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
+                <div className="h-1.5 overflow-hidden rounded-full bg-surface-container">
                   <div
                     className={cn('h-full rounded-full',
-                      req.relevance_score >= 0.7 ? 'bg-emerald-400' :
-                      req.relevance_score >= 0.4 ? 'bg-yellow-400' : 'bg-zinc-600'
+                      req.relevance_score >= 0.7 ? 'bg-secondary' :
+                      req.relevance_score >= 0.4 ? 'bg-tertiary' : 'bg-on-surface-muted/30',
                     )}
                     style={{ width: `${req.relevance_score * 100}%` }}
                   />
@@ -145,30 +149,29 @@ export function ConnectionRequests() {
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex shrink-0 gap-1.5">
               <button
                 onClick={() => accept.mutate(req.id)}
                 disabled={accept.isPending}
-                className="rounded-md bg-emerald-600/20 p-2 text-emerald-400 hover:bg-emerald-600/30"
+                className="rounded-xl bg-secondary/10 p-2.5 text-secondary transition-colors hover:bg-secondary/20"
                 title="Accept"
               >
-                <Check className="h-4 w-4" />
+                <Check className="h-4 w-4" strokeWidth={1.75} />
               </button>
               <button
                 onClick={() => decline.mutate(req.id)}
                 disabled={decline.isPending}
-                className="rounded-md bg-red-600/20 p-2 text-red-400 hover:bg-red-600/30"
+                className="rounded-xl bg-error/10 p-2.5 text-error transition-colors hover:bg-error/20"
                 title="Decline"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" strokeWidth={1.75} />
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {(requests ?? []).length === 0 && (
-          <p className="py-8 text-center text-sm text-zinc-500">No pending connection requests</p>
+          <p className="py-16 text-center text-sm text-on-surface-muted">No pending connection requests</p>
         )}
       </div>
     </div>

@@ -1,3 +1,83 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: rgba(6, 182, 212, 0.15);
+    color: #1A1C1C;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 104, 122, 0.12);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 104, 122, 0.2);
+  }
+}
+
+@layer components {
+  /* Optic Glass Card */
+  .glass {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom-color: rgba(0, 0, 0, 0.04);
+    border-right-color: rgba(0, 0, 0, 0.04);
+    box-shadow: 0 20px 50px -12px rgba(0, 104, 122, 0.04);
+  }
+
+  .glass-elevated {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-bottom-color: rgba(0, 0, 0, 0.04);
+    border-right-color: rgba(0, 0, 0, 0.04);
+    box-shadow: 0 32px 64px -16px rgba(0, 104, 122, 0.06);
+  }
+
+  /* Aurora background washes */
+  .aurora-canvas {
+    position: relative;
+  }
+  .aurora-canvas::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(16, 185, 129, 0.04), transparent),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(6, 182, 212, 0.05), transparent),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(245, 158, 11, 0.025), transparent);
+    animation: aurora-breathe 8s ease-in-out infinite;
+  }
+
+  /* Primary gradient button */
+  .btn-primary-gradient {
+    background: linear-gradient(135deg, #00687A, #06B6D4);
+    color: white;
+    border: none;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

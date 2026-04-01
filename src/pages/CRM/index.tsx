@@ -6,6 +6,8 @@ import { Pipeline } from './Pipeline'
 import { ProjectDetail } from './ProjectDetail'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { Client } from '@/types/crm'
+import { motion } from 'framer-motion'
+import { ArrowLeft } from 'lucide-react'
 
 export default function CRMPage() {
   const { clientId } = useParams()
@@ -20,47 +22,82 @@ export default function CRMPage() {
 
   if (client) {
     return (
-      <div className="space-y-6">
-        <button onClick={() => setSelectedClient(null)} className="text-sm text-zinc-400 hover:text-zinc-200">
-          &larr; Back to pipeline
+      <motion.div
+        initial={{ opacity: 0, x: 12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        className="mx-auto max-w-4xl space-y-8"
+      >
+        <button
+          onClick={() => setSelectedClient(null)}
+          className="flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to pipeline
         </button>
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6">
+
+        <div className="glass rounded-3xl p-10">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-xl font-semibold text-zinc-100">{client.name}</h1>
-              {client.company && <p className="text-sm text-zinc-400">{client.company}</p>}
+              <h1 className="font-display text-display-md font-light text-on-surface">{client.name}</h1>
+              {client.company && <p className="mt-2 text-sm text-on-surface-muted">{client.company}</p>}
             </div>
             <div className="flex gap-2">
               <StatusBadge status={client.stage} />
               <StatusBadge status={client.priority} />
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-            {client.email && <div><span className="text-zinc-500">Email:</span> <span className="text-zinc-300">{client.email}</span></div>}
-            {client.phone && <div><span className="text-zinc-500">Phone:</span> <span className="text-zinc-300">{client.phone}</span></div>}
+
+          <div className="mt-8 grid grid-cols-2 gap-6 text-sm">
+            {client.email && (
+              <div>
+                <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Email</span>
+                <p className="mt-1 text-on-surface-variant">{client.email}</p>
+              </div>
+            )}
+            {client.phone && (
+              <div>
+                <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Phone</span>
+                <p className="mt-1 text-on-surface-variant">{client.phone}</p>
+              </div>
+            )}
           </div>
 
           {client.notes.length > 0 && (
-            <div className="mt-6 space-y-2">
-              <h3 className="text-sm font-medium text-zinc-400">Notes</h3>
+            <div className="mt-10 space-y-3">
+              <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Notes</h3>
               {client.notes.map((n, i) => (
-                <div key={i} className="rounded-md bg-zinc-800/50 p-3">
-                  <p className="text-sm text-zinc-300">{n.content}</p>
-                  <p className="mt-1 text-xs text-zinc-500">{n.source} &middot; {new Date(n.createdAt).toLocaleDateString()}</p>
+                <div key={i} className="rounded-2xl bg-surface-container-low p-5">
+                  <p className="text-sm leading-relaxed text-on-surface-variant">{n.content}</p>
+                  <p className="mt-2 font-mono text-label-sm text-on-surface-muted">
+                    {n.source} &middot; {new Date(n.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
               ))}
             </div>
           )}
         </div>
+
         <ProjectDetail clientId={client.id} />
-      </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-zinc-100">CRM Pipeline</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      className="mx-auto max-w-6xl"
+    >
+      <div className="mb-12">
+        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+          Client Network
+        </span>
+        <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+          Flow <em className="not-italic font-normal text-primary">State</em>
+        </h1>
+      </div>
       <Pipeline onSelectClient={setSelectedClient} />
-    </div>
+    </motion.div>
   )
 }

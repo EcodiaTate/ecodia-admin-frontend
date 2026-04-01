@@ -9,42 +9,62 @@ import {
   Terminal,
   Settings,
 } from 'lucide-react'
+import * as Tooltip from '@radix-ui/react-tooltip'
 
 const links = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/finance', icon: DollarSign, label: 'Finance' },
-  { to: '/gmail', icon: Mail, label: 'Gmail' },
-  { to: '/linkedin', icon: Linkedin, label: 'LinkedIn' },
-  { to: '/crm', icon: Users, label: 'CRM' },
-  { to: '/claude-code', icon: Terminal, label: 'Claude Code' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Atmospheric Vitals' },
+  { to: '/finance', icon: DollarSign, label: 'Financial Ecosystem' },
+  { to: '/gmail', icon: Mail, label: 'Digital Curator' },
+  { to: '/linkedin', icon: Linkedin, label: 'Network Intelligence' },
+  { to: '/crm', icon: Users, label: 'Flow State' },
+  { to: '/claude-code', icon: Terminal, label: 'Autonomy Core' },
+  { to: '/settings', icon: Settings, label: 'System Nodes' },
 ]
 
 export function Sidebar() {
   return (
-    <aside className="flex h-screen w-56 flex-col border-r border-zinc-800 bg-zinc-950">
-      <div className="flex h-14 items-center px-4">
-        <span className="text-lg font-semibold text-zinc-100">Ecodia</span>
-      </div>
-      <nav className="flex-1 space-y-1 px-2 py-4">
-        {links.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            className={({ isActive }) =>
-              cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-zinc-800 text-zinc-100'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200',
-              )
-            }
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+    <Tooltip.Provider delayDuration={200}>
+      <aside className="relative z-20 flex h-screen w-16 flex-col items-center bg-surface-container-low/60 backdrop-blur-glass py-6">
+        {/* Wordmark */}
+        <div className="mb-10 flex flex-col items-center">
+          <span className="text-label-sm font-display font-medium uppercase tracking-[0.2em] text-on-surface-muted">
+            E O S
+          </span>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex flex-1 flex-col items-center gap-3">
+          {links.map(({ to, icon: Icon, label }) => (
+            <Tooltip.Root key={to}>
+              <Tooltip.Trigger asChild>
+                <NavLink
+                  to={to}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200',
+                      isActive
+                        ? 'bg-primary/10 text-primary shadow-glass'
+                        : 'text-on-surface-muted hover:bg-surface-container hover:text-on-surface-variant',
+                    )
+                  }
+                >
+                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                </NavLink>
+              </Tooltip.Trigger>
+              <Tooltip.Portal>
+                <Tooltip.Content
+                  side="right"
+                  sideOffset={12}
+                  className="glass-elevated rounded-xl px-3 py-1.5 text-xs font-medium text-on-surface-variant"
+                >
+                  {label}
+                  <Tooltip.Arrow className="fill-white/60" />
+                </Tooltip.Content>
+              </Tooltip.Portal>
+            </Tooltip.Root>
+          ))}
+        </nav>
+      </aside>
+    </Tooltip.Provider>
   )
 }

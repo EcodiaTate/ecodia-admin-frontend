@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#4edea3",
+              "secondary-fixed": "#6ffbbe",
+              "on-error": "#ffffff",
+              "on-secondary": "#ffffff",
+              "tertiary": "#855300",
+              "on-primary-fixed": "#001f26",
+              "surface-container-high": "#e8e8e8",
+              "inverse-surface": "#2f3131",
+              "inverse-primary": "#4cd7f6",
+              "primary-container": "#06b6d4",
+              "on-surface": "#1a1c1c",
+              "on-primary-container": "#00424f",
+              "surface": "#f9f9f9",
+              "primary": "#00687a",
+              "on-secondary-fixed": "#002113",
+              "error": "#ba1a1a",
+              "secondary": "#006c49",
+              "on-surface-variant": "#3d494c",
+              "on-tertiary-container": "#563400",
+              "on-secondary-container": "#00714d",
+              "error-container": "#ffdad6",
+              "primary-fixed": "#acedff",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#4cd7f6",
+              "surface-container-low": "#f3f3f3",
+              "surface-bright": "#f9f9f9",
+              "on-background": "#1a1c1c",
+              "tertiary-fixed": "#ffddb8",
+              "on-tertiary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#bcc9cd",
+              "surface-container": "#eeeeee",
+              "surface-dim": "#dadada",
+              "surface-variant": "#e2e2e2",
+              "tertiary-fixed-dim": "#ffb95f",
+              "on-tertiary-fixed-variant": "#653e00",
+              "on-primary-fixed-variant": "#004e5c",
+              "on-tertiary-fixed": "#2a1700",
+              "on-secondary-fixed-variant": "#005236",
+              "on-error-container": "#93000a",
+              "inverse-on-surface": "#f0f1f1",
+              "secondary-container": "#6cf8bb",
+              "tertiary-container": "#e79400",
+              "outline": "#6d797d",
+              "surface-container-highest": "#e2e2e2",
+              "background": "#f9f9f9",
+              "surface-tint": "#00687a"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        background-color: #FAFAFA;
+        overflow-x: hidden;
+      }
+      .aurora-glow {
+        position: fixed;
+        width: 80vw;
+        height: 80vh;
+        background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, rgba(250, 250, 250, 0) 70%);
+        top: -10vh;
+        right: -10vw;
+        z-index: -1;
+        pointer-events: none;
+      }
+      .aurora-glow-bottom {
+        position: fixed;
+        width: 60vw;
+        height: 60vh;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, rgba(250, 250, 250, 0) 70%);
+        bottom: -5vh;
+        left: -5vw;
+        z-index: -1;
+        pointer-events: none;
+      }
+    </style>
+</head>
+<body class="font-body text-on-surface selection:bg-primary-container/30">
+<div class="aurora-glow"></div>
+<div class="aurora-glow-bottom"></div>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-28 py-10 bg-white/60 dark:bg-slate-950/60 backdrop-blur-3xl">
+<div class="text-lg font-light tracking-[0.2em] text-slate-900 dark:text-slate-100">
+            Ecodia OS
+        </div>
+<nav class="hidden md:flex items-center gap-16">
+<a class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 active:scale-95 active:opacity-80" href="#">Knowledge</a>
+<a class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 active:scale-95 active:opacity-80" href="#">Tasks</a>
+<a class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-cyan-600 dark:text-cyan-400 font-semibold hover:text-cyan-500 transition-colors duration-500 active:scale-95 active:opacity-80" href="#">Settings</a>
+<a class="font-['Inter'] tracking-widest uppercase text-[10px] font-medium text-slate-400 dark:text-slate-500 hover:text-cyan-500 transition-colors duration-500 active:scale-95 active:opacity-80" href="#">History</a>
+</nav>
+<div class="flex items-center gap-8">
+<button class="material-symbols-outlined text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 transition-all duration-500" data-icon="search">search</button>
+<button class="material-symbols-outlined text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 transition-all duration-500" data-icon="notifications">notifications</button>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Minimalist professional headshot of a person with soft studio lighting against a clean neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoVvcZUi1XAutaxRzeS9BNUl2TPH-tnycxC2rZDc1F3ASXfg04EGZLZwsru4RlGda0V-AarF46CeYdFZjoStuCoK-fsI898ssfqg55I-dQAbbM7F0P_miYXqmYFrvBRsUjQZV5DLDhem0QuS_6hqy9aQvsMmORLtto6eG3Oni8zyst6FMNdvD_eK6LiCHoNL6vJNdu2onN4B1VXKmuh3CP3tzB9yeeqr_HdQzeWHpO0_NkgOo1y1G3d1KKds1sS-cw8C7bQpiUEM8"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 bottom-0 w-20 hover:w-64 z-40 flex flex-col py-20 transition-all duration-700 ease-in-out overflow-hidden bg-slate-50/40 dark:bg-slate-900/40 backdrop-blur-2xl rounded-r-3xl my-auto h-[819px] group shadow-[64px_0_64px_-10px_rgba(6,182,212,0.04)]">
+<div class="flex flex-col gap-12 px-6">
+<div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="eco">eco</span>
+</div>
+<div>
+<div class="font-['Inter'] font-medium text-sm text-slate-900 dark:text-white">Ecodia OS</div>
+<div class="text-[10px] uppercase tracking-tighter text-slate-400">V1.0 Ambient</div>
+</div>
+</div>
+<div class="flex flex-col gap-8 mt-10">
+<div class="flex items-center gap-6 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover/item:text-cyan-500" data-icon="hub">hub</span>
+<span class="font-['Inter'] font-light tracking-normal text-sm text-slate-400 dark:text-slate-500 group-hover/item:text-cyan-500 opacity-0 group-hover:opacity-100 transition-all">Knowledge</span>
+</div>
+<div class="flex items-center gap-6 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover/item:text-cyan-500" data-icon="checklist">checklist</span>
+<span class="font-['Inter'] font-light tracking-normal text-sm text-slate-400 dark:text-slate-500 group-hover/item:text-cyan-500 opacity-0 group-hover:opacity-100 transition-all">Tasks</span>
+</div>
+<div class="flex items-center gap-6 group/item cursor-pointer border-r-2 border-cyan-500">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" data-icon="settings">settings</span>
+<span class="font-['Inter'] font-medium tracking-normal text-sm text-slate-900 dark:text-white opacity-0 group-hover:opacity-100 transition-all">Settings</span>
+</div>
+<div class="flex items-center gap-6 group/item cursor-pointer">
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 group-hover/item:text-cyan-500" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+<span class="font-['Inter'] font-light tracking-normal text-sm text-slate-400 dark:text-slate-500 group-hover/item:text-cyan-500 opacity-0 group-hover:opacity-100 transition-all">History</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="min-h-screen pt-48 px-28 pb-32 max-w-7xl mx-auto flex flex-col gap-40">
+<!-- Header Section -->
+<section class="max-w-2xl">
+<h1 class="text-[3.5rem] font-light tracking-tight text-on-surface mb-6 leading-none">
+                System <span class="text-primary font-medium">Nodes</span>
+</h1>
+<p class="text-on-surface-variant font-light text-lg leading-relaxed max-w-md">
+                Manage your neural connections and third-party integrations within the Ecodia ecosystem.
+            </p>
+</section>
+<!-- Connection Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-24 items-start">
+<!-- Xero Connection -->
+<section class="flex flex-col gap-10">
+<div class="flex flex-col gap-4">
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase text-on-surface-variant opacity-60">Financial Protocol</span>
+<h2 class="text-2xl font-light tracking-wide text-slate-900">Xero Connection</h2>
+</div>
+<div class="p-12 bg-surface-container-lowest/60 backdrop-blur-2xl rounded-[2.5rem] shadow-[64px_0_64px_-10px_rgba(6,182,212,0.04)] flex flex-col gap-12 group hover:translate-y-[-4px] transition-all duration-700">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-125" data-icon="account_balance">account_balance</span>
+</div>
+<div class="flex flex-col">
+<span class="text-secondary-fixed-dim font-medium tracking-wide flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+                                    Connected
+                                </span>
+<span class="text-[10px] text-on-surface-variant opacity-60 uppercase tracking-widest mt-1">Last synced 2m ago</span>
+</div>
+</div>
+</div>
+<div class="flex justify-start">
+<button class="px-8 py-4 bg-surface-container-highest text-on-surface text-sm font-medium rounded-xl hover:bg-surface-container-high transition-all duration-500 active:scale-95">
+                            Disconnect
+                        </button>
+</div>
+</div>
+</section>
+<!-- Gmail Connection -->
+<section class="flex flex-col gap-10 mt-20 md:mt-0">
+<div class="flex flex-col gap-4">
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase text-on-surface-variant opacity-60">Communication Node</span>
+<h2 class="text-2xl font-light tracking-wide text-slate-900">Gmail Connection</h2>
+</div>
+<div class="p-12 bg-surface-container-lowest/60 backdrop-blur-2xl rounded-[2.5rem] shadow-[64px_0_64px_-10px_rgba(6,182,212,0.04)] flex flex-col gap-12 group hover:translate-y-[-4px] transition-all duration-700">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-primary scale-125" data-icon="mail">mail</span>
+</div>
+<div class="flex flex-col">
+<span class="text-secondary-fixed-dim font-medium tracking-wide flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+                                    Connected
+                                </span>
+<span class="text-[10px] text-on-surface-variant opacity-60 uppercase tracking-widest mt-1">Active Monitoring</span>
+</div>
+</div>
+</div>
+<div class="flex justify-start">
+<button class="px-8 py-4 bg-surface-container-highest text-on-surface text-sm font-medium rounded-xl hover:bg-surface-container-high transition-all duration-500 active:scale-95">
+                            Disconnect
+                        </button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full px-28 py-12 flex justify-between items-center z-30 bg-transparent">
+<div class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-emerald-500 dark:text-emerald-400">
+            Ecosystem Health: <span class="animate-pulse">Optimal</span>
+</div>
+<div class="flex gap-12">
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-slate-400 hover:opacity-100 transition-opacity cursor-default">Status: Bio-Luminescent</span>
+<span class="font-['Inter'] text-[10px] tracking-[0.3em] uppercase opacity-60 text-slate-400 hover:opacity-100 transition-opacity cursor-default">Node: Aurora-1</span>
+</div>
+</footer>
+</body></html>

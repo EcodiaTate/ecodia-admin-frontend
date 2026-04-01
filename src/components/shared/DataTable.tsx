@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 interface Column<T> {
   key: string
@@ -22,14 +23,17 @@ export function DataTable<T = any>({
   keyField = 'id',
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-zinc-800">
+    <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-zinc-800 bg-zinc-900/50">
+          <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={cn('px-4 py-3 text-left font-medium text-zinc-400', col.className)}
+                className={cn(
+                  'px-5 py-3 text-left font-medium uppercase tracking-[0.05em] text-label-md text-on-surface-muted',
+                  col.className,
+                )}
               >
                 {col.header}
               </th>
@@ -40,25 +44,29 @@ export function DataTable<T = any>({
           {data.map((row, i) => {
             const r = row as Record<string, unknown>
             return (
-              <tr
+              <motion.tr
                 key={String(r[keyField] ?? i)}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
-                  'border-b border-zinc-800/50 transition-colors',
-                  onRowClick && 'cursor-pointer hover:bg-zinc-900/50',
+                  'transition-colors',
+                  i % 2 === 0 ? 'bg-transparent' : 'bg-surface-container-low/40',
+                  onRowClick && 'cursor-pointer hover:bg-surface-container/60',
                 )}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={cn('px-4 py-3 text-zinc-300', col.className)}>
+                  <td key={col.key} className={cn('px-5 py-4 text-on-surface-variant', col.className)}>
                     {col.render ? col.render(row) : String(r[col.key] ?? '')}
                   </td>
                 ))}
-              </tr>
+              </motion.tr>
             )
           })}
           {data.length === 0 && (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-8 text-center text-zinc-500">
+              <td colSpan={columns.length} className="px-5 py-16 text-center text-on-surface-muted">
                 No data
               </td>
             </tr>
