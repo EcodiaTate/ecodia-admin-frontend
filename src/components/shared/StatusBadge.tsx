@@ -28,6 +28,22 @@ const colorMap: Record<string, string> = {
   in_progress: 'bg-blue-500/20 text-blue-400',
   done: 'bg-green-500/20 text-green-400',
   cancelled: 'bg-zinc-500/20 text-zinc-500',
+  // LinkedIn DM categories
+  networking: 'bg-blue-500/20 text-blue-400',
+  recruiter: 'bg-purple-500/20 text-purple-400',
+  support: 'bg-cyan-500/20 text-cyan-400',
+  personal: 'bg-pink-500/20 text-pink-400',
+  drafting: 'bg-yellow-500/20 text-yellow-400',
+  ignored: 'bg-zinc-700/20 text-zinc-600',
+  // LinkedIn post status
+  draft: 'bg-zinc-500/20 text-zinc-400',
+  scheduled: 'bg-yellow-500/20 text-yellow-400',
+  posted: 'bg-green-500/20 text-green-400',
+  failed: 'bg-red-500/20 text-red-400',
+  // LinkedIn connection
+  pending: 'bg-yellow-500/20 text-yellow-400',
+  accepted: 'bg-green-500/20 text-green-400',
+  declined: 'bg-red-500/20 text-red-400',
   // Pipeline
   lead: 'bg-zinc-500/20 text-zinc-400',
   proposal: 'bg-yellow-500/20 text-yellow-400',
