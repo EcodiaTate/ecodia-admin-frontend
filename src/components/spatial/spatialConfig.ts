@@ -154,81 +154,88 @@ export function getScene(pathname: string): SceneConfig {
 }
 
 /**
- * Compute directional transition variants between two scenes.
- *
- * The key insight: entering content slides in from the direction of travel
- * using full viewport-relative offsets (100vw/100vh), so it genuinely
- * appears from off-screen. The exiting content slides out the opposite
- * direction — also fully off-screen. During the brief overlap window,
- * blur + opacity create a depth-of-field crossing effect that reads as
- * "same holographic plane, different focal region."
+ * Compute a normalized direction vector between two scenes.
+ * Returns { nx, ny, nz } used by the variant functions.
  */
-export function getTransitionDirection(fromPath: string, toPath: string) {
-  const from = getScene(fromPath)
-  const to = getScene(toPath)
+export function getDirection(fromKey: string, toKey: string) {
+  const from = SCENES[fromKey] ?? SCENES.dashboard
+  const to = SCENES[toKey] ?? SCENES.dashboard
 
   const dx = to.position.x - from.position.x
   const dy = to.position.y - from.position.y
   const dz = to.position.z - from.position.z
 
-  // Normalize so diagonal jumps still use full-viewport offsets
   const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1
-  const nx = dx / magnitude
-  const ny = dy / magnitude
-  const nz = dz / magnitude
-
-  // Full viewport-relative travel distance
-  // "100vw" equivalent in pixels isn't known statically, so we use
-  // a percentage-based approach via CSS calc — but framer-motion needs
-  // numbers. Use a large fixed value that exceeds any viewport.
-  const fullX = nx * 110 // percent of viewport width
-  const fullY = ny * 110 // percent of viewport height
 
   return {
-    initial: {
-      opacity: 0.3,
-      x: `${fullX}vw`,
-      y: `${fullY}vh`,
-      scale: 1 + nz * 0.04,
-      rotateY: nx * 2,
-      rotateX: -ny * 1.5,
-      filter: 'blur(6px)',
-    },
-    animate: {
-      opacity: 1,
-      x: '0vw',
-      y: '0vh',
-      scale: 1,
-      rotateY: 0,
-      rotateX: 0,
-      filter: 'blur(0px)',
-      transition: {
-        type: 'spring' as const,
-        stiffness: 80,
-        damping: 18,
-        mass: 1,
-        opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-        filter: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
-      },
-    },
-    exit: {
-      opacity: 0,
-      x: `${-fullX}vw`,
-      y: `${-fullY}vh`,
-      scale: 1 - nz * 0.04,
-      rotateY: -nx * 2,
-      rotateX: ny * 1.5,
-      filter: 'blur(8px)',
-      transition: {
-        type: 'spring' as const,
-        stiffness: 90,
-        damping: 20,
-        mass: 0.8,
-        opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
-        filter: { duration: 0.35, ease: [0.64, 0, 0.78, 0] },
-      },
-    },
+    nx: dx / magnitude,
+    ny: dy / magnitude,
+    nz: dz / magnitude,
   }
+}
+
+export interface DirectionVector {
+  nx: number
+  ny: number
+  nz: number
+}
+
+/**
+ * Framer Motion variant functions.
+ *
+ * These are evaluated dynamically via the `custom` prop. The `custom` value
+ * is a DirectionVector that gets re-read at animation time — critically,
+ * the `exit` variant reads the CURRENT direction (not the stale one from
+ * mount time). This is what makes 1→2→pause→1 work correctly.
+ *
+ * The content travels 110vw/vh so it fully leaves the viewport.
+ * During the crossfade overlap, blur + partial opacity creates the
+ * depth-of-field "same holographic plane" illusion.
+ */
+export const sceneVariants = {
+  initial: (d: DirectionVector) => ({
+    opacity: 0.25,
+    x: `${d.nx * 110}vw`,
+    y: `${d.ny * 110}vh`,
+    scale: 1 + d.nz * 0.04,
+    rotateY: d.nx * 2,
+    rotateX: -d.ny * 1.5,
+    filter: 'blur(6px)',
+  }),
+  animate: {
+    opacity: 1,
+    x: '0vw',
+    y: '0vh',
+    scale: 1,
+    rotateY: 0,
+    rotateX: 0,
+    filter: 'blur(0px)',
+    transition: {
+      type: 'spring' as const,
+      stiffness: 80,
+      damping: 18,
+      mass: 1,
+      opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+      filter: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+    },
+  },
+  exit: (d: DirectionVector) => ({
+    opacity: 0,
+    x: `${-d.nx * 110}vw`,
+    y: `${-d.ny * 110}vh`,
+    scale: 1 - d.nz * 0.04,
+    rotateY: -d.nx * 2,
+    rotateX: d.ny * 1.5,
+    filter: 'blur(8px)',
+    transition: {
+      type: 'spring' as const,
+      stiffness: 90,
+      damping: 20,
+      mass: 0.8,
+      opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
+      filter: { duration: 0.35, ease: [0.64, 0, 0.78, 0] },
+    },
+  }),
 }
 
 /** Ordered list of nav links */
