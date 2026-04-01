@@ -7,7 +7,7 @@ export function TopBar() {
   const logout = useAuthStore((s) => s.logout)
 
   return (
-    <header className="relative z-20 flex h-14 items-center justify-between bg-surface/60 px-10 backdrop-blur-glass lg:px-16">
+    <header className="relative z-20 flex h-14 items-center justify-between bg-surface/90 px-10 lg:px-16">
       <div className="flex items-center gap-2">
         <span className="font-display text-sm font-medium tracking-wide text-on-surface">
           Ecodia OS

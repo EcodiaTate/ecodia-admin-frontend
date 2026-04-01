@@ -26,7 +26,7 @@ const links = [
 export function Sidebar() {
   return (
     <Tooltip.Provider delayDuration={200}>
-      <aside className="relative z-20 flex h-screen w-16 flex-col items-center bg-surface-container-low/60 backdrop-blur-glass py-6">
+      <aside className="relative z-20 flex h-screen w-16 flex-col items-center bg-surface-container-low/85 py-6">
         {/* Wordmark */}
         <div className="mb-10 flex flex-col items-center">
           <span className="text-label-sm font-display font-medium uppercase tracking-[0.2em] text-on-surface-muted">

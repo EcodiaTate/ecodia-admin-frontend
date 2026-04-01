@@ -8,9 +8,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 import { motion } from 'framer-motion'
 
 const glassTooltipStyle = {
-  background: 'rgba(255, 255, 255, 0.8)',
-  backdropFilter: 'blur(16px)',
-  WebkitBackdropFilter: 'blur(16px)',
+  background: 'rgba(255, 255, 255, 0.92)',
   border: '1px solid rgba(255, 255, 255, 0.6)',
   borderRadius: '12px',
   boxShadow: '0 12px 32px -8px rgba(0, 104, 122, 0.06)',

@@ -22,9 +22,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         position="bottom-right"
         toastOptions={{
           style: {
-            background: 'rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            background: 'rgba(255, 255, 255, 0.85)',
             border: '1px solid rgba(255, 255, 255, 0.6)',
             borderBottomColor: 'rgba(0, 0, 0, 0.04)',
             borderRightColor: 'rgba(0, 0, 0, 0.04)',

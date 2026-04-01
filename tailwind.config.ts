@@ -68,11 +68,7 @@ export default {
         'glow-primary': '0 0 20px rgba(6, 182, 212, 0.15)',
         'glow-active': '0 0 30px rgba(6, 182, 212, 0.2), 0 0 60px rgba(6, 182, 212, 0.08)',
       },
-      backdropBlur: {
-        glass: '20px',
-        'glass-heavy': '24px',
-        'glass-ultra': '28px',
-      },
+      /* backdropBlur removed — no blur effects in the app */
       keyframes: {
         'aurora-breathe': {
           '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },

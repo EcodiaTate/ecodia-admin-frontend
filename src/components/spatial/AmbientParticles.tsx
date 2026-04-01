@@ -40,7 +40,7 @@ function generateParticles(count: number): Particle[] {
 }
 
 export function AmbientParticles() {
-  const particles = useMemo(() => generateParticles(18), [])
+  const particles = useMemo(() => generateParticles(8), [])
 
   return (
     <div className="fixed inset-0 z-[5] pointer-events-none overflow-hidden">

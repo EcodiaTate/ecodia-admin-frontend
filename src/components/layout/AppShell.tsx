@@ -1,7 +1,6 @@
 import { useWebSocket } from '@/hooks/useWebSocket'
 import { AuroraBackground } from '@/components/spatial/AuroraBackground'
 import { AmbientParticles } from '@/components/spatial/AmbientParticles'
-import { CursorGlow } from '@/components/spatial/CursorGlow'
 import { SpatialCanvas } from '@/components/spatial/SpatialCanvas'
 import { FloatingNav } from '@/components/spatial/FloatingNav'
 import { AmbientStatus } from '@/components/spatial/AmbientStatus'
@@ -14,8 +13,6 @@ export function AppShell() {
       {/* Layer 0: Reactive aurora */}
       <AuroraBackground />
 
-      {/* Layer 1: Cursor glow */}
-      <CursorGlow />
 
       {/* Layer 1.5: Ambient particles */}
       <AmbientParticles />

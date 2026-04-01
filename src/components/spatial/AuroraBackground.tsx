@@ -33,16 +33,14 @@ export function AuroraBackground() {
           }}
           transition={orbTransition}
           style={{
-            background: `radial-gradient(ellipse at center, ${orb.color}, transparent 70%)`,
+            background: `radial-gradient(ellipse at center, ${orb.color}, transparent 50%)`,
             transform: 'translate(-50%, -50%)',
-            filter: 'blur(40px)',
           }}
         >
           {/* Inner breathing animation */}
           <motion.div
             className="absolute inset-0 rounded-full"
             animate={{
-              scale: [1, 1.08, 1],
               opacity: [0.6, 1, 0.6],
             }}
             transition={{
@@ -51,7 +49,7 @@ export function AuroraBackground() {
               ease: 'easeInOut',
             }}
             style={{
-              background: `radial-gradient(ellipse at center, ${orb.color}, transparent 70%)`,
+              background: `radial-gradient(ellipse at center, ${orb.color}, transparent 50%)`,
             }}
           />
         </motion.div>

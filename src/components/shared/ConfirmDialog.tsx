@@ -17,7 +17,7 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-surface/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80"
           onClick={onCancel}
         >
           <motion.div
