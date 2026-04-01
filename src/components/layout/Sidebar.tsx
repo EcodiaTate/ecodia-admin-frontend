@@ -8,6 +8,7 @@ import {
   Users,
   Terminal,
   Settings,
+  Brain,
 } from 'lucide-react'
 import * as Tooltip from '@radix-ui/react-tooltip'
 
@@ -17,6 +18,7 @@ const links = [
   { to: '/gmail', icon: Mail, label: 'Digital Curator' },
   { to: '/linkedin', icon: Linkedin, label: 'Network Intelligence' },
   { to: '/crm', icon: Users, label: 'Flow State' },
+  { to: '/cortex', icon: Brain, label: 'The Cortex' },
   { to: '/claude-code', icon: Terminal, label: 'Autonomy Core' },
   { to: '/settings', icon: Settings, label: 'System Nodes' },
 ]

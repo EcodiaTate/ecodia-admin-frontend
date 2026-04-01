@@ -42,6 +42,13 @@ export async function getKGNeighborhood(name: string, depth?: number) {
   return data
 }
 
+export async function getKGBriefing(query: string) {
+  const { data } = await api.get<{ briefing: string | null; raw: string }>('/kg/briefing', {
+    params: { q: query },
+  })
+  return data
+}
+
 export async function triggerEmbedding() {
   const { data } = await api.post<{ embedded: number }>('/kg/embed')
   return data
