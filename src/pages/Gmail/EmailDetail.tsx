@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify'
 import type { EmailThread } from '@/types/gmail'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 
@@ -25,9 +26,16 @@ export function EmailDetail({ thread }: { thread: EmailThread }) {
       )}
 
       <div className="mt-4">
-        <p className="whitespace-pre-wrap text-sm text-zinc-300">
-          {thread.full_body || thread.snippet || 'No content'}
-        </p>
+        {thread.full_body && thread.full_body.includes('<') ? (
+          <div
+            className="prose prose-invert prose-sm max-w-none text-zinc-300 [&_a]:text-blue-400 [&_img]:max-w-full"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.full_body) }}
+          />
+        ) : (
+          <p className="whitespace-pre-wrap text-sm text-zinc-300">
+            {thread.full_body || thread.snippet || 'No content'}
+          </p>
+        )}
       </div>
     </div>
   )
