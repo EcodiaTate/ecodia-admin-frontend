@@ -43,7 +43,7 @@ export function SpatialCanvas() {
           animate="animate"
           exit="exit"
           className="scene-container"
-          style={{ willChange: 'transform, opacity, filter' }}
+          style={{ willChange: 'transform, opacity' }}
         >
           {outlet}
         </motion.div>

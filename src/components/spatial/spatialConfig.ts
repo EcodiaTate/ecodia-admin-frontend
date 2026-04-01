@@ -194,13 +194,12 @@ export interface DirectionVector {
  */
 export const sceneVariants = {
   initial: (d: DirectionVector) => ({
-    opacity: 0.25,
+    opacity: 0.2,
     x: `${d.nx * 110}vw`,
     y: `${d.ny * 110}vh`,
     scale: 1 + d.nz * 0.04,
     rotateY: d.nx * 2,
     rotateX: -d.ny * 1.5,
-    filter: 'blur(6px)',
   }),
   animate: {
     opacity: 1,
@@ -209,14 +208,12 @@ export const sceneVariants = {
     scale: 1,
     rotateY: 0,
     rotateX: 0,
-    filter: 'blur(0px)',
     transition: {
       type: 'spring' as const,
       stiffness: 80,
       damping: 18,
       mass: 1,
       opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-      filter: { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
     },
   },
   exit: (d: DirectionVector) => ({
@@ -226,14 +223,12 @@ export const sceneVariants = {
     scale: 1 - d.nz * 0.04,
     rotateY: -d.nx * 2,
     rotateX: d.ny * 1.5,
-    filter: 'blur(8px)',
     transition: {
       type: 'spring' as const,
       stiffness: 90,
       damping: 20,
       mass: 0.8,
       opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
-      filter: { duration: 0.35, ease: [0.64, 0, 0.78, 0] },
     },
   }),
 }
