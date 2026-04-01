@@ -14,7 +14,8 @@ interface DataTableProps<T> {
   keyField?: string
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DataTable<T = any>({
   columns,
   data,
   onRowClick,
@@ -36,22 +37,25 @@ export function DataTable<T extends Record<string, unknown>>({
           </tr>
         </thead>
         <tbody>
-          {data.map((row) => (
-            <tr
-              key={String(row[keyField])}
-              onClick={() => onRowClick?.(row)}
-              className={cn(
-                'border-b border-zinc-800/50 transition-colors',
-                onRowClick && 'cursor-pointer hover:bg-zinc-900/50',
-              )}
-            >
-              {columns.map((col) => (
-                <td key={col.key} className={cn('px-4 py-3 text-zinc-300', col.className)}>
-                  {col.render ? col.render(row) : String(row[col.key] ?? '')}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {data.map((row, i) => {
+            const r = row as Record<string, unknown>
+            return (
+              <tr
+                key={String(r[keyField] ?? i)}
+                onClick={() => onRowClick?.(row)}
+                className={cn(
+                  'border-b border-zinc-800/50 transition-colors',
+                  onRowClick && 'cursor-pointer hover:bg-zinc-900/50',
+                )}
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className={cn('px-4 py-3 text-zinc-300', col.className)}>
+                    {col.render ? col.render(row) : String(r[col.key] ?? '')}
+                  </td>
+                ))}
+              </tr>
+            )
+          })}
           {data.length === 0 && (
             <tr>
               <td colSpan={columns.length} className="px-4 py-8 text-center text-zinc-500">

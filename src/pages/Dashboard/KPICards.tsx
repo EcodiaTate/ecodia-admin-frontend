@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getFinanceSummary } from '@/api/finance'
 import { formatCurrency } from '@/lib/utils'
-import { DollarSign, TrendingUp, TrendingDown, Activity } from 'lucide-react'
+import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react'
 
 export function KPICards() {
   const { data } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })

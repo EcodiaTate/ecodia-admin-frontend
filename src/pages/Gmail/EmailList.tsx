@@ -28,5 +28,5 @@ export function EmailList({ status, onSelect }: EmailListProps) {
     { key: 'received_at', header: 'Received', render: (r: EmailThread) => r.received_at ? formatRelative(r.received_at) : '-' },
   ]
 
-  return <DataTable columns={columns} data={data?.threads ?? []} onRowClick={(r) => onSelect(r as unknown as EmailThread)} />
+  return <DataTable columns={columns} data={data?.threads ?? []} onRowClick={onSelect} />
 }

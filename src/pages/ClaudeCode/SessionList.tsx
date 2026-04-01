@@ -27,5 +27,5 @@ export function SessionList({ onSelect }: SessionListProps) {
     { key: 'cc_cost_usd', header: 'Cost', render: (r: CCSession) => r.cc_cost_usd ? `$${r.cc_cost_usd.toFixed(4)}` : '-' },
   ]
 
-  return <DataTable columns={columns} data={data?.sessions ?? []} onRowClick={(r) => onSelect(r as unknown as CCSession)} />
+  return <DataTable columns={columns} data={data?.sessions ?? []} onRowClick={onSelect} />
 }
