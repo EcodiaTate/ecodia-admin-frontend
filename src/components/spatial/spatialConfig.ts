@@ -41,10 +41,13 @@ export interface AuroraConfig {
 // ═══════════════════════════════════════════════════════════════════════
 // SCENES — Ordered by cognitive flow:
 //   Awareness → Intelligence → Channels → Relations → Surfaces → Action → Memory → System
+//
+// Aurora palette: green + gold — each scene has a distinct atmospheric signature
 // ═══════════════════════════════════════════════════════════════════════
 
 export const SCENES: Record<string, SceneConfig> = {
   // ── Awareness: what's happening ──
+  // Centered warm gold bloom — sun at the heart of the ecosystem
   dashboard: {
     path: '/dashboard',
     label: 'Vitals',
@@ -52,14 +55,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 0, y: 0, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(16, 185, 129, 0.05)', x: '25%', y: '75%', size: '70%' },
-        { color: 'rgba(6, 182, 212, 0.06)', x: '75%', y: '25%', size: '60%' },
-        { color: 'rgba(245, 158, 11, 0.025)', x: '50%', y: '50%', size: '50%' },
+        { color: 'rgba(200, 145, 10, 0.09)', x: '50%', y: '55%', size: '80%' },
+        { color: 'rgba(46, 204, 113, 0.06)', x: '20%', y: '75%', size: '55%' },
+        { color: 'rgba(27, 122, 61, 0.04)', x: '80%', y: '25%', size: '50%' },
       ],
     },
   },
 
   // ── Intelligence: ask anything ──
+  // Deep green canopy — neural depth
   cortex: {
     path: '/cortex',
     label: 'Cortex',
@@ -67,14 +71,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 0, y: -1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(0, 104, 122, 0.07)', x: '50%', y: '40%', size: '75%' },
-        { color: 'rgba(6, 182, 212, 0.05)', x: '25%', y: '60%', size: '55%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '75%', y: '20%', size: '40%' },
+        { color: 'rgba(27, 122, 61, 0.10)', x: '45%', y: '35%', size: '75%' },
+        { color: 'rgba(46, 204, 113, 0.07)', x: '70%', y: '60%', size: '55%' },
+        { color: 'rgba(200, 145, 10, 0.04)', x: '20%', y: '80%', size: '45%' },
       ],
     },
   },
 
   // ── Channels: communication streams ──
+  // Cool green mist — clarity for reading
   gmail: {
     path: '/gmail',
     label: 'Mail',
@@ -82,12 +87,13 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: -1, y: 0, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(6, 182, 212, 0.06)', x: '30%', y: '40%', size: '65%' },
-        { color: 'rgba(0, 104, 122, 0.04)', x: '70%', y: '70%', size: '50%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '20%', y: '20%', size: '45%' },
+        { color: 'rgba(46, 204, 113, 0.06)', x: '25%', y: '30%', size: '60%' },
+        { color: 'rgba(27, 122, 61, 0.05)', x: '75%', y: '65%', size: '55%' },
+        { color: 'rgba(200, 145, 10, 0.03)', x: '60%', y: '20%', size: '40%' },
       ],
     },
   },
+  // Warm gold horizon — influence and reach
   linkedin: {
     path: '/linkedin',
     label: 'Social',
@@ -95,14 +101,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 1, y: 0, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(0, 104, 122, 0.06)', x: '70%', y: '35%', size: '65%' },
-        { color: 'rgba(6, 182, 212, 0.05)', x: '30%', y: '65%', size: '55%' },
-        { color: 'rgba(245, 158, 11, 0.03)', x: '80%', y: '80%', size: '40%' },
+        { color: 'rgba(200, 145, 10, 0.08)', x: '65%', y: '40%', size: '70%' },
+        { color: 'rgba(245, 200, 66, 0.05)', x: '30%', y: '70%', size: '55%' },
+        { color: 'rgba(46, 204, 113, 0.04)', x: '80%', y: '80%', size: '40%' },
       ],
     },
   },
 
   // ── Relations: people and money ──
+  // Verdant spread — growing relationships
   crm: {
     path: '/crm',
     label: 'Pipeline',
@@ -110,12 +117,13 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: -1, y: 1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(16, 185, 129, 0.06)', x: '40%', y: '50%', size: '70%' },
-        { color: 'rgba(6, 182, 212, 0.04)', x: '75%', y: '25%', size: '50%' },
-        { color: 'rgba(245, 158, 11, 0.025)', x: '20%', y: '80%', size: '45%' },
+        { color: 'rgba(46, 204, 113, 0.08)', x: '35%', y: '45%', size: '70%' },
+        { color: 'rgba(27, 122, 61, 0.05)', x: '75%', y: '25%', size: '50%' },
+        { color: 'rgba(200, 145, 10, 0.04)', x: '20%', y: '80%', size: '50%' },
       ],
     },
   },
+  // Gold dominant — money flows
   finance: {
     path: '/finance',
     label: 'Finance',
@@ -123,14 +131,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 0, y: 1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(245, 158, 11, 0.06)', x: '65%', y: '30%', size: '70%' },
-        { color: 'rgba(16, 185, 129, 0.04)', x: '25%', y: '70%', size: '55%' },
-        { color: 'rgba(6, 182, 212, 0.03)', x: '80%', y: '80%', size: '40%' },
+        { color: 'rgba(200, 145, 10, 0.10)', x: '55%', y: '35%', size: '75%' },
+        { color: 'rgba(245, 200, 66, 0.06)', x: '25%', y: '70%', size: '55%' },
+        { color: 'rgba(46, 204, 113, 0.04)', x: '80%', y: '80%', size: '45%' },
       ],
     },
   },
 
   // ── Surfaces: connected platforms ──
+  // Split green/gold — bridging worlds
   workspace: {
     path: '/workspace',
     label: 'Surfaces',
@@ -138,14 +147,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: -1, y: -1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(6, 182, 212, 0.05)', x: '40%', y: '35%', size: '65%' },
-        { color: 'rgba(245, 158, 11, 0.04)', x: '70%', y: '65%', size: '55%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '25%', y: '75%', size: '45%' },
+        { color: 'rgba(46, 204, 113, 0.06)', x: '30%', y: '40%', size: '65%' },
+        { color: 'rgba(200, 145, 10, 0.06)', x: '70%', y: '60%', size: '60%' },
+        { color: 'rgba(27, 122, 61, 0.03)', x: '50%', y: '20%', size: '45%' },
       ],
     },
   },
 
   // ── Action: autonomous execution ──
+  // Intense emerald — machine precision
   'claude-code': {
     path: '/claude-code',
     label: 'Factory',
@@ -153,14 +163,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 1, y: 1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(6, 182, 212, 0.06)', x: '60%', y: '40%', size: '65%' },
-        { color: 'rgba(0, 104, 122, 0.05)', x: '30%', y: '70%', size: '55%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '80%', y: '20%', size: '40%' },
+        { color: 'rgba(27, 122, 61, 0.09)', x: '55%', y: '45%', size: '70%' },
+        { color: 'rgba(46, 204, 113, 0.06)', x: '30%', y: '70%', size: '55%' },
+        { color: 'rgba(200, 145, 10, 0.03)', x: '80%', y: '20%', size: '40%' },
       ],
     },
   },
 
   // ── Intelligence: codebase semantic mind ──
+  // Green with gold sparks — knowledge embedded in code
   codebase: {
     path: '/codebase',
     label: 'Code',
@@ -168,14 +179,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 2, y: 0, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(6, 182, 212, 0.06)', x: '55%', y: '35%', size: '65%' },
-        { color: 'rgba(0, 104, 122, 0.04)', x: '25%', y: '60%', size: '50%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '80%', y: '75%', size: '45%' },
+        { color: 'rgba(46, 204, 113, 0.07)', x: '45%', y: '35%', size: '65%' },
+        { color: 'rgba(200, 145, 10, 0.05)', x: '75%', y: '65%', size: '55%' },
+        { color: 'rgba(27, 122, 61, 0.04)', x: '20%', y: '70%', size: '45%' },
       ],
     },
   },
 
   // ── Memory: world model + archive ──
+  // Deep dual — the oldest layers of the organism
   'knowledge-graph': {
     path: '/knowledge-graph',
     label: 'Memory',
@@ -183,14 +195,15 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: -1, y: 2, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(0, 104, 122, 0.06)', x: '45%', y: '40%', size: '70%' },
-        { color: 'rgba(6, 182, 212, 0.05)', x: '70%', y: '65%', size: '55%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '25%', y: '25%', size: '45%' },
+        { color: 'rgba(27, 122, 61, 0.08)', x: '40%', y: '40%', size: '70%' },
+        { color: 'rgba(200, 145, 10, 0.06)', x: '70%', y: '60%', size: '55%' },
+        { color: 'rgba(46, 204, 113, 0.04)', x: '25%', y: '25%', size: '45%' },
       ],
     },
   },
 
   // ── Infrastructure: system internals ──
+  // Subtle, muted — infrastructure hum
   settings: {
     path: '/settings',
     label: 'System',
@@ -198,9 +211,9 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 0, y: 2, z: -1 },
     aurora: {
       orbs: [
-        { color: 'rgba(0, 104, 122, 0.04)', x: '50%', y: '50%', size: '80%' },
-        { color: 'rgba(6, 182, 212, 0.03)', x: '30%', y: '30%', size: '50%' },
-        { color: 'rgba(16, 185, 129, 0.02)', x: '70%', y: '70%', size: '45%' },
+        { color: 'rgba(27, 122, 61, 0.05)', x: '50%', y: '50%', size: '80%' },
+        { color: 'rgba(200, 145, 10, 0.03)', x: '30%', y: '30%', size: '50%' },
+        { color: 'rgba(46, 204, 113, 0.03)', x: '70%', y: '70%', size: '45%' },
       ],
     },
   },

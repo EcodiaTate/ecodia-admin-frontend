@@ -9,7 +9,7 @@ import type { WorkerStatus } from '@/store/workerStore'
 import { ActionStream } from './ActionStream'
 import { formatCurrency } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { Heart } from 'lucide-react'
+import { Heart, Activity, Zap } from 'lucide-react'
 
 export default function DashboardPage() {
   const workers = useWorkerStatus() as Record<string, WorkerStatus>
@@ -20,84 +20,82 @@ export default function DashboardPage() {
 
   const net = finance?.net ?? 0
   // null = no organism configured, true = organism healthy — both mean system is alive
-  // Only show offline when organism.healthy is explicitly false (unreachable)
   const organismAlive = vitals ? vitals.organism.healthy !== false : false
+  const activeWorkers = Object.values(workers).filter(w => w.status === 'active').length
+  const totalWorkers = Object.keys(workers).length
 
   return (
-    <div className="mx-auto max-w-3xl">
-      {/* Header — hero net figure as the one story */}
-      <SpatialLayer z={25} className="mb-16">
-        <div className="flex items-start justify-between">
-          <div>
-            <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
-              Ecosystem Overview
-            </span>
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 70, damping: 18, mass: 1.2 }}
-              className={`mt-4 font-display text-4xl font-light tabular-nums sm:text-display-lg ${
-                net >= 0 ? 'text-secondary' : 'text-error'
-              }`}
-            >
-              {formatCurrency(net)}
-            </motion.p>
-            <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
-              Net · month to date
+    <div className="mx-auto max-w-3xl flex flex-col items-center">
+      {/* Hero — single massive number, the one story */}
+      <SpatialLayer z={25} className="mb-4 flex flex-col items-center pt-[8vh]">
+        <motion.p
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 60, damping: 18, mass: 1.4 }}
+          className={`font-display text-7xl font-bold tabular-nums tracking-tight sm:text-[6rem] ${
+            net >= 0 ? 'text-on-surface' : 'text-error'
+          }`}
+        >
+          {formatCurrency(net)}
+        </motion.p>
+        <span className="mt-3 text-label-sm uppercase tracking-[0.15em] text-on-surface-muted/50">
+          Net · month to date
+        </span>
+      </SpatialLayer>
+
+      {/* Organism vitals strip — always visible, no hover */}
+      <SpatialLayer z={15} className="mb-16 mt-8">
+        <div className="flex items-center gap-8 text-on-surface-muted/50">
+          <div className="flex items-center gap-2">
+            <Heart
+              className={`h-3 w-3 ${organismAlive ? 'text-secondary' : 'text-on-surface-muted/20'}`}
+              strokeWidth={2}
+              fill={organismAlive ? 'currentColor' : 'none'}
+            />
+            <span className="font-mono text-label-sm">
+              {organismAlive ? 'Alive' : 'Offline'}
             </span>
           </div>
 
-          {/* Organism heartbeat — ambient, no controls */}
-          <div className="flex flex-col items-end gap-3 pt-2">
+          <div className="flex items-center gap-2">
+            <Activity className="h-3 w-3 text-tertiary" strokeWidth={2} />
+            <span className="font-mono text-label-sm">
+              {activeWorkers}/{totalWorkers}
+            </span>
+          </div>
+
+          {vitals?.organism?.lastResponseMs != null && (
             <div className="flex items-center gap-2">
-              <motion.div
-                animate={organismAlive ? {
-                  scale: [1, 1.15, 1],
-                  opacity: [0.5, 1, 0.5],
-                } : {}}
-                transition={organismAlive ? {
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: [0.42, 0, 0.58, 1],
-                } : {}}
-              >
-                <Heart
-                  className={`h-3.5 w-3.5 ${organismAlive ? 'text-secondary' : 'text-on-surface-muted/20'}`}
-                  strokeWidth={1.75}
-                  fill={organismAlive ? 'currentColor' : 'none'}
-                />
-              </motion.div>
-              <span className={`text-[10px] font-medium uppercase tracking-wider ${
-                organismAlive ? 'text-secondary/60' : 'text-on-surface-muted/20'
-              }`}>
-                {organismAlive ? 'Alive' : 'Offline'}
+              <Zap className="h-3 w-3 text-gold" strokeWidth={2} />
+              <span className="font-mono text-label-sm">
+                {vitals.organism.lastResponseMs}ms
               </span>
             </div>
-
-            {/* Worker pulses — ambient sync awareness */}
-            <div className="flex flex-wrap justify-end gap-2">
-              {Object.entries(workers).map(([key, w]) => (
-                <AmbientPulse key={key} label={key} lastSyncAt={w.lastSync} status={w.status} />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </SpatialLayer>
 
-      {/* System activity — what the system needs a human decision on */}
+      {/* Pending actions — the decisions that need a human */}
       {actionStats && actionStats.pending > 0 && (
-        <SpatialLayer z={10} className="mb-16">
+        <SpatialLayer z={10} className="mb-12 w-full">
           <ActionStream />
         </SpatialLayer>
       )}
 
-      {/* What the system has done — ambient summary */}
-      {actionStats && (actionStats.executed_24h > 0 || actionStats.dismissed_24h > 0) && (
-        <SpatialLayer z={-10}>
-          <div className="flex items-center gap-6 text-sm text-on-surface-muted/40">
+      {/* Worker pulses — ambient awareness at bottom */}
+      <SpatialLayer z={-10} className="w-full">
+        <div className="flex flex-wrap justify-center gap-4">
+          {Object.entries(workers).map(([key, w]) => (
+            <AmbientPulse key={key} label={key} lastSyncAt={w.lastSync} status={w.status} />
+          ))}
+        </div>
+
+        {/* Activity summary */}
+        {actionStats && (actionStats.executed_24h > 0 || actionStats.dismissed_24h > 0) && (
+          <div className="mt-6 flex items-center justify-center gap-6 text-label-sm text-on-surface-muted/40">
             {actionStats.executed_24h > 0 && (
               <span>
-                <span className="font-mono text-on-surface-variant">{actionStats.executed_24h}</span> actions executed today
+                <span className="font-mono text-on-surface-variant">{actionStats.executed_24h}</span> executed today
               </span>
             )}
             {actionStats.dismissed_24h > 0 && (
@@ -106,8 +104,8 @@ export default function DashboardPage() {
               </span>
             )}
           </div>
-        </SpatialLayer>
-      )}
+        )}
+      </SpatialLayer>
     </div>
   )
 }

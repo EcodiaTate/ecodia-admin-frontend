@@ -18,10 +18,10 @@ interface Particle {
 }
 
 const COLORS = [
-  'rgba(6, 182, 212, 0.7)',
-  'rgba(0, 104, 122, 0.6)',
-  'rgba(16, 185, 129, 0.5)',
-  'rgba(245, 158, 11, 0.4)',
+  'rgba(46, 204, 113, 0.6)',
+  'rgba(27, 122, 61, 0.5)',
+  'rgba(200, 145, 10, 0.5)',
+  'rgba(245, 200, 66, 0.4)',
 ]
 
 function generateParticles(count: number): Particle[] {

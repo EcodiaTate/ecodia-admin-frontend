@@ -93,7 +93,7 @@ export function GlassPanel({
         parallax
           ? {
               y: -4,
-              boxShadow: '0 36px 80px -18px rgba(0, 104, 122, 0.10)',
+              boxShadow: '0 36px 80px -18px rgba(27, 122, 61, 0.10)',
               transition: { type: 'spring', stiffness: 80, damping: 18 },
             }
           : undefined

@@ -84,7 +84,7 @@ export function AmbientStatus() {
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.70)',
                 border: '1px solid rgba(255, 255, 255, 0.7)',
-                boxShadow: '0 32px 64px -16px rgba(0, 104, 122, 0.06)',
+                boxShadow: '0 32px 64px -16px rgba(27, 122, 61, 0.06)',
               }}
             >
               <div className="p-6">

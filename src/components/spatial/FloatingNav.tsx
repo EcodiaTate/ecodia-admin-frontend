@@ -50,7 +50,7 @@ export function FloatingNav() {
           rotateX: navRotateX,
           transformPerspective: 800,
           backgroundColor: 'rgba(255, 255, 255, 0.35)',
-          boxShadow: '0 24px 60px -16px rgba(0, 104, 122, 0.05)',
+          boxShadow: '0 24px 60px -16px rgba(27, 122, 61, 0.05)',
         }}
         animate={{ opacity: visible || hovered ? 1 : 0.08 }}
         transition={{ type: 'spring', stiffness: 60, damping: 20 }}
@@ -125,7 +125,7 @@ export function FloatingNav() {
         className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around px-2 py-2 md:hidden"
         style={{
           backgroundColor: 'rgba(255, 255, 255, 0.50)',
-          boxShadow: '0 -12px 40px -10px rgba(0, 104, 122, 0.04)',
+          boxShadow: '0 -12px 40px -10px rgba(27, 122, 61, 0.04)',
         }}
       >
         {NAV_LINKS.map((scene) => {

@@ -22,7 +22,7 @@ export function SpatialEdgeLight() {
   const background = useTransform(
     [lightX, lightY],
     ([x, y]: number[]) =>
-      `radial-gradient(ellipse at ${x}% ${y}%, rgba(255, 255, 255, 0.04), rgba(6, 182, 212, 0.01) 40%, transparent 70%)`,
+      `radial-gradient(ellipse at ${x}% ${y}%, rgba(255, 255, 255, 0.04), rgba(46, 204, 113, 0.01) 40%, transparent 70%)`,
   )
 
   // Opacity increases when tilted — more angle = more glare

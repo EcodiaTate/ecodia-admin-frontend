@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -14,101 +13,47 @@ interface WhisperStatProps {
   onClick?: () => void
 }
 
-// Slow, viscous — like glass settling into shape
-const glide = { type: 'spring' as const, stiffness: 55, damping: 22, mass: 1.5 }
-
 export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surface', trend, subtext, onClick }: WhisperStatProps) {
-  const [expanded, setExpanded] = useState(false)
-
   return (
     <motion.div
-      onHoverStart={() => setExpanded((prev) => !prev)}
       onClick={onClick}
-      // The WHOLE pane transforms as one — position, size, surface all together
-      animate={{
-        padding: expanded ? '28px 32px' : '10px 14px',
-        backgroundColor: expanded
-          ? 'rgba(255, 255, 255, 0.50)'
-          : 'rgba(255, 255, 255, 0)',
-        boxShadow: expanded
-          ? '0 24px 60px -16px rgba(0, 104, 122, 0.06)'
-          : '0 0px 0px 0px rgba(0, 104, 122, 0)',
-        borderColor: expanded
-          ? 'rgba(255, 255, 255, 0.6)'
-          : 'rgba(255, 255, 255, 0)',
-      }}
-      transition={glide}
-      style={{ borderWidth: 1, borderStyle: 'solid' }}
       className={cn(
-        'relative rounded-3xl',
-        onClick && 'cursor-pointer',
+        'relative rounded-2xl px-4 py-3',
+        onClick && 'cursor-pointer hover:bg-white/30',
       )}
     >
-      {/* Label — drifts from muted to visible */}
-      <motion.span
-        animate={{ opacity: expanded ? 0.8 : 0.35 }}
-        transition={glide}
-        className="block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted"
-      >
+      <span className="block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/60">
         {label}
-      </motion.span>
+      </span>
 
-      {/* Value — the whole text element scales up as one with the pane */}
-      <motion.p
-        animate={{
-          fontSize: expanded ? '2rem' : '0.875rem',
-          lineHeight: expanded ? '2.5rem' : '1.25rem',
-          marginTop: expanded ? '8px' : '2px',
-          opacity: expanded ? 1 : 0.5,
-          color: expanded ? undefined : undefined,
-        }}
-        transition={glide}
-        className={cn(
-          'font-display font-light tabular-nums',
-          expanded ? accent : 'text-on-surface-muted',
-        )}
-      >
+      <p className={cn(
+        'mt-1 font-display text-lg font-light tabular-nums',
+        accent,
+      )}>
         {value}
-      </motion.p>
+      </p>
 
-      {/* Contextual detail — grows from 0 height as part of the pane expansion */}
-      <motion.div
-        animate={{
-          height: expanded ? 'auto' : 0,
-          opacity: expanded ? 1 : 0,
-          marginTop: expanded ? 12 : 0,
-        }}
-        transition={{ ...glide, opacity: { ...glide, delay: expanded ? 0.15 : 0 } }}
-        className="overflow-hidden"
-      >
-        {trend && (
-          <div className="flex items-center gap-1.5">
-            {trend.value > 0 && <TrendingUp className="h-3 w-3 text-secondary" strokeWidth={1.75} />}
-            {trend.value < 0 && <TrendingDown className="h-3 w-3 text-error" strokeWidth={1.75} />}
-            <span className={cn(
-              'text-label-sm',
-              trend.value > 0 ? 'text-secondary' : trend.value < 0 ? 'text-error' : 'text-on-surface-muted',
-            )}>
-              {trend.value > 0 ? '+' : ''}{trend.value} {trend.label}
-            </span>
-          </div>
-        )}
-        {subtext && (
-          <span className="mt-1 block text-label-sm text-on-surface-muted/50">{subtext}</span>
-        )}
-      </motion.div>
+      {trend && (
+        <div className="mt-1.5 flex items-center gap-1.5">
+          {trend.value > 0 && <TrendingUp className="h-3 w-3 text-secondary" strokeWidth={1.75} />}
+          {trend.value < 0 && <TrendingDown className="h-3 w-3 text-error" strokeWidth={1.75} />}
+          <span className={cn(
+            'text-label-sm',
+            trend.value > 0 ? 'text-secondary' : trend.value < 0 ? 'text-error' : 'text-on-surface-muted',
+          )}>
+            {trend.value > 0 ? '+' : ''}{trend.value} {trend.label}
+          </span>
+        </div>
+      )}
+      {subtext && (
+        <span className="mt-0.5 block text-label-sm text-on-surface-muted/40">{subtext}</span>
+      )}
 
-      {/* Icon — materializes in the corner as the glass grows */}
-      <motion.div
-        animate={{
-          opacity: expanded ? 0.2 : 0,
-          scale: expanded ? 1 : 0.7,
-        }}
-        transition={glide}
-        className="absolute right-6 top-6"
-      >
-        {Icon && <Icon className={cn('h-5 w-5', accent)} strokeWidth={1.5} />}
-      </motion.div>
+      {Icon && (
+        <div className="absolute right-3 top-3 opacity-15">
+          <Icon className={cn('h-4 w-4', accent)} strokeWidth={1.5} />
+        </div>
+      )}
     </motion.div>
   )
 }

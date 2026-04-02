@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '@/lib/utils'
 
@@ -15,22 +13,13 @@ const DOT_COLORS = {
   error: 'bg-error',
 }
 
-// Slow, fluid spring — matches the ambient feel
-const glide = { type: 'spring' as const, stiffness: 60, damping: 24, mass: 1.2 }
-
 export function AmbientPulse({ label, lastSyncAt, status }: AmbientPulseProps) {
-  const [expanded, setExpanded] = useState(false)
-
   const relativeTime = lastSyncAt
     ? formatDistanceToNow(new Date(lastSyncAt), { addSuffix: false })
     : null
 
   return (
-    <motion.div
-      onHoverStart={() => setExpanded((prev) => !prev)}
-      className="inline-flex items-center gap-2 rounded-xl px-2 py-1"
-    >
-      {/* Breathing dot */}
+    <div className="inline-flex items-center gap-2 rounded-xl px-2 py-1">
       <span className="relative flex h-1.5 w-1.5">
         <span className={cn(
           'absolute inline-flex h-full w-full rounded-full opacity-60',
@@ -43,25 +32,14 @@ export function AmbientPulse({ label, lastSyncAt, status }: AmbientPulseProps) {
         )} />
       </span>
 
-      {/* Compact: just relative time */}
-      <span className="font-mono text-label-sm text-on-surface-muted/40">
-        {relativeTime ? `${relativeTime}` : label}
+      <span className="font-mono text-label-sm text-on-surface-muted/50">
+        {label}
       </span>
-
-      {/* Expanded on hover — slides in gently */}
-      <AnimatePresence>
-        {expanded && lastSyncAt && (
-          <motion.span
-            initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
-            exit={{ opacity: 0, width: 0 }}
-            transition={glide}
-            className="overflow-hidden whitespace-nowrap font-mono text-label-sm text-on-surface-muted/30"
-          >
-            · {label} · {new Date(lastSyncAt).toLocaleTimeString()}
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {relativeTime && (
+        <span className="font-mono text-label-sm text-on-surface-muted/30">
+          {relativeTime}
+        </span>
+      )}
+    </div>
   )
 }

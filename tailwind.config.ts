@@ -6,28 +6,28 @@ export default {
     extend: {
       colors: {
         surface: {
-          DEFAULT: '#F9F9F9',
-          dim: '#F0F4F7',
-          'container-low': '#F0F4F7',
-          container: '#E8EDF1',
-          'container-high': '#E1E9EE',
-          'container-lowest': '#FFFFFF',
+          DEFAULT: '#F5F5F0',
+          dim: '#ECECE4',
+          'container-low': '#EDEDE6',
+          container: '#E4E4DB',
+          'container-high': '#DBDBD2',
+          'container-lowest': '#FAFAF6',
         },
         'on-surface': {
-          DEFAULT: '#1A1C1C',
-          variant: '#3D494C',
-          muted: '#64748B',
+          DEFAULT: '#1A1C18',
+          variant: '#3B3F36',
+          muted: '#5C6356',
         },
         primary: {
-          DEFAULT: '#00687A',
-          container: '#06B6D4',
+          DEFAULT: '#1B7A3D',
+          container: '#2ECC71',
         },
         secondary: {
           DEFAULT: '#10B981',
           container: '#D1FAE5',
         },
         tertiary: {
-          DEFAULT: '#F59E0B',
+          DEFAULT: '#C8910A',
           container: '#FEF3C7',
         },
         error: {
@@ -35,7 +35,13 @@ export default {
           container: '#FEE2E2',
         },
         outline: {
-          variant: '#A9B4B9',
+          variant: '#B0B5A8',
+        },
+        gold: {
+          DEFAULT: '#C8910A',
+          bright: '#E5A80D',
+          muted: '#A37808',
+          glow: '#F5C842',
         },
       },
       fontFamily: {
@@ -61,12 +67,14 @@ export default {
         '28': '7rem',
       },
       boxShadow: {
-        glass: '0 20px 50px -12px rgba(0, 104, 122, 0.04)',
-        'glass-elevated': '0 32px 64px -16px rgba(0, 104, 122, 0.06)',
-        'glass-hover': '0 24px 56px -14px rgba(0, 104, 122, 0.06)',
-        'glass-floating': '0 40px 80px -20px rgba(0, 104, 122, 0.07)',
-        'glow-primary': '0 0 20px rgba(6, 182, 212, 0.15)',
-        'glow-active': '0 0 30px rgba(6, 182, 212, 0.2), 0 0 60px rgba(6, 182, 212, 0.08)',
+        glass: '0 20px 50px -12px rgba(27, 122, 61, 0.04)',
+        'glass-elevated': '0 32px 64px -16px rgba(27, 122, 61, 0.06)',
+        'glass-hover': '0 24px 56px -14px rgba(27, 122, 61, 0.06)',
+        'glass-floating': '0 40px 80px -20px rgba(27, 122, 61, 0.07)',
+        'glow-primary': '0 0 20px rgba(46, 204, 113, 0.15)',
+        'glow-active': '0 0 30px rgba(46, 204, 113, 0.2), 0 0 60px rgba(46, 204, 113, 0.08)',
+        'glow-gold': '0 0 20px rgba(200, 145, 10, 0.15)',
+        'glow-gold-active': '0 0 30px rgba(200, 145, 10, 0.2), 0 0 60px rgba(200, 145, 10, 0.08)',
       },
       /* backdropBlur removed — no blur effects in the app */
       keyframes: {
