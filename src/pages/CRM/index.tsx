@@ -255,7 +255,7 @@ function ClientDetail({ client }: { client: Client }) {
       </div>
 
       {/* Notes — what the system has observed */}
-      {client.notes.length > 0 && (
+      {Array.isArray(client.notes) && client.notes.length > 0 && (
         <div className="mt-10 space-y-3">
           <h3 className="text-label-sm uppercase tracking-[0.1em] text-on-surface-muted/40">
             Signal Log
