@@ -78,22 +78,25 @@ The interface must feel like standing inside a prism at golden hour. 90% negativ
 ### File Organization
 ```
 src/
-  api/           # Typed API clients (one per domain: finance, crm, gmail, linkedin, claudeCode)
+  api/           # Typed API clients (one per domain: finance, crm, gmail, linkedin, claudeCode, drive, vercel, meta, actions, cortex, workers, knowledgeGraph)
   components/
     layout/      # AppShell, Sidebar, TopBar — the spatial frame
     shared/      # DataTable, ConfirmDialog, LoadingSpinner, StatusBadge
-  hooks/         # useWebSocket, useNotifications, useCCSession
+    spatial/     # AuroraBackground, AmbientParticles, FloatingNav, SpatialCanvas, WhisperStat, AmbientPulse, GlassPanel, SpatialLayer
+  hooks/         # useWebSocket, useNotifications, useCCSession, useWorkerStatus
   pages/         # Route-level views, co-located sub-components
-    Dashboard/   # KPICards, ActivityFeed
+    Dashboard/   # KPICards, ActivityFeed, ActionStream
     Finance/     # TransactionList, CategoryChart, ReconcilePanel
     Gmail/       # EmailList, EmailDetail, DraftReview
     LinkedIn/    # DMList, PostList, PostComposer, ContentCalendar, AnalyticsSummary, ConnectionRequests, DMDetail, LinkedInSettings
     CRM/         # ClientCard, Pipeline, ProjectDetail
+    Cortex/      # ConstellationCanvas, blocks/ (BlockRenderer, ActionCard, TextBlock, etc.)
+    Workspace/   # Drive (search, stats, write ops), Vercel (projects, deployments), Meta (pages, posts, conversations)
     ClaudeCode/  # Terminal, SessionList
     Settings/
-  store/         # Zustand stores (authStore, ccSessionStore, notificationStore)
-  types/         # TypeScript interfaces per domain
-  lib/           # utils.ts (cn helper, etc.)
+  store/         # Zustand stores (authStore, ccSessionStore, cortexStore, notificationStore, workerStore)
+  types/         # TypeScript interfaces per domain (gmail, linkedin, cortex, workspace, etc.)
+  lib/           # utils.ts (cn, formatCurrency, formatDate, formatRelative)
 ```
 
 ---
