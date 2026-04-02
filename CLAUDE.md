@@ -6,41 +6,85 @@ You are building **Ecodia OS**: a spatial, autonomous command center for Ecodia 
 
 ---
 
-## 0. Engineering Philosophy: FREEDOM & COMPLETENESS
+## 0. Engineering Philosophy: AMBIENT INTELLIGENCE
 
-This frontend is the human-facing surface of an autonomous operating system. It must reflect the full capability of the backend — every integration, every action, every data source must be surfaced. Nothing hidden, nothing half-built.
+This is not a dashboard. It is not an admin panel. It is a **spatial, solarpunk ambient AI operating system** — the human-facing surface of an autonomous living system that is already doing everything.
 
-### Core Principles
+**The fundamental principle: the system runs. You observe. Occasionally you approve.**
 
-**Every backend capability must have a frontend surface.** If the backend can publish to Meta, the frontend must expose it. If the backend has an action queue, the dashboard must show it. If the backend tracks Vercel deployments, there must be a view. No orphaned capabilities.
+---
 
-**The interface is the system's voice.** It doesn't just display data — it surfaces intelligence, pre-processed actions, and autonomous decisions. The ActionStream on the dashboard is the canonical example: the system did the thinking, the human approves with one tap.
+### The Two Write Surfaces
 
-**Never build a static display when you could build an interactive surface.** Every data card should be actionable. Every list item should be expandable. Every metric should link to its source. The interface empowers, it doesn't just inform.
+There are exactly **two** places where a human acts in EcodiaOS:
 
-**Generalise components relentlessly.** If you build a stat display for Drive, it should use the same `WhisperStat` as Gmail and Finance. If you build a tab system for Workspace, it should follow the same pattern as LinkedIn. One component library, universally applied.
+1. **Cortex** — the conversational mind. Tell it what you want. Ask it what it sees. It acts through the capability registry. It is the only place write operations originate from human intent.
 
-**Never leave a page incomplete.** Every page must have: stats/metrics at the top, the primary content view, sync status indicators, and manual sync/action triggers. If any of these are missing, the page is unfinished.
+2. **ActionStream** (Dashboard) — the system's voice. Pre-processed decisions the AI made, waiting for one approve/dismiss gesture. Not a form. Not a task manager. A nod or a shake.
+
+Everything else is a **lens** — passive, beautiful, observational. You read it like looking through a window into what the system is already doing.
+
+---
+
+### Pages Are Lenses, Not Controls
+
+Every page except Cortex and Dashboard is observation-only:
+- **Gmail** — a stream of what the system read and triaged
+- **LinkedIn** — the influence field, what the system is monitoring
+- **CRM** — clients arranged by momentum, not a Kanban to manage
+- **Finance** — the capital flow ledger; unclassified items show with a pulse ("Cortex is reviewing")
+- **Workspace** — Drive/Vercel/Meta signal streams; you can read logs, not trigger actions
+- **KG** — explore the memory; the consolidation engine runs itself
+- **Settings** — connection status and worker health; `AmbientPulse` shows "synced 3m ago"
+- **ClaudeCode** — the Factory; watch sessions run, read terminal, see the pipeline
+
+**No forms on pages. No sync buttons. No trigger buttons. No create flows.**
+If you want to create a client, add a task, publish a post, or categorize a transaction — you tell Cortex.
+
+---
+
+### What "Complete" Means
+
+A page is complete when it:
+- Shows the key stats at the top as `WhisperStat` (ambient, muted)
+- Surfaces what the system is doing in that domain as a living stream
+- Uses `AmbientPulse` to show worker sync status (not a button)
+- Has nothing the user needs to click to make the system work
+
+A page is **incomplete** if it has forms, sync buttons, trigger buttons, or category pickers. Those are symptoms of thinking the human needs to operate the system. The system operates itself.
+
+---
+
+### Generalise Components Relentlessly
+
+One component library, universally applied. `WhisperStat` everywhere. `GlassPanel` everywhere. `AmbientPulse` for every worker. The spatial config (`spatialConfig.ts`) defines every scene's position and aurora — scenes are spatial locations, not just routes.
+
+---
 
 ### Anti-Patterns
 
 | If you catch yourself doing this... | Do this instead... |
 |---|---|
-| Building a read-only display of backend data | Add action buttons — the backend has write operations, surface them |
+| Adding a "Sync" button to a page | Remove it. Workers sync automatically. Show `AmbientPulse`. |
+| Adding a create form to a page (new client, new task, compose post) | Remove it. Cortex creates things. |
+| Adding category pickers or classification UI | Remove it. Cortex proposes categories as action_cards. |
+| Adding trigger buttons for background jobs | Remove it. Workers run themselves. |
+| Building a page as a management console | Build it as a lens — ambient, observational, beautiful |
+| Telling a page it's "incomplete" because it has no write ops | Observation IS complete. Lenses don't have buttons. |
 | Hardcoding a list of worker names for sync pulses | Dynamically render all workers from the worker status API |
-| Creating a page without stats/metrics at the top | Add `WhisperStat` components with the key numbers |
-| Building a detail view without a link back to source | Every item links to its external source (Gmail, Drive, Vercel, etc.) |
-| Leaving Cortex unaware of new capabilities | Update Cortex action types when backend adds new action handlers |
-| Building one integration's UI without the others | Build all integrations in the same pass — unified patterns |
+| Creating a page without ambient stats at the top | Add `WhisperStat` components with the key numbers |
+| Leaving Cortex unaware of new capabilities | The backend capability registry handles this automatically — Cortex's prompt is built from it live |
+| Building a Tasks page | Tasks surface through ActionStream and Cortex. `/tasks` redirects to `/cortex`. |
+
+---
 
 ### Backend ↔ Frontend Contract
 
-The backend `CLAUDE.md` defines the engineering philosophy. The frontend must match:
-- Backend has `resolveCodebase()` → Frontend's CC session creator doesn't need a codebase dropdown (the backend resolves from the prompt)
-- Backend has `actionQueueService` → Frontend has `ActionStream` on the dashboard
-- Backend has full Google Workspace write ops → Frontend has create doc/sheet/folder UI
-- Backend has Meta write ops → Frontend must surface post publishing, message reply
-- Backend feeds everything to KG → Frontend's Cortex can query it all conversationally
+- Backend `CapabilityRegistry` auto-populates Cortex's prompt → **never manually add Cortex action types to the frontend**
+- Backend `actionQueueService` → Frontend `ActionStream` on Dashboard (approve/dismiss only)
+- Backend workers poll automatically → Frontend `AmbientPulse` shows sync status (no buttons)
+- Backend `resolveCodebase()` → CC session creator is just a text field (no dropdown)
+- Backend feeds everything to KG → Cortex can query it all conversationally
 
 ---
 
@@ -385,11 +429,11 @@ Study these reference screenshots in `examples/` — they define the target:
 | **Finance** | `ecodia_finance_flow_ambient_aurora/` | Hero: `$1.42M` display-lg. Floating bubble metrics. Transaction ledger below as unboxed list. Asset allocation as glowing bars. |
 | **Gmail** | `serene_email_center/` | Split layout: email list (left), email detail (right). "Digital Curator" naming. Glass card for each email. Reading pane is expansive, editorial. |
 | **LinkedIn** | `linkedin_intelligence/` | Tab navigation (DMs, Posts, Calendar, Connections, Analytics, Settings). DM view is messaging-app-style with glass bubbles. "Influence" score orb. |
-| **CRM** | `crm_pipeline_ambient_aurora/` | Pipeline as floating glass cards in columns (Lead, Proposal, Contract). Project detail below with hero project name and value. |
+| **CRM** | `crm_pipeline_ambient_aurora/` | Relational field — clients float by momentum (live=full opacity, archived=faded). Not a Kanban. No create form. Client detail shows momentum bar + signal log. |
 | **Claude Code** | `ecodia_autonomy_core_ambient_aurora/`, `ecodia_autonomy_core/` | "Autonomy Core" branding. Terminal output in monospace on glass. Network health metrics. Session list as "Recent Decisions." |
 | **Settings** | `ecodia_settings_ambient_aurora/` | "System Nodes" — each integration (Xero, Gmail) as a glass card with connection status orb. |
 | **Notifications** | `ecodia_notifications_ambient_aurora/` | "System Pulsations" — timeline layout, no boxes, events float with timestamps. |
-| **Tasks** | `ecodia_tasks_ambient_aurora/` | "Current Intentions" — minimal checklist, generous spacing, status pills. |
+| **Tasks** | — | No tasks page. Tasks surface through ActionStream and Cortex. `/tasks` redirects to `/cortex`. |
 | **Knowledge Graph** | `ecodia_knowledge_graph_ambient_aurora/` | Floating node visualization. "Trending Node" sidebar. "12,402 Active Nodes" hero stat. |
 | **Archive** | `ecodia_the_archive/` | Editorial card layout. Historical entries as curated artifacts. Dark sphere centerpiece. |
 | **Causal Network** | `ecodia_causal_network/` | "Relational Entropy" — neural network visualization, topology health metric, glass overlay controls. |
@@ -471,7 +515,7 @@ Every screen must be fully usable from mobile to ultrawide.
 | Using `ease-in-out` or `transition-all` | Use Framer Motion spring physics |
 | Writing "Welcome back!" or "Let's get started!" | Write nothing, or write plainly: "Atmospheric Integrity: 98.4%" |
 | Building a KPI card grid | Use one hero stat + `WhisperStat` components that expand on hover |
-| Adding a "Sync" button | The system syncs autonomously — show `AmbientPulse` with "synced 3m ago" |
+| Adding a "Sync" button anywhere | The system syncs autonomously — show `AmbientPulse` with "synced 3m ago". Never a button. |
 | Adding descriptive paragraphs under headings | Remove them. The interface speaks through its data. |
 | Building a generic dashboard grid | Build a spatial environment with floating glass panes |
 | Using `rounded-md` | Use `rounded-2xl` or `rounded-3xl` — organic, never sharp |

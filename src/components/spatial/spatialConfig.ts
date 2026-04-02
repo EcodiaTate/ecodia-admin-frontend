@@ -10,7 +10,6 @@ import {
   CircleDollarSign,
   Network,
   Code2,
-  CheckSquare,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -199,22 +198,6 @@ export const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(27, 122, 61, 0.08)', x: '40%', y: '40%', size: '70%' },
         { color: 'rgba(200, 145, 10, 0.06)', x: '70%', y: '60%', size: '55%' },
         { color: 'rgba(46, 204, 113, 0.04)', x: '25%', y: '25%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Intentions: task stream ──
-  // Clean green — clarity of action
-  tasks: {
-    path: '/tasks',
-    label: 'Tasks',
-    icon: CheckSquare,
-    position: { x: 1, y: 2, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(46, 204, 113, 0.07)', x: '55%', y: '45%', size: '65%' },
-        { color: 'rgba(27, 122, 61, 0.05)', x: '25%', y: '70%', size: '50%' },
-        { color: 'rgba(200, 145, 10, 0.03)', x: '75%', y: '25%', size: '40%' },
       ],
     },
   },

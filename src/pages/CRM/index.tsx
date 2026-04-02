@@ -1,233 +1,125 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getClient, createClient, updateStage, addNote } from '@/api/crm'
-import { Pipeline } from './Pipeline'
+import { useQuery } from '@tanstack/react-query'
+import { getClient, getPipeline } from '@/api/crm'
 import { ProjectDetail } from './ProjectDetail'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-
 import type { Client, PipelineStage } from '@/types/crm'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
-import { ArrowLeft, Plus, ChevronDown, Send } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
+import { ArrowLeft } from 'lucide-react'
+import { formatRelative } from '@/lib/utils'
 
-const STAGES: PipelineStage[] = ['lead', 'proposal', 'contract', 'development', 'live', 'ongoing', 'archived']
+// ─── Stage ordering and visual weight ─────────────────────────────────
+// Clients float in a field, grouped loosely by momentum.
+// No columns. No kanban. Just proximity and weight.
+
+const STAGE_MOMENTUM: Record<PipelineStage, number> = {
+  lead: 0.2,
+  proposal: 0.4,
+  contract: 0.6,
+  development: 0.8,
+  live: 1.0,
+  ongoing: 0.9,
+  archived: 0.0,
+}
+
+const STAGE_COLOR: Record<PipelineStage, string> = {
+  lead: 'text-on-surface-muted/50',
+  proposal: 'text-tertiary/60',
+  contract: 'text-gold/70',
+  development: 'text-primary/80',
+  live: 'text-secondary',
+  ongoing: 'text-secondary/70',
+  archived: 'text-on-surface-muted/20',
+}
 
 export default function CRMPage() {
   const { clientId } = useParams()
   const [selectedClient, setSelectedClient] = useState<Client | null>(null)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [noteInput, setNoteInput] = useState('')
-  const [stageDropdownOpen, setStageDropdownOpen] = useState(false)
-  const queryClient = useQueryClient()
 
   const activeId = clientId || selectedClient?.id
-  const { data: client, refetch: refetchClient } = useQuery({
+  const { data: client } = useQuery({
     queryKey: ['client', activeId],
     queryFn: () => getClient(activeId!),
     enabled: !!activeId,
   })
 
-  const stageMutation = useMutation({
-    mutationFn: ({ stage, note }: { stage: PipelineStage; note?: string }) =>
-      updateStage(activeId!, stage, note),
-    onSuccess: () => {
-      refetchClient()
-      queryClient.invalidateQueries({ queryKey: ['pipeline'] })
-      setStageDropdownOpen(false)
-      toast.success('Stage updated')
-    },
-    onError: () => toast.error('Failed to update stage'),
+  const { data: pipeline } = useQuery({
+    queryKey: ['pipeline'],
+    queryFn: getPipeline,
   })
 
-  const noteMutation = useMutation({
-    mutationFn: (content: string) => addNote(activeId!, content),
-    onSuccess: () => {
-      refetchClient()
-      setNoteInput('')
-      toast.success('Note added')
-    },
-    onError: () => toast.error('Failed to add note'),
-  })
+  // Flatten all clients, sorted by momentum (most active first), excluding archived
+  const allClients = pipeline
+    ? (Object.entries(pipeline) as [PipelineStage, Client[]][])
+        .filter(([stage]) => stage !== 'archived')
+        .flatMap(([, clients]) => clients)
+        .sort((a, b) => (STAGE_MOMENTUM[b.stage] ?? 0) - (STAGE_MOMENTUM[a.stage] ?? 0))
+    : []
+
+  const liveCount = allClients.filter(c => c.stage === 'live' || c.stage === 'ongoing').length
+  const inMotionCount = allClients.filter(c =>
+    c.stage === 'development' || c.stage === 'contract' || c.stage === 'proposal'
+  ).length
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <SpatialLayer z={25} className="mb-10 sm:mb-12 flex items-end justify-between gap-4">
-        <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
-            Client Network
-          </span>
-          <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-            Flow <em className="not-italic font-normal text-primary">State</em>
-          </h1>
-        </div>
-        {!client && !showCreateForm && (
-          <motion.button
-            onClick={() => setShowCreateForm(true)}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/15"
-          >
-            <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-            New Client
-          </motion.button>
+    <div className="mx-auto max-w-5xl">
+      <SpatialLayer z={25} className="mb-14">
+        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
+          Relational Field
+        </span>
+        <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
+          Flow <em className="not-italic font-normal text-primary">State</em>
+        </h1>
+
+        {/* Ambient signal — what the field looks like right now */}
+        {allClients.length > 0 && (
+          <div className="mt-6 flex items-center gap-8 text-on-surface-muted/40">
+            <span className="font-mono text-label-sm">
+              <span className="text-secondary">{liveCount}</span> live
+            </span>
+            <span className="font-mono text-label-sm">
+              <span className="text-tertiary">{inMotionCount}</span> in motion
+            </span>
+            <span className="font-mono text-label-sm">
+              <span className="text-on-surface-variant">{allClients.length}</span> total
+            </span>
+          </div>
         )}
       </SpatialLayer>
 
       <SpatialLayer z={-5}>
         <AnimatePresence mode="popLayout" initial={false}>
-          {showCreateForm ? (
-            <motion.div
-              key="create-form"
-              initial={{ opacity: 0, scale: 0.96, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: 12 }}
-              transition={{ type: 'spring', stiffness: 100, damping: 22 }}
-            >
-              <CreateClientForm
-                onClose={() => setShowCreateForm(false)}
-                onCreated={(c) => {
-                  setShowCreateForm(false)
-                  setSelectedClient(c)
-                  queryClient.invalidateQueries({ queryKey: ['pipeline'] })
-                }}
-              />
-            </motion.div>
-          ) : client ? (
+          {client ? (
             <motion.div
               key="client-detail"
               initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
               transition={{ type: 'spring', stiffness: 100, damping: 22 }}
-              className="max-w-4xl space-y-8"
+              className="max-w-3xl space-y-8"
             >
               <button
                 onClick={() => setSelectedClient(null)}
                 className="flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
               >
-                <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to pipeline
+                <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back
               </button>
 
-              <div className="rounded-3xl bg-white/40 p-10">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h1 className="font-display text-display-md font-light text-on-surface">{client.name}</h1>
-                    {client.company && <p className="mt-2 text-sm text-on-surface-muted">{client.company}</p>}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {/* Stage selector */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setStageDropdownOpen(!stageDropdownOpen)}
-                        className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/15"
-                      >
-                        {client.stage}
-                        <ChevronDown className="h-3 w-3" strokeWidth={2} />
-                      </button>
-                      <AnimatePresence>
-                        {stageDropdownOpen && (
-                          <motion.div
-                            initial={{ opacity: 0, y: -4, scale: 0.96 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -4, scale: 0.96 }}
-                            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-                            className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-xl bg-white/90 shadow-lg ring-1 ring-black/5"
-                          >
-                            {STAGES.map((s) => (
-                              <button
-                                key={s}
-                                onClick={() => stageMutation.mutate({ stage: s })}
-                                disabled={s === client.stage || stageMutation.isPending}
-                                className={`w-full px-4 py-2.5 text-left text-sm transition-colors hover:bg-primary/5 ${
-                                  s === client.stage ? 'text-primary font-medium' : 'text-on-surface-variant'
-                                } disabled:cursor-default`}
-                              >
-                                {s}
-                              </button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                    <StatusBadge status={client.priority} />
-                  </div>
-                </div>
-
-                <div className="mt-8 grid grid-cols-2 gap-6 text-sm">
-                  {client.email && (
-                    <div>
-                      <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Email</span>
-                      <p className="mt-1 text-on-surface-variant">{client.email}</p>
-                    </div>
-                  )}
-                  {client.phone && (
-                    <div>
-                      <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Phone</span>
-                      <p className="mt-1 text-on-surface-variant">{client.phone}</p>
-                    </div>
-                  )}
-                  {client.linkedin_url && (
-                    <div className="col-span-2">
-                      <span className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">LinkedIn</span>
-                      <a href={client.linkedin_url} target="_blank" rel="noopener noreferrer"
-                        className="mt-1 block text-primary hover:underline text-sm truncate">{client.linkedin_url}</a>
-                    </div>
-                  )}
-                </div>
-
-                {/* Notes */}
-                <div className="mt-10 space-y-3">
-                  <h3 className="text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Notes</h3>
-                  <AnimatePresence initial={false}>
-                    {client.notes.map((n, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="rounded-2xl bg-surface-container-low p-5"
-                      >
-                        <p className="text-sm leading-relaxed text-on-surface-variant">{n.content}</p>
-                        <p className="mt-2 font-mono text-label-sm text-on-surface-muted">
-                          {n.source} &middot; {new Date(n.createdAt).toLocaleDateString()}
-                        </p>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-
-                  {/* Add note */}
-                  <div className="flex gap-3 pt-2">
-                    <input
-                      value={noteInput}
-                      onChange={(e) => setNoteInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && noteInput.trim() && noteMutation.mutate(noteInput.trim())}
-                      placeholder="Add a note..."
-                      className="flex-1 rounded-xl bg-surface-container-low px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-muted/40 outline-none focus:bg-white/60"
-                    />
-                    <button
-                      onClick={() => noteInput.trim() && noteMutation.mutate(noteInput.trim())}
-                      disabled={!noteInput.trim() || noteMutation.isPending}
-                      className="flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-2.5 text-sm text-primary hover:bg-primary/15 disabled:opacity-40"
-                    >
-                      <Send className="h-3.5 w-3.5" strokeWidth={1.75} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
+              <ClientDetail client={client} />
               <ProjectDetail clientId={client.id} />
             </motion.div>
           ) : (
             <motion.div
-              key="pipeline"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
+              key="field"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 100, damping: 22 }}
             >
-              <Pipeline onSelectClient={setSelectedClient} />
+              <RelationalField clients={allClients} onSelect={setSelectedClient} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -236,103 +128,154 @@ export default function CRMPage() {
   )
 }
 
-// ─── Create Client Form ───────────────────────────────────────────────────────
+// ─── Relational Field — clients as floating nodes, not rows ──────────
+// Momentum determines visual prominence. Live clients breathe loudest.
+// Archived clients don't exist here.
 
-function CreateClientForm({
-  onClose,
-  onCreated,
-}: {
-  onClose: () => void
-  onCreated: (client: Client) => void
-}) {
-  const [form, setForm] = useState({
-    name: '',
-    company: '',
-    email: '',
-    phone: '',
-    linkedin_url: '',
-    stage: 'lead' as PipelineStage,
-    priority: 'medium' as 'low' | 'medium' | 'high',
-  })
-
-  const create = useMutation({
-    mutationFn: () => createClient(form),
-    onSuccess: (client) => {
-      toast.success(`${client.name} added to pipeline`)
-      onCreated(client)
-    },
-    onError: () => toast.error('Failed to create client'),
-  })
-
-  const field = (key: keyof typeof form) => ({
-    value: form[key],
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-      setForm((f) => ({ ...f, [key]: e.target.value })),
-  })
-
-  const inputClass =
-    'w-full rounded-xl bg-surface-container-low px-4 py-3 text-sm text-on-surface placeholder-on-surface-muted/40 outline-none focus:bg-white/60'
+function RelationalField({ clients, onSelect }: { clients: Client[]; onSelect: (c: Client) => void }) {
+  if (clients.length === 0) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <p className="text-sm text-on-surface-muted/30">
+          The field is quiet. Cortex will surface leads as they emerge.
+        </p>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-2xl rounded-3xl bg-white/40 p-10 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-headline-md font-light text-on-surface">New Client</h2>
-        <button onClick={onClose} className="text-sm text-on-surface-muted hover:text-on-surface-variant">Cancel</button>
-      </div>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {clients.map((client, i) => {
+        const momentum = STAGE_MOMENTUM[client.stage] ?? 0
+        const opacity = 0.3 + momentum * 0.7
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">Name *</label>
-          <input {...field('name')} placeholder="Full name" className={inputClass} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">Company</label>
-          <input {...field('company')} placeholder="Company name" className={inputClass} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">Email</label>
-          <input {...field('email')} type="email" placeholder="email@example.com" className={inputClass} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">Phone</label>
-          <input {...field('phone')} placeholder="+61 400 000 000" className={inputClass} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">LinkedIn URL</label>
-          <input {...field('linkedin_url')} placeholder="linkedin.com/in/..." className={inputClass} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">Stage</label>
-          <select {...field('stage')} className={inputClass}>
-            {STAGES.filter(s => s !== 'archived').map(s => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-label-sm uppercase tracking-[0.05em] text-on-surface-muted">Priority</label>
-          <select {...field('priority')} className={inputClass}>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-        </div>
-      </div>
+        return (
+          <motion.button
+            key={client.id}
+            onClick={() => onSelect(client)}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity, y: 0 }}
+            whileHover={{ opacity: 1, y: -2, transition: { type: 'spring', stiffness: 200, damping: 20 } }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.03 }}
+            className="group rounded-2xl bg-white/40 p-5 text-left hover:bg-white/60"
+            style={{ opacity }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-display text-sm font-medium text-on-surface truncate">{client.name}</p>
+                {client.company && (
+                  <p className="mt-0.5 text-xs text-on-surface-muted truncate">{client.company}</p>
+                )}
+              </div>
+              {/* Stage as a living signal, not a badge */}
+              <span className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${STAGE_COLOR[client.stage]}`}>
+                {client.stage}
+              </span>
+            </div>
 
-      <div className="flex justify-end gap-3 pt-2">
-        <button onClick={onClose} className="rounded-xl px-5 py-2.5 text-sm text-on-surface-muted hover:text-on-surface-variant">
-          Cancel
-        </button>
-        <motion.button
-          onClick={() => form.name.trim() && create.mutate()}
-          disabled={!form.name.trim() || create.isPending}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="btn-primary-gradient rounded-xl px-5 py-2.5 text-sm font-medium disabled:opacity-40"
-        >
-          {create.isPending ? 'Creating...' : 'Create Client'}
-        </motion.button>
-      </div>
+            {client.tags.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {client.tags.map(tag => (
+                  <span key={tag} className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/50">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Last activity whisper */}
+            <p className="mt-3 font-mono text-[10px] text-on-surface-muted/25 opacity-0 transition-opacity group-hover:opacity-100">
+              {formatRelative(client.updated_at)}
+            </p>
+          </motion.button>
+        )
+      })}
     </div>
+  )
+}
+
+// ─── Client Detail — observation only ────────────────────────────────
+
+function ClientDetail({ client }: { client: Client }) {
+  const momentum = STAGE_MOMENTUM[client.stage] ?? 0
+
+  return (
+    <GlassPanel depth="elevated" className="p-10">
+      <div className="flex items-start justify-between gap-6">
+        <div>
+          <h1 className="font-display text-display-md font-light text-on-surface">{client.name}</h1>
+          {client.company && (
+            <p className="mt-2 text-sm text-on-surface-muted">{client.company}</p>
+          )}
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <span className={`font-mono text-sm uppercase tracking-wider ${STAGE_COLOR[client.stage]}`}>
+            {client.stage}
+          </span>
+          <StatusBadge status={client.priority} />
+        </div>
+      </div>
+
+      {/* Momentum bar — visual pulse of where this client is in the journey */}
+      <div className="mt-6 h-px w-full bg-on-surface-muted/8">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${momentum * 100}%` }}
+          transition={{ type: 'spring', stiffness: 60, damping: 20, delay: 0.2 }}
+          className="h-px bg-secondary/40"
+        />
+      </div>
+
+      <div className="mt-8 grid grid-cols-2 gap-6 text-sm">
+        {client.email && (
+          <div>
+            <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted/50">Email</span>
+            <p className="mt-1 text-on-surface-variant">{client.email}</p>
+          </div>
+        )}
+        {client.phone && (
+          <div>
+            <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted/50">Phone</span>
+            <p className="mt-1 text-on-surface-variant">{client.phone}</p>
+          </div>
+        )}
+        {client.linkedin_url && (
+          <div className="col-span-2">
+            <span className="text-label-sm uppercase tracking-[0.05em] text-on-surface-muted/50">LinkedIn</span>
+            <a
+              href={client.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 block truncate text-sm text-primary/70 hover:text-primary"
+            >
+              {client.linkedin_url}
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Notes — what the system has observed */}
+      {client.notes.length > 0 && (
+        <div className="mt-10 space-y-3">
+          <h3 className="text-label-sm uppercase tracking-[0.1em] text-on-surface-muted/40">
+            Signal Log
+          </h3>
+          {client.notes.map((n, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="rounded-2xl bg-surface-container-low/60 p-5"
+            >
+              <p className="text-sm leading-relaxed text-on-surface-variant">{n.content}</p>
+              <p className="mt-2 font-mono text-[10px] text-on-surface-muted/30">
+                {n.source} · {new Date(n.createdAt).toLocaleDateString()}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </GlassPanel>
   )
 }

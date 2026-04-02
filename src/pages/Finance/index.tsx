@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getFinanceSummary, syncFinance } from '@/api/finance'
+import { useQuery } from '@tanstack/react-query'
+import { getFinanceSummary } from '@/api/finance'
 import { TransactionList } from './TransactionList'
 import { CategoryChart } from './CategoryChart'
 import { ReconcilePanel } from './ReconcilePanel'
@@ -9,10 +9,9 @@ import { AmbientPulse } from '@/components/spatial/AmbientPulse'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import { formatCurrency, cn } from '@/lib/utils'
-import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { WorkerStatus } from '@/store/workerStore'
-import toast from 'react-hot-toast'
 
 const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
 
@@ -20,17 +19,6 @@ export default function FinancePage() {
   const [tab, setTab] = useState<'all' | 'uncategorized'>('all')
   const { data: summary } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })
   const financeWorker = useWorkerStatus('finance') as WorkerStatus | null
-  const queryClient = useQueryClient()
-
-  const sync = useMutation({
-    mutationFn: syncFinance,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] })
-      queryClient.invalidateQueries({ queryKey: ['financeSummary'] })
-      toast.success('Xero sync complete')
-    },
-    onError: () => toast.error('Sync failed'),
-  })
 
   const net = summary?.net ?? 0
 
@@ -50,22 +38,12 @@ export default function FinancePage() {
             Financial <em className="not-italic font-normal text-gold">Ecosystem</em>
           </h1>
         </div>
-        <div className="flex items-center gap-3">
-          {financeWorker && (
-            <AmbientPulse label="Xero" lastSyncAt={financeWorker.lastSync} status={financeWorker.status} />
-          )}
-          <button
-            onClick={() => sync.mutate()}
-            disabled={sync.isPending}
-            className="flex items-center gap-1.5 rounded-xl bg-surface-container-low px-3 py-2 text-sm text-on-surface-muted hover:bg-white/60 hover:text-on-surface-variant disabled:opacity-40"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${sync.isPending ? 'animate-spin' : ''}`} strokeWidth={1.75} />
-            Sync
-          </button>
-        </div>
+        {financeWorker && (
+          <AmbientPulse label="Xero" lastSyncAt={financeWorker.lastSync} status={financeWorker.status} />
+        )}
       </SpatialLayer>
 
-      {/* Hero net — floats forward */}
+      {/* Hero net */}
       <SpatialLayer z={20}>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -85,7 +63,7 @@ export default function FinancePage() {
         </motion.div>
       </SpatialLayer>
 
-      {/* Whisper stats — content plane */}
+      {/* Whisper stats */}
       <SpatialLayer z={10} className="mb-14 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
         <WhisperStat
           label="Income"
@@ -103,7 +81,7 @@ export default function FinancePage() {
         />
       </SpatialLayer>
 
-      {/* Chart — slightly recessed */}
+      {/* Chart */}
       <SpatialLayer z={-5} className="mx-auto max-w-md md:max-w-lg">
         <CategoryChart />
       </SpatialLayer>

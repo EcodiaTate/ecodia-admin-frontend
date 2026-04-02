@@ -3,37 +3,23 @@ import { getPendingActions, executeAction, dismissAction } from '@/api/actions'
 import type { ActionItem } from '@/api/actions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatRelative } from '@/lib/utils'
-import { Check, X, Mail, Linkedin, Share2, Calendar, FileText, Loader2 } from 'lucide-react'
+import { Check, X, Loader2 } from 'lucide-react'
 import { useState } from 'react'
-import toast from 'react-hot-toast'
 
-const SOURCE_ICON: Record<string, typeof Mail> = {
-  gmail: Mail,
-  linkedin: Linkedin,
-  meta: Share2,
-  calendar: Calendar,
-  factory: FileText,
-}
+// ─── The system's voice ───────────────────────────────────────────────
+//
+// These are decisions the AI has already made. It's not asking you to
+// manage anything — it's telling you what it wants to do, and waiting
+// for a nod or a shake. One gesture. That's all.
+//
+// No icons. No labels. No priority badges.
+// Just the action, the context, and two gestures.
 
-const PRIORITY_DOT: Record<string, string> = {
-  urgent: 'bg-error',
-  high: 'bg-tertiary',
-  medium: 'bg-gold/40',
-  low: 'bg-on-surface-muted/20',
-}
-
-const ACTION_LABELS: Record<string, string> = {
-  send_reply: 'Send reply',
-  send_linkedin_reply: 'Send reply',
-  send_meta_message: 'Send reply',
-  create_lead: 'Create lead',
-  follow_up: 'Follow up',
-  publish_post: 'Publish',
-  schedule_meeting: 'Schedule',
-  create_task: 'Create task',
-  create_doc: 'Create doc',
-  archive_email: 'Archive',
-  reply_to_comment: 'Reply',
+const URGENCY_LINE: Record<string, string> = {
+  urgent: 'bg-error/60',
+  high: 'bg-tertiary/40',
+  medium: 'bg-primary/20',
+  low: 'bg-on-surface-muted/10',
 }
 
 export function ActionStream() {
@@ -41,98 +27,104 @@ export function ActionStream() {
 
   const { data: actions } = useQuery({
     queryKey: ['pendingActions'],
-    queryFn: () => getPendingActions(8),
-    refetchInterval: 30000,
+    queryFn: () => getPendingActions(6),
+    refetchInterval: 20000,
   })
 
   if (!actions || actions.length === 0) return null
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-px">
       <AnimatePresence initial={false}>
         {actions.map((action, i) => (
-          <ActionCard key={action.id} action={action} index={i} queryClient={queryClient} />
+          <ActionVoice key={action.id} action={action} index={i} queryClient={queryClient} />
         ))}
       </AnimatePresence>
     </div>
   )
 }
 
-function ActionCard({ action, index, queryClient }: { action: ActionItem; index: number; queryClient: ReturnType<typeof useQueryClient> }) {
+function ActionVoice({
+  action,
+  index,
+  queryClient,
+}: {
+  action: ActionItem
+  index: number
+  queryClient: ReturnType<typeof useQueryClient>
+}) {
   const [executing, setExecuting] = useState(false)
 
-  const Icon = SOURCE_ICON[action.source] || FileText
-  const label = ACTION_LABELS[action.action_type] || action.action_type.replace(/_/g, ' ')
   const draft = action.prepared_data?.draft as string | undefined
 
-  const executeMut = useMutation({
+  const execute = useMutation({
     mutationFn: () => executeAction(action.id),
     onMutate: () => setExecuting(true),
-    onSuccess: (data) => {
-      toast.success((data as { message?: string })?.message || 'Done')
-      queryClient.invalidateQueries({ queryKey: ['pendingActions'] })
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : 'Failed')
-      setExecuting(false)
-    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['pendingActions'] }),
   })
 
-  const dismissMut = useMutation({
+  const dismiss = useMutation({
     mutationFn: () => dismissAction(action.id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pendingActions'] }),
   })
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: 60, transition: { type: 'spring', stiffness: 200, damping: 25 } }}
-      transition={{ type: 'spring', stiffness: 100, damping: 22, delay: index * 0.03 }}
-      className="group rounded-2xl bg-white/40 px-4 py-3 hover:bg-white/55"
+      exit={{
+        opacity: 0,
+        x: 40,
+        transition: { type: 'spring', stiffness: 300, damping: 28 },
+      }}
+      transition={{ type: 'spring', stiffness: 100, damping: 22, delay: index * 0.04 }}
+      className="group relative rounded-2xl px-5 py-4 hover:bg-white/30 transition-colors"
     >
-      <div className="flex items-start gap-3">
-        <div className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-low/60">
-          <Icon className="h-3.5 w-3.5 text-on-surface-muted" strokeWidth={1.75} />
-          <div className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full ${PRIORITY_DOT[action.priority]}`} />
-        </div>
+      {/* Urgency thread — a thin left line, not a badge */}
+      <div className={`absolute left-0 top-3 bottom-3 w-0.5 rounded-full ${URGENCY_LINE[action.priority] ?? URGENCY_LINE.medium}`} />
 
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-on-surface truncate">{action.title}</p>
-          {action.summary && (
-            <p className="mt-0.5 text-xs text-on-surface-muted line-clamp-1">{action.summary}</p>
-          )}
-          {draft && (
-            <p className="mt-1 text-xs text-on-surface-variant/70 italic line-clamp-2">&ldquo;{draft.slice(0, 120)}{draft.length > 120 ? '...' : ''}&rdquo;</p>
-          )}
-          <div className="mt-1.5 flex items-center gap-2">
-            <span className="rounded-full bg-primary/8 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary">{label}</span>
-            <span className="text-[10px] text-on-surface-muted/30 font-mono">{formatRelative(action.created_at)}</span>
+      <div className="pl-3">
+        {/* The decision — stated plainly, no UI chrome */}
+        <p className="text-sm leading-snug text-on-surface">
+          {action.title}
+        </p>
+
+        {/* Draft preview — what the system actually wrote */}
+        {draft && (
+          <p className="mt-1.5 text-xs italic leading-relaxed text-on-surface-muted/50 line-clamp-2">
+            &ldquo;{draft.slice(0, 140)}{draft.length > 140 ? '…' : ''}&rdquo;
+          </p>
+        )}
+
+        {/* Whisper metadata */}
+        <p className="mt-1.5 font-mono text-[10px] text-on-surface-muted/25">
+          {action.source} · {formatRelative(action.created_at)}
+        </p>
+      </div>
+
+      {/* Gestures — appear on hover, invisible at rest */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {executing ? (
+          <div className="flex h-7 w-7 items-center justify-center">
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary/50" />
           </div>
-        </div>
-
-        <div className="flex items-center gap-1 shrink-0 opacity-60 group-hover:opacity-100">
-          {executing ? (
-            <div className="flex h-8 w-8 items-center justify-center">
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-            </div>
-          ) : (
-            <>
-              <button
-                onClick={() => dismissMut.mutate()}
-                className="flex h-8 w-8 items-center justify-center rounded-xl text-on-surface-muted/40 hover:bg-surface-container hover:text-on-surface-muted"
-              >
-                <X className="h-3.5 w-3.5" strokeWidth={1.75} />
-              </button>
-              <button
-                onClick={() => executeMut.mutate()}
-                className="flex h-8 items-center gap-1 rounded-xl bg-primary/10 px-2.5 text-xs font-medium text-primary hover:bg-primary/15"
-              >
-                <Check className="h-3 w-3" strokeWidth={2} />
-              </button>
-            </>
-          )}
-        </div>
+        ) : (
+          <>
+            <button
+              onClick={() => dismiss.mutate()}
+              disabled={dismiss.isPending}
+              className="flex h-7 w-7 items-center justify-center rounded-xl text-on-surface-muted/30 hover:bg-surface-container hover:text-on-surface-muted transition-colors"
+            >
+              <X className="h-3 w-3" strokeWidth={2} />
+            </button>
+            <button
+              onClick={() => execute.mutate()}
+              className="flex h-7 w-7 items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </button>
+          </>
+        )}
       </div>
     </motion.div>
   )
