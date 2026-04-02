@@ -8,10 +8,7 @@ import {
   Brain,
   Layers,
   CircleDollarSign,
-  Bell,
-  CheckSquare,
   Network,
-  BookOpen,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -42,7 +39,7 @@ export interface AuroraConfig {
 
 // ═══════════════════════════════════════════════════════════════════════
 // SCENES — Ordered by cognitive flow:
-//   Awareness → Intelligence → Channels → Relations → Action → Infrastructure
+//   Awareness → Intelligence → Channels → Relations → Surfaces → Action → Memory → System
 // ═══════════════════════════════════════════════════════════════════════
 
 export const SCENES: Record<string, SceneConfig> = {
@@ -50,7 +47,6 @@ export const SCENES: Record<string, SceneConfig> = {
   dashboard: {
     path: '/dashboard',
     label: 'Vitals',
-
     icon: Orbit,
     position: { x: 0, y: 0, z: 0 },
     aurora: {
@@ -66,7 +62,6 @@ export const SCENES: Record<string, SceneConfig> = {
   cortex: {
     path: '/cortex',
     label: 'Cortex',
-
     icon: Brain,
     position: { x: 0, y: -1, z: 0 },
     aurora: {
@@ -82,7 +77,6 @@ export const SCENES: Record<string, SceneConfig> = {
   gmail: {
     path: '/gmail',
     label: 'Mail',
-
     icon: Mail,
     position: { x: -1, y: 0, z: 0 },
     aurora: {
@@ -96,7 +90,6 @@ export const SCENES: Record<string, SceneConfig> = {
   linkedin: {
     path: '/linkedin',
     label: 'Social',
-
     icon: Linkedin,
     position: { x: 1, y: 0, z: 0 },
     aurora: {
@@ -112,7 +105,6 @@ export const SCENES: Record<string, SceneConfig> = {
   crm: {
     path: '/crm',
     label: 'Pipeline',
-
     icon: Users,
     position: { x: -1, y: 1, z: 0 },
     aurora: {
@@ -126,7 +118,6 @@ export const SCENES: Record<string, SceneConfig> = {
   finance: {
     path: '/finance',
     label: 'Finance',
-
     icon: CircleDollarSign,
     position: { x: 0, y: 1, z: 0 },
     aurora: {
@@ -142,7 +133,6 @@ export const SCENES: Record<string, SceneConfig> = {
   workspace: {
     path: '/workspace',
     label: 'Surfaces',
-
     icon: Layers,
     position: { x: -1, y: -1, z: 0 },
     aurora: {
@@ -158,7 +148,6 @@ export const SCENES: Record<string, SceneConfig> = {
   'claude-code': {
     path: '/claude-code',
     label: 'Factory',
-
     icon: Terminal,
     position: { x: 1, y: 1, z: 0 },
     aurora: {
@@ -170,40 +159,10 @@ export const SCENES: Record<string, SceneConfig> = {
     },
   },
 
-  // ── Awareness: system signals ──
-  notifications: {
-    path: '/notifications',
-    label: 'Pulses',
-    icon: Bell,
-    position: { x: 1, y: -1, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(6, 182, 212, 0.05)', x: '35%', y: '45%', size: '60%' },
-        { color: 'rgba(16, 185, 129, 0.04)', x: '70%', y: '25%', size: '50%' },
-        { color: 'rgba(245, 158, 11, 0.03)', x: '20%', y: '75%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Execution: active threads ──
-  tasks: {
-    path: '/tasks',
-    label: 'Tasks',
-    icon: CheckSquare,
-    position: { x: 1, y: 2, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(16, 185, 129, 0.06)', x: '50%', y: '35%', size: '65%' },
-        { color: 'rgba(0, 104, 122, 0.04)', x: '25%', y: '65%', size: '50%' },
-        { color: 'rgba(245, 158, 11, 0.03)', x: '75%', y: '75%', size: '40%' },
-      ],
-    },
-  },
-
-  // ── Memory: world model browser ──
+  // ── Memory: world model + archive ──
   'knowledge-graph': {
     path: '/knowledge-graph',
-    label: 'Graph',
+    label: 'Memory',
     icon: Network,
     position: { x: -1, y: 2, z: 0 },
     aurora: {
@@ -211,21 +170,6 @@ export const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(0, 104, 122, 0.06)', x: '45%', y: '40%', size: '70%' },
         { color: 'rgba(6, 182, 212, 0.05)', x: '70%', y: '65%', size: '55%' },
         { color: 'rgba(16, 185, 129, 0.03)', x: '25%', y: '25%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── History: institutional memory ──
-  archive: {
-    path: '/archive',
-    label: 'Archive',
-    icon: BookOpen,
-    position: { x: -2, y: 1, z: -1 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(0, 104, 122, 0.04)', x: '40%', y: '50%', size: '65%' },
-        { color: 'rgba(6, 182, 212, 0.03)', x: '65%', y: '30%', size: '50%' },
-        { color: 'rgba(16, 185, 129, 0.025)', x: '30%', y: '70%', size: '45%' },
       ],
     },
   },

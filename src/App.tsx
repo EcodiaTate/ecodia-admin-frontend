@@ -10,10 +10,7 @@ import CortexPage from './pages/Cortex'
 import ClaudeCodePage from './pages/ClaudeCode'
 import WorkspacePage from './pages/Workspace'
 import SettingsPage from './pages/Settings'
-import NotificationsPage from './pages/Notifications'
-import TasksPage from './pages/Tasks'
 import KnowledgeGraphPage from './pages/KnowledgeGraph'
-import ArchivePage from './pages/Archive'
 import LoginPage from './pages/Login'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -45,11 +42,12 @@ export default function App() {
           <Route path="/workspace" element={<WorkspacePage />} />
           <Route path="/claude-code" element={<ClaudeCodePage />} />
           <Route path="/claude-code/:sessionId" element={<ClaudeCodePage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/tasks" element={<TasksPage />} />
           <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
-          <Route path="/archive" element={<ArchivePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          {/* Redirects for consolidated pages */}
+          <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/tasks" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/archive" element={<Navigate to="/knowledge-graph" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

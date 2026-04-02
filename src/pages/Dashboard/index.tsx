@@ -1,6 +1,6 @@
 import { KPICards } from './KPICards'
-import { ActivityFeed } from './ActivityFeed'
 import { ActionStream } from './ActionStream'
+import { TaskStream } from './TaskStream'
 import { AmbientPulse } from '@/components/spatial/AmbientPulse'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
@@ -39,15 +39,18 @@ export default function DashboardPage() {
         <KPICards />
       </SpatialLayer>
 
-      {/* Action stream — pre-processed items ready for one-tap approval */}
-      <SpatialLayer z={15} className="mt-12 sm:mt-16">
-        <ActionStream />
-      </SpatialLayer>
+      {/* Two-column layout: Actions + Tasks */}
+      <div className="mt-12 grid gap-12 sm:mt-16 lg:grid-cols-2 lg:gap-10">
+        {/* Action stream — pre-processed items ready for one-tap approval */}
+        <SpatialLayer z={15}>
+          <ActionStream />
+        </SpatialLayer>
 
-      {/* Activity feed — recessed, sits behind the KPIs */}
-      <SpatialLayer z={-10} className="mt-16 sm:mt-20 md:ml-auto md:max-w-xl lg:max-w-2xl">
-        <ActivityFeed />
-      </SpatialLayer>
+        {/* Task stream — active intentions */}
+        <SpatialLayer z={-5}>
+          <TaskStream />
+        </SpatialLayer>
+      </div>
     </div>
   )
 }
