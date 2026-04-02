@@ -4,7 +4,7 @@ import { getSessionLogs, sendMessage, stopSession } from '@/api/claudeCode'
 import { useCCSession } from '@/hooks/useCCSession'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { CCSession, CCSessionLog } from '@/types/claudeCode'
-import { Send, Square, ChevronDown, ChevronUp, Terminal, DollarSign, Clock } from 'lucide-react'
+import { Send, Square, ChevronDown, ChevronUp, Terminal, DollarSign, Clock, GitBranch, Shield, Rocket, CheckCircle2, XCircle, FileCode } from 'lucide-react'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatRelative } from '@/lib/utils'
@@ -275,6 +275,11 @@ export function CCTerminal({ session }: TerminalProps) {
         )}
       </div>
 
+      {/* Pipeline stage tracker */}
+      {session.pipeline_stage && (
+        <PipelineTracker stage={session.pipeline_stage} confidence={session.confidence_score} filesChanged={session.files_changed} commitSha={session.commit_sha} deployStatus={session.deploy_status} />
+      )}
+
       {/* Prompt display */}
       <div className="rounded-2xl bg-primary/5 px-6 py-4">
         <span className="text-label-sm uppercase tracking-wide text-primary/50">Initial Prompt</span>
@@ -365,14 +370,39 @@ export function CCTerminal({ session }: TerminalProps) {
         </div>
       )}
 
-      {/* Completion summary */}
+      {/* Completion summary with files + confidence */}
       {isComplete && (
         <div className="rounded-2xl bg-secondary/5 px-6 py-4">
           <span className="text-label-sm uppercase tracking-wide text-secondary/50">Session Complete</span>
-          <div className="mt-1 flex items-center gap-4 text-sm text-on-surface-muted">
+          <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-on-surface-muted">
             {session.completed_at && <span>Completed {formatRelative(session.completed_at)}</span>}
             {session.cc_cost_usd != null && <span className="font-mono">${session.cc_cost_usd.toFixed(4)}</span>}
+            {session.confidence_score != null && (
+              <span className="flex items-center gap-1">
+                <Shield className="h-3 w-3" strokeWidth={1.75} />
+                {(session.confidence_score * 100).toFixed(0)}% confidence
+              </span>
+            )}
+            {session.commit_sha && (
+              <span className="flex items-center gap-1 font-mono text-xs">
+                <GitBranch className="h-3 w-3" strokeWidth={1.75} />
+                {session.commit_sha.slice(0, 7)}
+              </span>
+            )}
           </div>
+          {session.files_changed && session.files_changed.length > 0 && (
+            <div className="mt-3">
+              <span className="text-label-sm uppercase tracking-wide text-secondary/40">Files Changed</span>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {session.files_changed.map(f => (
+                  <span key={f} className="inline-flex items-center gap-1 rounded-lg bg-secondary/8 px-2 py-0.5 font-mono text-[11px] text-secondary/70">
+                    <FileCode className="h-2.5 w-2.5" strokeWidth={1.75} />
+                    {f.split('/').pop()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -408,6 +438,108 @@ export function CCTerminal({ session }: TerminalProps) {
           </button>
         </motion.form>
       )}
+    </div>
+  )
+}
+
+// ─── Pipeline Stage Tracker ────────────────────────────────────────────
+
+const PIPELINE_STAGES = [
+  { key: 'queued', label: 'Queued', icon: Clock },
+  { key: 'context', label: 'Context', icon: FileCode },
+  { key: 'executing', label: 'Executing', icon: Terminal },
+  { key: 'testing', label: 'Testing', icon: Shield },
+  { key: 'reviewing', label: 'Review', icon: CheckCircle2 },
+  { key: 'deploying', label: 'Deploy', icon: Rocket },
+] as const
+
+function PipelineTracker({ stage, confidence, filesChanged, commitSha, deployStatus }: {
+  stage: string
+  confidence: number | null
+  filesChanged: string[] | null
+  commitSha: string | null
+  deployStatus: string | null
+}) {
+  const isFailed = stage === 'failed'
+  const isComplete = stage === 'complete'
+  const activeIndex = PIPELINE_STAGES.findIndex(s => s.key === stage)
+
+  return (
+    <div className="rounded-2xl bg-white/40 px-6 py-4">
+      <div className="flex items-center gap-1.5 overflow-x-auto">
+        {PIPELINE_STAGES.map((s, i) => {
+          const Icon = s.icon
+          const isPast = isComplete || activeIndex > i
+          const isCurrent = !isComplete && !isFailed && activeIndex === i
+          return (
+            <div key={s.key} className="flex items-center gap-1.5">
+              {i > 0 && (
+                <div className={`h-px w-4 sm:w-8 transition-colors ${isPast ? 'bg-secondary/40' : 'bg-on-surface-muted/10'}`} />
+              )}
+              <div className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 transition-colors ${
+                isCurrent ? 'bg-primary/10 text-primary' :
+                isPast ? 'text-secondary/60' :
+                isFailed && activeIndex === i ? 'bg-error/8 text-error' :
+                'text-on-surface-muted/25'
+              }`}>
+                {isFailed && activeIndex === i ? (
+                  <XCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+                ) : isPast ? (
+                  <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                ) : (
+                  <Icon className={`h-3.5 w-3.5 ${isCurrent ? 'animate-pulse' : ''}`} strokeWidth={1.75} />
+                )}
+                <span className="hidden text-[11px] font-medium uppercase tracking-wider sm:inline">{s.label}</span>
+              </div>
+            </div>
+          )
+        })}
+
+        {/* Terminal state */}
+        <div className="flex items-center gap-1.5">
+          <div className={`h-px w-4 sm:w-8 ${isComplete ? 'bg-secondary/40' : isFailed ? 'bg-error/20' : 'bg-on-surface-muted/10'}`} />
+          <div className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 ${
+            isComplete ? 'bg-secondary/10 text-secondary' :
+            isFailed ? 'bg-error/8 text-error' :
+            'text-on-surface-muted/25'
+          }`}>
+            {isComplete ? <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.75} /> :
+             isFailed ? <XCircle className="h-3.5 w-3.5" strokeWidth={1.75} /> :
+             <Rocket className="h-3.5 w-3.5" strokeWidth={1.75} />}
+            <span className="hidden text-[11px] font-medium uppercase tracking-wider sm:inline">
+              {isComplete ? 'Done' : isFailed ? 'Failed' : 'Done'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Metadata row */}
+      <div className="mt-3 flex flex-wrap items-center gap-4 text-[11px] text-on-surface-muted/50">
+        {confidence != null && (
+          <span className="flex items-center gap-1">
+            <Shield className="h-3 w-3" strokeWidth={1.75} />
+            {(confidence * 100).toFixed(0)}% confidence
+          </span>
+        )}
+        {filesChanged && filesChanged.length > 0 && (
+          <span className="flex items-center gap-1">
+            <FileCode className="h-3 w-3" strokeWidth={1.75} />
+            {filesChanged.length} files changed
+          </span>
+        )}
+        {commitSha && (
+          <span className="flex items-center gap-1 font-mono">
+            <GitBranch className="h-3 w-3" strokeWidth={1.75} />
+            {commitSha.slice(0, 7)}
+          </span>
+        )}
+        {deployStatus && (
+          <span className={`flex items-center gap-1 ${deployStatus === 'deployed' ? 'text-secondary/60' : deployStatus === 'failed' ? 'text-error/60' : ''}`}>
+            <Rocket className="h-3 w-3" strokeWidth={1.75} />
+            {deployStatus}
+          </span>
+        )}
+      </div>
     </div>
   )
 }

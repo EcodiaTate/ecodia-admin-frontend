@@ -3,9 +3,16 @@ export interface CCSession {
   cc_session_id: string | null
   project_id: string | null
   client_id: string | null
-  triggered_by: 'crm_stage' | 'manual' | 'task'
+  codebase_id: string | null
+  triggered_by: 'crm_stage' | 'manual' | 'task' | 'simula' | 'thymos' | 'scheduled' | 'cortex'
+  trigger_source: string | null
   initial_prompt: string
   status: 'initializing' | 'running' | 'awaiting_input' | 'complete' | 'error'
+  pipeline_stage: 'queued' | 'context' | 'executing' | 'testing' | 'reviewing' | 'deploying' | 'complete' | 'failed' | null
+  confidence_score: number | null
+  files_changed: string[] | null
+  commit_sha: string | null
+  deploy_status: string | null
   working_dir: string | null
   cc_cost_usd: number | null
   started_at: string
