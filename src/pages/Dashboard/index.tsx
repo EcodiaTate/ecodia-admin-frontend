@@ -1,6 +1,7 @@
 import { KPICards } from './KPICards'
 import { ActivityFeed } from './ActivityFeed'
 import { AmbientPulse } from '@/components/spatial/AmbientPulse'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import type { WorkerStatus } from '@/store/workerStore'
 
@@ -8,9 +9,9 @@ export default function DashboardPage() {
   const workers = useWorkerStatus() as Record<string, WorkerStatus>
 
   return (
-    <div className="mx-auto max-w-5xl">
-      {/* Header — title left, pulses drift right */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-5xl preserve-3d-deep">
+      {/* Header — floats closest to viewer */}
+      <SpatialLayer z={25} className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Ecosystem Overview
@@ -20,7 +21,7 @@ export default function DashboardPage() {
           </h1>
         </div>
 
-        {/* Ambient sync pulses — wrap on small screens */}
+        {/* Ambient sync pulses */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 sm:pt-2">
           {workers.gmail && <AmbientPulse label="Gmail" lastSyncAt={workers.gmail.lastSync} status={workers.gmail.status} />}
           {workers.calendar && <AmbientPulse label="Calendar" lastSyncAt={workers.calendar.lastSync} status={workers.calendar.status} />}
@@ -30,14 +31,17 @@ export default function DashboardPage() {
           {workers.linkedin && <AmbientPulse label="LinkedIn" lastSyncAt={workers.linkedin.lastSync} status={workers.linkedin.status} />}
           {workers.meta && <AmbientPulse label="Meta" lastSyncAt={workers.meta.lastSync} status={workers.meta.status} />}
         </div>
-      </div>
+      </SpatialLayer>
 
-      <KPICards />
+      {/* KPI cards — content plane, slightly forward */}
+      <SpatialLayer z={10}>
+        <KPICards />
+      </SpatialLayer>
 
-      {/* Activity feed — offset right for asymmetry on desktop */}
-      <div className="mt-16 sm:mt-20 md:ml-auto md:max-w-xl lg:max-w-2xl">
+      {/* Activity feed — recessed, sits behind the KPIs */}
+      <SpatialLayer z={-10} className="mt-16 sm:mt-20 md:ml-auto md:max-w-xl lg:max-w-2xl">
         <ActivityFeed />
-      </div>
+      </SpatialLayer>
     </div>
   )
 }

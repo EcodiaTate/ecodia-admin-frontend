@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { motion, useTransform } from 'framer-motion'
+import { useSpatialContext } from './SpatialDepthProvider'
 
 interface Particle {
   id: number
@@ -11,6 +13,8 @@ interface Particle {
   dx: number
   dy: number
   color: string
+  /** Simulated depth — particles at different "distances" drift differently */
+  zFactor: number
 }
 
 const COLORS = [
@@ -34,9 +38,47 @@ function generateParticles(count: number): Particle[] {
       dx: 15 + Math.random() * 40,
       dy: 15 + Math.random() * 40,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      zFactor: 0.3 + Math.random() * 1.2,
     })
   }
   return particles
+}
+
+/** Individual particle that drifts with spatial tilt */
+function SpatialParticle({ p }: { p: Particle }) {
+  const { tiltX, tiltY } = useSpatialContext()
+
+  const x = useTransform(tiltX, (v) => v * p.zFactor * 8)
+  const y = useTransform(tiltY, (v) => v * p.zFactor * 8)
+
+  return (
+    <motion.div
+      className="ambient-particle"
+      style={{
+        left: p.left,
+        top: p.top,
+        width: p.size,
+        height: p.size,
+        x,
+        y,
+      }}
+      // CSS custom properties applied as data attributes via inline style
+      // But framer-motion style doesn't support CSS custom props well,
+      // so we layer a plain div for the CSS animation properties
+    >
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          opacity: p.opacity,
+          background: p.color,
+          animation: `float-particle ${p.duration}s ease-in-out infinite`,
+          animationDelay: `${p.delay}s`,
+          '--p-dx': `${p.dx}px`,
+          '--p-dy': `${p.dy}px`,
+        } as React.CSSProperties}
+      />
+    </motion.div>
+  )
 }
 
 export function AmbientParticles() {
@@ -45,22 +87,7 @@ export function AmbientParticles() {
   return (
     <div className="fixed inset-0 z-[5] pointer-events-none overflow-hidden">
       {particles.map((p) => (
-        <div
-          key={p.id}
-          className="ambient-particle"
-          style={{
-            left: p.left,
-            top: p.top,
-            width: p.size,
-            height: p.size,
-            '--p-opacity': p.opacity,
-            '--p-duration': `${p.duration}s`,
-            '--p-delay': `${p.delay}s`,
-            '--p-dx': `${p.dx}px`,
-            '--p-dy': `${p.dy}px`,
-            '--p-color': p.color,
-          } as React.CSSProperties}
-        />
+        <SpatialParticle key={p.id} p={p} />
       ))}
     </div>
   )
