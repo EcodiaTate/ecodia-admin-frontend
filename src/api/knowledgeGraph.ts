@@ -49,11 +49,6 @@ export async function getKGBriefing(query: string) {
   return data
 }
 
-export async function triggerEmbedding() {
-  const { data } = await api.post<{ embedded: number }>('/kg/embed')
-  return data
-}
-
 // ── Consolidation ─────────────────────────────────────────────────────
 
 export interface ConsolidationStats {
@@ -67,17 +62,5 @@ export interface ConsolidationStats {
 
 export async function getConsolidationStats() {
   const { data } = await api.get<ConsolidationStats>('/kg/consolidation/stats')
-  return data
-}
-
-export async function triggerConsolidation(dryRun = false) {
-  const { data } = await api.post<{ status: string; message: string }>('/kg/consolidation/run', null, {
-    params: dryRun ? { dryRun: 'true' } : undefined,
-  })
-  return data
-}
-
-export async function getKGHealth() {
-  const { data } = await api.get<{ neo4j: 'connected' | 'disconnected' }>('/kg/health')
   return data
 }

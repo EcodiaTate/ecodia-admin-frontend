@@ -20,18 +20,3 @@ export async function getMetaConversations(params?: { pageId?: string; limit?: n
   const { data } = await api.get<MetaConversation[]>('/meta/conversations', { params })
   return data
 }
-
-export async function syncMeta() {
-  const { data } = await api.post('/meta/sync')
-  return data
-}
-
-export async function publishMetaPost(pageId: string, message: string, link?: string) {
-  const { data } = await api.post('/meta/posts', { pageId, message, link })
-  return data
-}
-
-export async function sendMetaMessage(conversationId: string, message: string, pageId: string) {
-  const { data } = await api.post('/meta/conversations/message', { conversationId, message, pageId })
-  return data
-}

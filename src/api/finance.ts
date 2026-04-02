@@ -10,13 +10,3 @@ export async function getFinanceSummary() {
   const { data } = await api.get<FinanceSummary>('/finance/summary')
   return data
 }
-
-export async function syncFinance() {
-  const { data } = await api.post('/finance/sync')
-  return data
-}
-
-export async function updateCategory(id: string, category: string, xeroCategory?: string) {
-  const { data } = await api.patch<Transaction>(`/finance/transactions/${id}/category`, { category, xeroCategory })
-  return data
-}
