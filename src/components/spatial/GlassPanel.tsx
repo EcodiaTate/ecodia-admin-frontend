@@ -9,7 +9,7 @@ interface GlassPanelProps {
   depth?: GlassDepth
   parallax?: boolean
   holo?: boolean
-  /** Z-depth in the spatial scene. Positive = closer. Affects gyro/mouse parallax. */
+  /** Z-depth in the spatial scene. Positive = closer. */
   z?: number
   className?: string
   children: React.ReactNode
@@ -23,8 +23,7 @@ const depthClasses: Record<GlassDepth, string> = {
   deep: 'glass-deep',
 }
 
-/** Pixels of lateral shift per unit of z-depth at full tilt */
-const Z_PARALLAX_FACTOR = 0.3
+const Z_PARALLAX = 0.5
 
 export function GlassPanel({
   depth = 'surface',
@@ -38,27 +37,26 @@ export function GlassPanel({
   const ref = useRef<HTMLDivElement>(null)
   const { tiltX, tiltY } = useSpatialContext()
 
-  // ── Local mouse parallax (hover-only, desktop) ──
+  // ── Local mouse parallax (hover, desktop) ──
   const mouseX = useMotionValue(0.5)
   const mouseY = useMotionValue(0.5)
-
-  const localRotateX = useSpring(useTransform(mouseY, [0, 1], [2.5, -2.5]), {
-    stiffness: 60,
-    damping: 18,
+  const localRotateX = useSpring(useTransform(mouseY, [0, 1], [3.5, -3.5]), {
+    stiffness: 50,
+    damping: 15,
   })
-  const localRotateY = useSpring(useTransform(mouseX, [0, 1], [-2.5, 2.5]), {
-    stiffness: 60,
-    damping: 18,
+  const localRotateY = useSpring(useTransform(mouseX, [0, 1], [-3.5, 3.5]), {
+    stiffness: 50,
+    damping: 15,
   })
 
-  // ── Global spatial tilt (gyro/mouse from SpatialDepthProvider) ──
-  // Panels at higher Z shift more, creating depth separation
-  const spatialX = useTransform(tiltX, (v) => v * z * Z_PARALLAX_FACTOR)
-  const spatialY = useTransform(tiltY, (v) => v * z * Z_PARALLAX_FACTOR)
+  // ── Global spatial tilt ──
+  const spatialX = useTransform(tiltX, (v) => v * z * Z_PARALLAX)
+  const spatialY = useTransform(tiltY, (v) => v * z * Z_PARALLAX)
 
-  // Ambient tilt from global scene — subtle rotation follows device/mouse
-  const ambientRotateX = useTransform(tiltY, (v) => v * -1.2)
-  const ambientRotateY = useTransform(tiltX, (v) => v * 1.2)
+  // Ambient tilt — ALL glass panels breathe with the scene, not just parallax ones
+  // ±2.5° rotation is perceptible but still elegant
+  const ambientRotateX = useTransform(tiltY, (v) => v * -2.5)
+  const ambientRotateY = useTransform(tiltX, (v) => v * 2.5)
 
   function handleMouseMove(e: React.MouseEvent) {
     if (!parallax || !ref.current) return
@@ -73,8 +71,6 @@ export function GlassPanel({
     mouseY.set(0.5)
   }
 
-  // Combine local hover parallax with global spatial tilt
-  const hasLocalParallax = parallax
   const hasSpatialDepth = z !== 0
 
   return (
@@ -84,24 +80,20 @@ export function GlassPanel({
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
-        // Local mouse parallax (desktop hover)
-        ...(hasLocalParallax
-          ? { rotateX: localRotateX, rotateY: localRotateY, transformPerspective: 800 }
-          : {}),
-        // Global spatial shift from z-depth
+        // Local mouse parallax overrides ambient when active
+        rotateX: parallax ? localRotateX : ambientRotateX,
+        rotateY: parallax ? localRotateY : ambientRotateY,
+        transformPerspective: parallax ? 600 : 900,
+        // Z-depth shift
         ...(hasSpatialDepth ? { x: spatialX, y: spatialY } : {}),
-        // Ambient rotation from gyro/mouse (all panels, subtle)
-        ...(!hasLocalParallax
-          ? { rotateX: ambientRotateX, rotateY: ambientRotateY, transformPerspective: 1000 }
-          : {}),
         translateZ: z,
       }}
       whileHover={
-        hasLocalParallax
+        parallax
           ? {
-              y: -3,
-              boxShadow: '0 32px 72px -18px rgba(0, 104, 122, 0.08)',
-              transition: { type: 'spring', stiffness: 100, damping: 20 },
+              y: -4,
+              boxShadow: '0 36px 80px -18px rgba(0, 104, 122, 0.10)',
+              transition: { type: 'spring', stiffness: 80, damping: 18 },
             }
           : undefined
       }

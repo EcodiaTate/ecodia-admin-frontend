@@ -17,6 +17,7 @@ import type { WorkerStatus } from '@/store/workerStore'
 import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import {
   MessageSquare, Target, UserPlus, PenSquare, ArrowLeft,
 } from 'lucide-react'
@@ -46,9 +47,9 @@ export default function LinkedInPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-6xl">
-      {/* Header */}
-      <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-6xl preserve-3d-deep">
+      {/* Header — floats closest */}
+      <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Network Intelligence
@@ -83,10 +84,10 @@ export default function LinkedInPage() {
             </motion.div>
           )}
         </div>
-      </div>
+      </SpatialLayer>
 
-      {/* Whisper stats — wrap on mobile, spread on desktop */}
-      <div className="mb-10 flex flex-wrap gap-4 sm:gap-6 md:gap-8 lg:justify-center">
+      {/* Whisper stats — content plane */}
+      <SpatialLayer z={12} className="mb-10 flex flex-wrap gap-4 sm:gap-6 md:gap-8 lg:justify-center">
         <WhisperStat
           label="Unread DMs"
           value={dmStats?.unread ?? 0}
@@ -115,10 +116,10 @@ export default function LinkedInPage() {
           accent="text-primary-container"
           onClick={() => setTab('posts')}
         />
-      </div>
+      </SpatialLayer>
 
-      {/* Tabs — wrap on mobile */}
-      <div className="mb-8 flex flex-wrap items-center gap-1">
+      {/* Tabs — neutral */}
+      <SpatialLayer z={5} className="mb-8 flex flex-wrap items-center gap-1">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -133,9 +134,10 @@ export default function LinkedInPage() {
             {t.label}
           </button>
         ))}
-      </div>
+      </SpatialLayer>
 
-      {/* Tab Content */}
+      {/* Tab Content — recessed */}
+      <SpatialLayer z={-8}>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
           key={tab + (tab === 'dms' && selectedDM ? '-detail' : '') + (tab === 'posts' && showComposer ? '-compose' : '')}
@@ -182,6 +184,7 @@ export default function LinkedInPage() {
           {tab === 'settings' && <LinkedInSettings />}
         </motion.div>
       </AnimatePresence>
+      </SpatialLayer>
     </div>
   )
 }

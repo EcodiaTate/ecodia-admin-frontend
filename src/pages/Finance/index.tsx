@@ -6,6 +6,7 @@ import { CategoryChart } from './CategoryChart'
 import { ReconcilePanel } from './ReconcilePanel'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
 import { AmbientPulse } from '@/components/spatial/AmbientPulse'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import { formatCurrency, cn } from '@/lib/utils'
 import { TrendingUp, TrendingDown } from 'lucide-react'
@@ -27,8 +28,8 @@ export default function FinancePage() {
   ]
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-5xl preserve-3d-deep">
+      <SpatialLayer z={25} className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Capital Flow
@@ -40,28 +41,30 @@ export default function FinancePage() {
         {financeWorker && (
           <AmbientPulse label="Xero" lastSyncAt={financeWorker.lastSync} status={financeWorker.status} />
         )}
-      </div>
+      </SpatialLayer>
 
-      {/* Hero net — centered on mobile, offset on desktop */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={glide}
-        className="mb-12 text-center sm:text-left md:pl-6"
-      >
-        <p className={cn(
-          'font-display text-4xl font-light tabular-nums sm:text-display-lg',
-          net >= 0 ? 'text-secondary' : 'text-error',
-        )}>
-          {formatCurrency(net)}
-        </p>
-        <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
-          Net · month to date
-        </span>
-      </motion.div>
+      {/* Hero net — floats forward */}
+      <SpatialLayer z={20}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={glide}
+          className="mb-12 text-center sm:text-left md:pl-6"
+        >
+          <p className={cn(
+            'font-display text-4xl font-light tabular-nums sm:text-display-lg',
+            net >= 0 ? 'text-secondary' : 'text-error',
+          )}>
+            {formatCurrency(net)}
+          </p>
+          <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
+            Net · month to date
+          </span>
+        </motion.div>
+      </SpatialLayer>
 
-      {/* Whisper stats — float right on desktop */}
-      <div className="mb-14 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
+      {/* Whisper stats — content plane */}
+      <SpatialLayer z={10} className="mb-14 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
         <WhisperStat
           label="Income"
           value={formatCurrency(summary?.income ?? 0)}
@@ -76,48 +79,50 @@ export default function FinancePage() {
           accent="text-tertiary"
           subtext="Month to date"
         />
-      </div>
+      </SpatialLayer>
 
-      {/* Chart — centered, breathes */}
-      <div className="mx-auto max-w-md md:max-w-lg">
+      {/* Chart — slightly recessed */}
+      <SpatialLayer z={-5} className="mx-auto max-w-md md:max-w-lg">
         <CategoryChart />
-      </div>
+      </SpatialLayer>
 
-      <div className="mt-12 mb-6 flex gap-1">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={cn(
-              'relative rounded-xl px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2',
-              tab === t.key
-                ? 'text-primary'
-                : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
-            )}
+      <SpatialLayer z={-10}>
+        <div className="mt-12 mb-6 flex gap-1">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                'relative rounded-xl px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2',
+                tab === t.key
+                  ? 'text-primary'
+                  : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
+              )}
+            >
+              {tab === t.key && (
+                <motion.div
+                  layoutId="finance-tab-bg"
+                  className="absolute inset-0 rounded-xl bg-primary/10"
+                  transition={glide}
+                />
+              )}
+              <span className="relative z-10">{t.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, x: tab === 'uncategorized' ? 20 : -20, scale: 0.98 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: tab === 'uncategorized' ? -20 : 20, scale: 0.98 }}
+            transition={glide}
           >
-            {tab === t.key && (
-              <motion.div
-                layoutId="finance-tab-bg"
-                className="absolute inset-0 rounded-xl bg-primary/10"
-                transition={glide}
-              />
-            )}
-            <span className="relative z-10">{t.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, x: tab === 'uncategorized' ? 20 : -20, scale: 0.98 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: tab === 'uncategorized' ? -20 : 20, scale: 0.98 }}
-          transition={glide}
-        >
-          {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
-        </motion.div>
-      </AnimatePresence>
+            {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
+          </motion.div>
+        </AnimatePresence>
+      </SpatialLayer>
     </div>
   )
 }

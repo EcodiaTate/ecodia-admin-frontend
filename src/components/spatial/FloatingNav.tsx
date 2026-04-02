@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useTransform } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { NAV_LINKS, getSceneKey } from './spatialConfig'
+import { useSpatialContext } from './SpatialDepthProvider'
 
 const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
 
@@ -11,6 +12,13 @@ export function FloatingNav() {
   const activeKey = getSceneKey(location.pathname)
   const [visible, setVisible] = useState(true)
   const [hovered, setHovered] = useState(false)
+  const { tiltX, tiltY } = useSpatialContext()
+
+  // Nav floats at its own Z-depth — shifts opposite to content for parallax separation
+  const navX = useTransform(tiltX, (v) => v * -6)
+  // Subtle rotation follows device tilt
+  const navRotateY = useTransform(tiltX, (v) => v * 1.5)
+  const navRotateX = useTransform(tiltY, (v) => v * -1.2)
 
   // Desktop: auto-fade after 3s, reappear on left-edge hover
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -37,6 +45,10 @@ export function FloatingNav() {
         className="fixed left-5 top-1/2 z-30 hidden flex-col items-center gap-1 rounded-3xl py-5 px-2 md:flex"
         style={{
           y: '-50%',
+          x: navX,
+          rotateY: navRotateY,
+          rotateX: navRotateX,
+          transformPerspective: 800,
           backgroundColor: 'rgba(255, 255, 255, 0.35)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           boxShadow: '0 24px 60px -16px rgba(0, 104, 122, 0.05)',

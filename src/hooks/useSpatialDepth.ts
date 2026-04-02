@@ -8,6 +8,9 @@ import { useMotionValue, useSpring, MotionValue } from 'framer-motion'
  *   - perspective-origin shifts on the spatial viewport
  *   - per-element translateZ parallax via SpatialLayer
  *   - GlassPanel ambient tilt
+ *   - Aurora counter-drift
+ *   - Particle scatter
+ *   - Edge-light direction
  *
  * On mobile: DeviceOrientationEvent (beta/gamma → tilt)
  * On desktop: mouse position relative to viewport center
@@ -15,19 +18,16 @@ import { useMotionValue, useSpring, MotionValue } from 'framer-motion'
  * Zero re-renders — all values are MotionValues.
  */
 
-const SPRING_CONFIG = { stiffness: 40, damping: 20, mass: 1.5 }
+// Looser springs = more floaty, organic, holographic feel
+const SPRING_CONFIG = { stiffness: 28, damping: 14, mass: 1.8 }
 
-/** Clamp value between -1 and 1 */
 function clamp(v: number): number {
   return Math.max(-1, Math.min(1, v))
 }
 
 export interface SpatialDepthValues {
-  /** Horizontal tilt: -1 (left) to 1 (right) */
   tiltX: MotionValue<number>
-  /** Vertical tilt: -1 (up) to 1 (down) */
   tiltY: MotionValue<number>
-  /** Whether gyroscope is active (mobile) */
   hasGyroscope: boolean
 }
 
@@ -43,12 +43,10 @@ export function useSpatialDepth(): SpatialDepthValues {
   const baselineBeta = useRef(0)
   const baselineGamma = useRef(0)
 
-  // ── Gyroscope (mobile) ──
   const handleOrientation = useCallback(
     (e: DeviceOrientationEvent) => {
       if (e.beta == null || e.gamma == null) return
 
-      // Calibrate on first reading — treat current holding angle as "neutral"
       if (!gyroCalibrated.current) {
         baselineBeta.current = e.beta
         baselineGamma.current = e.gamma
@@ -56,9 +54,9 @@ export function useSpatialDepth(): SpatialDepthValues {
         return
       }
 
-      // Delta from baseline, normalized to ±1 over a ±25° range
-      const dx = clamp((e.gamma - baselineGamma.current) / 25)
-      const dy = clamp((e.beta - baselineBeta.current) / 25)
+      // Wider range on mobile — ±20° for full tilt (more responsive)
+      const dx = clamp((e.gamma - baselineGamma.current) / 20)
+      const dy = clamp((e.beta - baselineBeta.current) / 20)
 
       rawX.set(dx)
       rawY.set(dy)
@@ -66,11 +64,9 @@ export function useSpatialDepth(): SpatialDepthValues {
     [rawX, rawY],
   )
 
-  // ── Mouse fallback (desktop) ──
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       if (hasGyro.current) return
-      // Map mouse position to -1..1 relative to viewport center
       const nx = (e.clientX / window.innerWidth - 0.5) * 2
       const ny = (e.clientY / window.innerHeight - 0.5) * 2
       rawX.set(clamp(nx))
@@ -80,9 +76,7 @@ export function useSpatialDepth(): SpatialDepthValues {
   )
 
   useEffect(() => {
-    // Try gyroscope first
     const tryGyro = async () => {
-      // iOS 13+ requires permission
       const doe = DeviceOrientationEvent as unknown as {
         requestPermission?: () => Promise<string>
       }
@@ -95,7 +89,6 @@ export function useSpatialDepth(): SpatialDepthValues {
         }
       }
 
-      // Test if we actually get readings
       return new Promise<boolean>((resolve) => {
         let received = false
         const test = (e: DeviceOrientationEvent) => {
@@ -106,7 +99,6 @@ export function useSpatialDepth(): SpatialDepthValues {
           }
         }
         window.addEventListener('deviceorientation', test, { passive: true })
-        // If no reading after 500ms, fall back to mouse
         setTimeout(() => {
           if (!received) {
             window.removeEventListener('deviceorientation', test)

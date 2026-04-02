@@ -12,6 +12,7 @@ import type { DriveFile, VercelDeployment, MetaPost, MetaConversation } from '@/
 import { cn } from '@/lib/utils'
 import { formatRelative } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import {
   HardDrive, Cloud, Share2, Search, FileText, Sheet, FileImage,
   GitBranch, CheckCircle2, XCircle, Clock, Rocket,
@@ -33,9 +34,9 @@ export default function WorkspacePage() {
   ]
 
   return (
-    <div className="mx-auto max-w-6xl">
-      {/* Header */}
-      <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-6xl preserve-3d-deep">
+      {/* Header — floats closest */}
+      <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Connected Systems
@@ -50,10 +51,10 @@ export default function WorkspacePage() {
           {workers.vercel && <AmbientPulse label="Vercel" lastSyncAt={workers.vercel.lastSync} status={workers.vercel.status} />}
           {workers.meta && <AmbientPulse label="Meta" lastSyncAt={workers.meta.lastSync} status={workers.meta.status} />}
         </div>
-      </div>
+      </SpatialLayer>
 
       {/* Tabs */}
-      <div className="mb-8 flex items-center gap-1 rounded-2xl bg-surface-container-low/50 p-1 w-fit">
+      <SpatialLayer z={10} className="mb-8 flex items-center gap-1 rounded-2xl bg-surface-container-low/50 p-1 w-fit">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -75,9 +76,10 @@ export default function WorkspacePage() {
             <span className="relative">{label}</span>
           </button>
         ))}
-      </div>
+      </SpatialLayer>
 
-      {/* Tab Content */}
+      {/* Tab Content — recessed */}
+      <SpatialLayer z={-8}>
       <AnimatePresence mode="wait">
         {tab === 'drive' && (
           <motion.div key="drive" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
@@ -95,6 +97,7 @@ export default function WorkspacePage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </SpatialLayer>
     </div>
   )
 }

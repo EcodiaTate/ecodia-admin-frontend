@@ -8,6 +8,7 @@ import { WhisperStat } from '@/components/spatial/WhisperStat'
 import type { CCSession } from '@/types/claudeCode'
 import toast from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { ArrowLeft, Sparkles, Activity, Clock } from 'lucide-react'
 import { formatRelative } from '@/lib/utils'
 
@@ -49,16 +50,17 @@ export default function ClaudeCodePage() {
   })
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-10">
+    <div className="mx-auto max-w-5xl preserve-3d-deep">
+      <SpatialLayer z={25} className="mb-10">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           AI Operations
         </span>
         <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
           Autonomy <em className="not-italic font-normal text-primary">Core</em>
         </h1>
-      </div>
+      </SpatialLayer>
 
+      <SpatialLayer z={-5}>
       <AnimatePresence mode="popLayout" initial={false}>
         {session ? (
           <motion.div
@@ -128,6 +130,7 @@ export default function ClaudeCodePage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </SpatialLayer>
     </div>
   )
 }

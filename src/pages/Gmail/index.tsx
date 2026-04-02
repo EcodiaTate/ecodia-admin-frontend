@@ -11,6 +11,7 @@ import type { EmailThread } from '@/types/gmail'
 import type { WorkerStatus } from '@/store/workerStore'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { ArrowLeft, Mail, AlertTriangle, AlertCircle, X } from 'lucide-react'
 
 type Filter = {
@@ -55,9 +56,9 @@ export default function GmailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      {/* Header */}
-      <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-5xl preserve-3d-deep">
+      {/* Header — floats closest */}
+      <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Communication Stream
@@ -69,10 +70,10 @@ export default function GmailPage() {
         {gmailWorker && (
           <AmbientPulse label="Gmail" lastSyncAt={gmailWorker.lastSync} status={gmailWorker.status} />
         )}
-      </div>
+      </SpatialLayer>
 
-      {/* Whisper stats — flow right on desktop for asymmetry */}
-      <div className="mb-10 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
+      {/* Whisper stats — content plane */}
+      <SpatialLayer z={12} className="mb-10 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
         <WhisperStat
           label="Unread"
           value={stats?.unread ?? 0}
@@ -94,10 +95,10 @@ export default function GmailPage() {
           accent="text-tertiary"
           onClick={() => setFilter({ priority: 'high' })}
         />
-      </div>
+      </SpatialLayer>
 
-      {/* Filter tabs — wrap naturally */}
-      <div className="mb-6 flex flex-wrap items-center gap-1">
+      {/* Filter tabs — neutral plane */}
+      <SpatialLayer z={5} className="mb-6 flex flex-wrap items-center gap-1">
         {inboxTabs.map((tab) => (
           <button
             key={tab.label}
@@ -145,14 +146,16 @@ export default function GmailPage() {
             )}
           </button>
         ))}
-      </div>
+      </SpatialLayer>
 
+      <SpatialLayer z={-8}>
       <EmailList
         status={filter.status}
         priority={filter.priority}
         inbox={filter.inbox}
         onSelect={setSelected}
       />
+      </SpatialLayer>
     </div>
   )
 }

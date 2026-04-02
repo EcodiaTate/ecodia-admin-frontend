@@ -2,14 +2,15 @@ import { motion, useTransform } from 'framer-motion'
 import { useSpatialContext } from './SpatialDepthProvider'
 
 /**
- * The root 3D viewport that responds to device tilt / mouse position.
+ * Root 3D viewport — shifts perspective-origin based on tilt.
+ * Every child with translateZ automatically separates in parallax.
  *
- * Shifts perspective-origin based on tilt, so every child with a translateZ
- * automatically moves in parallax. Real CSS 3D perspective, not a 2D hack.
+ * Perspective is set to 800px (closer = more dramatic depth separation).
+ * Origin shifts ±15% from center — enough to clearly see depth layers separate.
  */
 
-/** How far the perspective origin shifts from center (in %) at full tilt */
-const ORIGIN_RANGE = 8
+const PERSPECTIVE = 800
+const ORIGIN_RANGE = 15
 
 export function SpatialViewport({
   className,
@@ -20,7 +21,6 @@ export function SpatialViewport({
 }) {
   const { tiltX, tiltY } = useSpatialContext()
 
-  // Combine into a single perspectiveOrigin string
   const perspectiveOrigin = useTransform(
     [tiltX, tiltY],
     ([x, y]: number[]) => `${50 + x * ORIGIN_RANGE}% ${50 + y * ORIGIN_RANGE}%`,
@@ -32,7 +32,7 @@ export function SpatialViewport({
       style={{
         position: 'fixed' as const,
         inset: 0,
-        perspective: 1200,
+        perspective: PERSPECTIVE,
         perspectiveOrigin,
         overflow: 'hidden' as const,
       }}

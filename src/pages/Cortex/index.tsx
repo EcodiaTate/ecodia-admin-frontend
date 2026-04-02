@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUp, Brain, Sparkles, Network } from 'lucide-react'
 import { ConstellationCanvas } from './ConstellationCanvas'
 import { BlockRenderer } from './blocks/BlockRenderer'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import type { ChatMessage } from '@/types/cortex'
 
 export default function CortexPage() {
@@ -109,15 +110,15 @@ export default function CortexPage() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="relative flex h-full flex-col">
-      {/* Ambient constellation background */}
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-30">
+    <div className="relative flex h-full flex-col preserve-3d-deep">
+      {/* Ambient constellation — deep background */}
+      <SpatialLayer z={-40} className="pointer-events-none fixed inset-0 z-0 opacity-30">
         <ConstellationCanvas
           nodeCount={stats?.totalNodes ?? 0}
           relCount={stats?.totalRelationships ?? 0}
           activeNodes={activeNodes}
         />
-      </div>
+      </SpatialLayer>
 
       {/* Scrollable chat area */}
       <div className="relative z-10 flex-1 overflow-y-auto scrollbar-thin">
@@ -182,8 +183,8 @@ export default function CortexPage() {
         </div>
       </div>
 
-      {/* Input bar — fixed at bottom */}
-      <div className="relative z-10">
+      {/* Input bar — floats forward */}
+      <SpatialLayer z={20} className="relative z-10">
         <div className="mx-auto max-w-3xl px-6 py-4">
           <div className="glass-elevated rounded-2xl transition-all focus-within:shadow-glass-hover">
             <div className="flex items-end gap-3 px-5 py-3.5">
@@ -227,7 +228,7 @@ export default function CortexPage() {
             </div>
           )}
         </div>
-      </div>
+      </SpatialLayer>
     </div>
   )
 }

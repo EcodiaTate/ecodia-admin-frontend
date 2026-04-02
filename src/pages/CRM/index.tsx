@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge'
 
 import type { Client } from '@/types/crm'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { ArrowLeft } from 'lucide-react'
 
 export default function CRMPage() {
@@ -22,16 +23,17 @@ export default function CRMPage() {
   })
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-10 sm:mb-12">
+    <div className="mx-auto max-w-6xl preserve-3d-deep">
+      <SpatialLayer z={25} className="mb-10 sm:mb-12">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           Client Network
         </span>
         <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
           Flow <em className="not-italic font-normal text-primary">State</em>
         </h1>
-      </div>
+      </SpatialLayer>
 
+      <SpatialLayer z={-5}>
       <AnimatePresence mode="popLayout" initial={false}>
         {client ? (
           <motion.div
@@ -117,6 +119,7 @@ export default function CRMPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </SpatialLayer>
     </div>
   )
 }

@@ -61,6 +61,7 @@ export function CCTerminal({ session }: TerminalProps) {
       </div>
 
       {/* Terminal output with glass frame */}
+      <div style={{ transformStyle: 'flat' }}>
       <GlassPanel depth="elevated" className="overflow-hidden">
         <div
           ref={outputRef}
@@ -74,6 +75,7 @@ export function CCTerminal({ session }: TerminalProps) {
           )}
         </div>
       </GlassPanel>
+      </div>
 
       {(session.status === 'running' || session.status === 'awaiting_input') && (
         <form
