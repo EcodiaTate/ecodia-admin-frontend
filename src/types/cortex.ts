@@ -13,7 +13,7 @@ export interface ActionCardBlock {
   type: 'action_card'
   title: string
   description: string
-  action: 'send_email' | 'archive_email' | 'create_task' | 'update_crm_stage' | 'draft_reply'
+  action: 'send_email' | 'archive_email' | 'create_task' | 'update_crm_stage' | 'draft_reply' | 'create_calendar_event' | 'start_cc_session' | 'create_doc' | 'create_sheet' | 'write_sheet' | 'upload_file' | 'search_drive'
   params: Record<string, unknown>
   urgency: 'low' | 'medium' | 'high'
 }

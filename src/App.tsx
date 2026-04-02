@@ -8,6 +8,7 @@ import LinkedInPage from './pages/LinkedIn'
 import CRMPage from './pages/CRM'
 import CortexPage from './pages/Cortex'
 import ClaudeCodePage from './pages/ClaudeCode'
+import WorkspacePage from './pages/Workspace'
 import SettingsPage from './pages/Settings'
 import LoginPage from './pages/Login'
 
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/crm" element={<CRMPage />} />
           <Route path="/crm/:clientId" element={<CRMPage />} />
           <Route path="/cortex" element={<CortexPage />} />
+          <Route path="/workspace" element={<WorkspacePage />} />
           <Route path="/claude-code" element={<ClaudeCodePage />} />
           <Route path="/claude-code/:sessionId" element={<ClaudeCodePage />} />
           <Route path="/settings" element={<SettingsPage />} />

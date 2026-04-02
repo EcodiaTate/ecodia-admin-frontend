@@ -7,6 +7,7 @@ import {
   Terminal,
   Settings,
   Brain,
+  Globe,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -111,6 +112,19 @@ export const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(0, 104, 122, 0.07)', x: '50%', y: '40%', size: '75%' },
         { color: 'rgba(6, 182, 212, 0.05)', x: '25%', y: '60%', size: '55%' },
         { color: 'rgba(16, 185, 129, 0.03)', x: '75%', y: '20%', size: '40%' },
+      ],
+    },
+  },
+  workspace: {
+    path: '/workspace',
+    label: 'External Workspace',
+    icon: Globe,
+    position: { x: -1, y: -1, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(6, 182, 212, 0.05)', x: '40%', y: '35%', size: '65%' },
+        { color: 'rgba(245, 158, 11, 0.04)', x: '70%', y: '65%', size: '55%' },
+        { color: 'rgba(16, 185, 129, 0.03)', x: '25%', y: '75%', size: '45%' },
       ],
     },
   },

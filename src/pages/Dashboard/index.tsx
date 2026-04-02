@@ -23,8 +23,12 @@ export default function DashboardPage() {
         {/* Ambient sync pulses — wrap on small screens */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 sm:pt-2">
           {workers.gmail && <AmbientPulse label="Gmail" lastSyncAt={workers.gmail.lastSync} status={workers.gmail.status} />}
+          {workers.calendar && <AmbientPulse label="Calendar" lastSyncAt={workers.calendar.lastSync} status={workers.calendar.status} />}
+          {workers.google_drive && <AmbientPulse label="Drive" lastSyncAt={workers.google_drive.lastSync} status={workers.google_drive.status} />}
+          {workers.vercel && <AmbientPulse label="Vercel" lastSyncAt={workers.vercel.lastSync} status={workers.vercel.status} />}
           {workers.finance && <AmbientPulse label="Xero" lastSyncAt={workers.finance.lastSync} status={workers.finance.status} />}
           {workers.linkedin && <AmbientPulse label="LinkedIn" lastSyncAt={workers.linkedin.lastSync} status={workers.linkedin.status} />}
+          {workers.meta && <AmbientPulse label="Meta" lastSyncAt={workers.meta.lastSync} status={workers.meta.status} />}
         </div>
       </div>
 
