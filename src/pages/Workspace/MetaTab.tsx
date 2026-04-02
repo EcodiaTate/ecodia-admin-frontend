@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { getMetaStats, getMetaPages, getMetaPosts, getMetaConversations } from '@/api/meta'
+import { getMetaStats, getMetaPosts, getMetaConversations } from '@/api/meta'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
 import type { MetaPost, MetaConversation } from '@/types/workspace'
 import { cn, formatRelative } from '@/lib/utils'
