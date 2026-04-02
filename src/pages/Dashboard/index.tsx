@@ -10,7 +10,7 @@ export default function DashboardPage() {
   const workers = useWorkerStatus() as Record<string, WorkerStatus>
 
   return (
-    <div className="mx-auto max-w-5xl preserve-3d-deep">
+    <div className="mx-auto max-w-5xl">
       {/* Header — floats closest to viewer */}
       <SpatialLayer z={25} className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>

@@ -109,18 +109,10 @@
   .scene-container {
     position: absolute;
     inset: 0;
-    transform-style: preserve-3d;
     overflow-y: auto;
     overflow-x: hidden;
     /* Mobile: tight padding, clear of bottom nav */
     padding: 2rem 1.25rem 6rem 1.25rem;
-  }
-
-  /* Propagate 3D through the page content tree so SpatialLayer translateZ works */
-  .scene-container > *,
-  .scene-container .preserve-3d-deep,
-  .scene-container .preserve-3d-deep > * {
-    transform-style: preserve-3d;
   }
 
   @media (min-width: 768px) {
@@ -152,26 +144,6 @@
   .preserve-3d {
     transform-style: preserve-3d;
   }
-
-  /* === Spatial Z-Depth Layers ===
-   * Use with SpatialLayer component or directly:
-   *   z-foreground  → closest to viewer (headers, CTAs)
-   *   z-surface     → neutral content plane
-   *   z-recessed    → pushed back (secondary info)
-   *   z-background  → deep background elements
-   */
-  .z-foreground  { transform: translateZ(30px); }
-  .z-surface     { transform: translateZ(0px); }
-  .z-recessed    { transform: translateZ(-20px); }
-  .z-background  { transform: translateZ(-50px); }
-
-  /* === Depth-of-Field Blur ===
-   * Subtle blur on elements at distance — mimics camera optics.
-   * Apply to recessed/background elements for depth perception.
-   */
-  .depth-blur-subtle { filter: blur(0.3px); }
-  .depth-blur-medium { filter: blur(0.6px); }
-  .depth-blur-deep   { filter: blur(1px); }
 }
 
 /* === Keyframes (outside layers for global scope) === */

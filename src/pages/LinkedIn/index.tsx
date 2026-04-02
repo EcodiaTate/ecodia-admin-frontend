@@ -47,7 +47,7 @@ export default function LinkedInPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-6xl preserve-3d-deep">
+    <div className="mx-auto max-w-6xl">
       {/* Header — floats closest */}
       <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>

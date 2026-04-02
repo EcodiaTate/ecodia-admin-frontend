@@ -28,7 +28,7 @@ export default function FinancePage() {
   ]
 
   return (
-    <div className="mx-auto max-w-5xl preserve-3d-deep">
+    <div className="mx-auto max-w-5xl">
       <SpatialLayer z={25} className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">

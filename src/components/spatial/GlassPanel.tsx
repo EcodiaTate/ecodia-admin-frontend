@@ -84,9 +84,8 @@ export function GlassPanel({
         rotateX: parallax ? localRotateX : ambientRotateX,
         rotateY: parallax ? localRotateY : ambientRotateY,
         transformPerspective: parallax ? 600 : 900,
-        // Z-depth shift
+        // Z-depth lateral shift (no translateZ — breaks pointer events in scroll containers)
         ...(hasSpatialDepth ? { x: spatialX, y: spatialY } : {}),
-        translateZ: z,
       }}
       whileHover={
         parallax

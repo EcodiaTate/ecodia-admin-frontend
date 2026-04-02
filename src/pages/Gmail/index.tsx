@@ -56,7 +56,7 @@ export default function GmailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl preserve-3d-deep">
+    <div className="mx-auto max-w-5xl">
       {/* Header — floats closest */}
       <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>

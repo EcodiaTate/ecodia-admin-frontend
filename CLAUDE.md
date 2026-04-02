@@ -6,6 +6,44 @@ You are building **Ecodia OS**: a spatial, autonomous command center for Ecodia 
 
 ---
 
+## 0. Engineering Philosophy: FREEDOM & COMPLETENESS
+
+This frontend is the human-facing surface of an autonomous operating system. It must reflect the full capability of the backend — every integration, every action, every data source must be surfaced. Nothing hidden, nothing half-built.
+
+### Core Principles
+
+**Every backend capability must have a frontend surface.** If the backend can publish to Meta, the frontend must expose it. If the backend has an action queue, the dashboard must show it. If the backend tracks Vercel deployments, there must be a view. No orphaned capabilities.
+
+**The interface is the system's voice.** It doesn't just display data — it surfaces intelligence, pre-processed actions, and autonomous decisions. The ActionStream on the dashboard is the canonical example: the system did the thinking, the human approves with one tap.
+
+**Never build a static display when you could build an interactive surface.** Every data card should be actionable. Every list item should be expandable. Every metric should link to its source. The interface empowers, it doesn't just inform.
+
+**Generalise components relentlessly.** If you build a stat display for Drive, it should use the same `WhisperStat` as Gmail and Finance. If you build a tab system for Workspace, it should follow the same pattern as LinkedIn. One component library, universally applied.
+
+**Never leave a page incomplete.** Every page must have: stats/metrics at the top, the primary content view, sync status indicators, and manual sync/action triggers. If any of these are missing, the page is unfinished.
+
+### Anti-Patterns
+
+| If you catch yourself doing this... | Do this instead... |
+|---|---|
+| Building a read-only display of backend data | Add action buttons — the backend has write operations, surface them |
+| Hardcoding a list of worker names for sync pulses | Dynamically render all workers from the worker status API |
+| Creating a page without stats/metrics at the top | Add `WhisperStat` components with the key numbers |
+| Building a detail view without a link back to source | Every item links to its external source (Gmail, Drive, Vercel, etc.) |
+| Leaving Cortex unaware of new capabilities | Update Cortex action types when backend adds new action handlers |
+| Building one integration's UI without the others | Build all integrations in the same pass — unified patterns |
+
+### Backend ↔ Frontend Contract
+
+The backend `CLAUDE.md` defines the engineering philosophy. The frontend must match:
+- Backend has `resolveCodebase()` → Frontend's CC session creator doesn't need a codebase dropdown (the backend resolves from the prompt)
+- Backend has `actionQueueService` → Frontend has `ActionStream` on the dashboard
+- Backend has full Google Workspace write ops → Frontend has create doc/sheet/folder UI
+- Backend has Meta write ops → Frontend must surface post publishing, message reply
+- Backend feeds everything to KG → Frontend's Cortex can query it all conversationally
+
+---
+
 ## 1. Creative North Star: "The Translucent Sanctuary"
 
 The interface must feel like standing inside a prism at golden hour. 90% negative space. No visual clutter. Every element exists in a state of serene suspension — floating glass panes on a luminous, breathing canvas.

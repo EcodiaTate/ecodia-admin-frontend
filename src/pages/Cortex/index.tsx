@@ -110,7 +110,7 @@ export default function CortexPage() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="relative flex h-full flex-col preserve-3d-deep">
+    <div className="relative flex h-full flex-col">
       {/* Ambient constellation — deep background */}
       <SpatialLayer z={-40} className="pointer-events-none fixed inset-0 z-0 opacity-30">
         <ConstellationCanvas

@@ -42,7 +42,7 @@ export function SpatialCanvas() {
           initial="initial"
           animate="animate"
           exit="exit"
-          className="scene-container preserve-3d-deep"
+          className="scene-container"
           style={{ willChange: 'transform, opacity' }}
         >
           {outlet}

@@ -47,7 +47,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="mx-auto max-w-4xl preserve-3d-deep">
+    <div className="mx-auto max-w-4xl">
       <SpatialLayer z={25} className="mb-12 sm:mb-16">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           Neural Connections
