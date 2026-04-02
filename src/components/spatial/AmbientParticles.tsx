@@ -71,7 +71,7 @@ function SpatialParticle({ p }: { p: Particle }) {
         style={{
           opacity: p.opacity,
           background: p.color,
-          animation: `float-particle ${p.duration}s ease-in-out infinite`,
+          animation: `float-particle ${p.duration}s cubic-bezier(0.42, 0, 0.58, 1) infinite`,
           animationDelay: `${p.delay}s`,
           '--p-dx': `${p.dx}px`,
           '--p-dy': `${p.dy}px`,

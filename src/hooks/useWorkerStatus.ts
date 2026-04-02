@@ -6,10 +6,17 @@ import type { WorkerStatus } from '@/store/workerStore'
 
 // Expected intervals in seconds — used to compute staleness
 const EXPECTED_INTERVALS: Record<string, number> = {
-  gmail: 3 * 60,           // 3 min
-  finance: 4 * 60 * 60,    // 4 hr
-  calendar: 5 * 60,        // 5 min
-  linkedin: 4 * 60 * 60,   // 4 hr (DM check interval)
+  gmail: 3 * 60,              // 3 min
+  finance: 4 * 60 * 60,       // 4 hr
+  calendar: 5 * 60,           // 5 min
+  linkedin: 4 * 60 * 60,      // 4 hr (DM check interval)
+  google_drive: 6 * 60 * 60,  // 6 hr
+  meta: 4 * 60 * 60,          // 4 hr
+  vercel: 60 * 60,            // 1 hr
+  codebase_index: 12 * 60 * 60, // 12 hr
+  factory_schedule: 60 * 60,  // 1 hr
+  kg_consolidation: 6 * 60 * 60, // 6 hr
+  kg_embedding: 6 * 60 * 60,  // 6 hr
 }
 
 function computeStaleness(ws: WorkerStatus): WorkerStatus {

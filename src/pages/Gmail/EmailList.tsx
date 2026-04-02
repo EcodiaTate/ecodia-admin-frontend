@@ -67,7 +67,7 @@ export function EmailList({ status, priority, inbox, onSelect }: EmailListProps)
                 {thread.from_name || thread.from_email}
               </span>
               {thread.inbox && (
-                <span className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
+                <span className="rounded-xl bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
                   {thread.inbox.split('@')[0]}@
                 </span>
               )}
@@ -84,7 +84,7 @@ export function EmailList({ status, priority, inbox, onSelect }: EmailListProps)
               <p className="mt-1 truncate text-xs text-on-surface-muted">{thread.snippet}</p>
             ) : null}
             {thread.triage_action && (
-              <span className="mt-1.5 inline-block rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
+              <span className="mt-1.5 inline-block rounded-xl bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
                 {thread.triage_action}
               </span>
             )}
@@ -95,7 +95,7 @@ export function EmailList({ status, priority, inbox, onSelect }: EmailListProps)
             {thread.status === 'unread' && (
               <button
                 onClick={(e) => { e.stopPropagation(); read.mutate(thread.id) }}
-                className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container hover:text-on-surface-variant"
+                className="rounded-xl p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container hover:text-on-surface-variant"
                 title="Mark read"
               >
                 <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -103,7 +103,7 @@ export function EmailList({ status, priority, inbox, onSelect }: EmailListProps)
             )}
             <button
               onClick={(e) => { e.stopPropagation(); archive.mutate(thread.id) }}
-              className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container hover:text-on-surface-variant"
+              className="rounded-xl p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container hover:text-on-surface-variant"
               title="Archive"
             >
               <Archive className="h-3.5 w-3.5" strokeWidth={1.75} />

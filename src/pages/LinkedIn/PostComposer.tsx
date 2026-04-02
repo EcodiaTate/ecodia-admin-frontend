@@ -167,7 +167,7 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
                   type="datetime-local"
                   value={scheduledAt}
                   onChange={(e) => setScheduledAt(e.target.value)}
-                  className="flex-1 rounded-lg bg-surface-container-low px-3 py-2 text-xs text-on-surface outline-none"
+                  className="flex-1 rounded-xl bg-surface-container-low px-3 py-2 text-xs text-on-surface outline-none"
                 />
               </div>
               {scheduledAt && (
@@ -185,7 +185,7 @@ export function PostComposer({ onSaved }: { onSaved: () => void }) {
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
               placeholder="e.g. Technical Tuesday"
-              className="mt-3 w-full rounded-lg bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder-on-surface-muted outline-none"
+              className="mt-3 w-full rounded-xl bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder-on-surface-muted outline-none"
             />
           </div>
 

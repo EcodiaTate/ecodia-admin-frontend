@@ -96,7 +96,7 @@ function ActionCard({ action, index, queryClient }: { action: ActionItem; index:
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
+      exit={{ opacity: 0, x: 60, transition: { type: 'spring', stiffness: 200, damping: 25 } }}
       transition={{ type: 'spring', stiffness: 100, damping: 22, delay: index * 0.03 }}
       className="group rounded-2xl bg-white/40 px-4 py-3 transition-colors hover:bg-white/55"
     >

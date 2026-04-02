@@ -20,7 +20,7 @@ export function ClientCard({ client, onClick }: ClientCardProps) {
       {client.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {client.tags.map((tag) => (
-            <span key={tag} className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
+            <span key={tag} className="rounded-xl bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">
               {tag}
             </span>
           ))}

@@ -108,7 +108,6 @@ function DriveTab() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<DriveFile[]>([])
-
   const { data: stats } = useQuery({ queryKey: ['driveStats'], queryFn: getDriveStats, staleTime: 30000 })
 
   const handleSearch = async () => {

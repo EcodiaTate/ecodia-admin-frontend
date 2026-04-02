@@ -82,7 +82,6 @@
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.5s ease;
     pointer-events: none;
     animation: holo-rotate 8s linear infinite;
   }

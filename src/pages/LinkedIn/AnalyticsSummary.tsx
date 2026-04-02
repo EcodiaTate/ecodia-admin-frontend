@@ -9,8 +9,7 @@ import { motion } from 'framer-motion'
 
 const tooltipStyle = {
   background: 'rgba(255, 255, 255, 0.92)',
-  border: '1px solid rgba(255, 255, 255, 0.6)',
-  borderRadius: '12px',
+  borderRadius: '16px',
   boxShadow: '0 12px 32px -8px rgba(0, 104, 122, 0.06)',
   color: '#1A1C1C',
   fontSize: '12px',

@@ -56,7 +56,7 @@ export function EmailDetail({ thread, onUpdate }: EmailDetailProps) {
           <div className="mt-2 flex items-center gap-3 text-sm text-on-surface-muted">
             <span className="text-on-surface-variant">{thread.from_name || thread.from_email}</span>
             {thread.inbox && (
-              <span className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm">
+              <span className="rounded-xl bg-surface-container px-2 py-0.5 text-label-sm">
                 to {thread.inbox}
               </span>
             )}

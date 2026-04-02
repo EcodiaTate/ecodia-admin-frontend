@@ -129,7 +129,7 @@ export default function CortexPage() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+                exit={{ opacity: 0, y: -20, transition: { type: 'spring', stiffness: 200, damping: 25 } }}
                 transition={{ type: 'spring', stiffness: 80, damping: 20 }}
                 className="flex flex-col items-center justify-center pt-[18vh]"
               >
@@ -168,7 +168,7 @@ export default function CortexPage() {
                     >
                       <div className="relative h-7 w-7">
                         <div className="absolute inset-0 animate-pulse-glow rounded-full bg-primary/10" />
-                        <div className="absolute inset-1 animate-spin rounded-full border-[1.5px] border-surface-container border-t-primary" />
+                        <div className="absolute inset-1.5 rounded-full bg-primary/20 animate-spin" style={{ clipPath: 'polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%)' }} />
                       </div>
                       <span className="text-xs text-on-surface-muted">
                         Tracing through the world model...
@@ -244,7 +244,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.02 }}
         className="flex justify-end"
       >
-        <div className="max-w-[80%] rounded-2xl rounded-br-lg bg-primary/8 px-5 py-3.5">
+        <div className="max-w-[80%] rounded-2xl rounded-br-xl bg-primary/8 px-5 py-3.5">
           <p className="text-sm leading-relaxed text-on-surface">{message.content}</p>
         </div>
       </motion.div>
@@ -261,7 +261,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     >
       {/* Cortex indicator */}
       <div className="flex items-center gap-2 mb-3 pl-1">
-        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/8">
+        <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-primary/8">
           <Brain className="h-3 w-3 text-primary" strokeWidth={1.75} />
         </div>
         <span className="text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/50">

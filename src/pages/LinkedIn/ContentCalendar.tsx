@@ -84,11 +84,11 @@ export function ContentCalendar() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={prevMonth} className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container">
+          <button onClick={prevMonth} className="rounded-xl p-1.5 text-on-surface-muted hover:bg-surface-container">
             <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
           </button>
           <h2 className="font-display text-sm font-medium text-on-surface">{monthLabel}</h2>
-          <button onClick={nextMonth} className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-surface-container">
+          <button onClick={nextMonth} className="rounded-xl p-1.5 text-on-surface-muted hover:bg-surface-container">
             <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
           </button>
         </div>
@@ -157,7 +157,7 @@ export function ContentCalendar() {
                   {dayPosts.slice(0, 3).map((post) => (
                     <div
                       key={post.id}
-                      className={cn('truncate rounded-lg px-1.5 py-0.5 text-[10px]', getThemeColor(post.theme))}
+                      className={cn('truncate rounded-xl px-1.5 py-0.5 text-[10px]', getThemeColor(post.theme))}
                       title={post.content.slice(0, 100)}
                     >
                       {post.content.slice(0, 20)}
@@ -189,7 +189,7 @@ export function ContentCalendar() {
                     <span className="ml-1 text-xs text-on-surface-muted">{theme.time_of_day}</span>
                   )}
                 </div>
-                <button onClick={() => removeTheme.mutate(theme.id)} className="rounded-lg p-1 text-on-surface-muted transition-colors hover:text-error">
+                <button onClick={() => removeTheme.mutate(theme.id)} className="rounded-xl p-1 text-on-surface-muted hover:text-error">
                   <Trash2 className="h-3 w-3" strokeWidth={1.75} />
                 </button>
               </div>
@@ -200,13 +200,13 @@ export function ContentCalendar() {
                 value={newThemeName}
                 onChange={(e) => setNewThemeName(e.target.value)}
                 placeholder="New theme name..."
-                className="flex-1 rounded-lg bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder-on-surface-muted outline-none"
+                className="flex-1 rounded-xl bg-surface-container-low px-3 py-2 text-xs text-on-surface placeholder-on-surface-muted outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && newThemeName.trim() && addTheme.mutate()}
               />
               <button
                 onClick={() => addTheme.mutate()}
                 disabled={!newThemeName.trim()}
-                className="rounded-lg bg-surface-container-high px-3 py-2 text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-40"
+                className="rounded-xl bg-surface-container-high px-3 py-2 text-on-surface-variant hover:bg-surface-container disabled:opacity-40"
               >
                 <Plus className="h-3 w-3" strokeWidth={1.75} />
               </button>

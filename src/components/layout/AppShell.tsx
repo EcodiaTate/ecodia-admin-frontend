@@ -3,7 +3,6 @@ import { SpatialDepthProvider } from '@/components/spatial/SpatialDepthProvider'
 import { AuroraBackground } from '@/components/spatial/AuroraBackground'
 import { SpatialEdgeLight } from '@/components/spatial/SpatialEdgeLight'
 import { AmbientParticles } from '@/components/spatial/AmbientParticles'
-import { CursorGlow } from '@/components/spatial/CursorGlow'
 import { SpatialCanvas } from '@/components/spatial/SpatialCanvas'
 import { FloatingNav } from '@/components/spatial/FloatingNav'
 import { AmbientStatus } from '@/components/spatial/AmbientStatus'
@@ -19,9 +18,6 @@ export function AppShell() {
 
         {/* Layer 0.5: Directional light glare — follows tilt */}
         <SpatialEdgeLight />
-
-        {/* Layer 1: Cursor light source */}
-        <CursorGlow />
 
         {/* Layer 1.5: Ambient particles — scattered at various depths */}
         <AmbientParticles />

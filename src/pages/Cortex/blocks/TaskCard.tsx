@@ -64,13 +64,13 @@ export function TaskCard({ block }: { block: TaskCardBlock }) {
             <>
               <button
                 onClick={() => setState('dismissed')}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-on-surface-muted/40 transition-colors hover:bg-surface-container hover:text-on-surface-muted"
+                className="flex h-7 w-7 items-center justify-center rounded-xl text-on-surface-muted/40 transition-colors hover:bg-surface-container hover:text-on-surface-muted"
               >
                 <X className="h-3 w-3" strokeWidth={2} />
               </button>
               <button
                 onClick={handleSave}
-                className="flex h-7 items-center gap-1 rounded-lg bg-primary/10 px-2.5 text-xs font-medium text-primary transition-colors hover:bg-primary/15"
+                className="flex h-7 items-center gap-1 rounded-xl bg-primary/10 px-2.5 text-xs font-medium text-primary transition-colors hover:bg-primary/15"
               >
                 Save
               </button>

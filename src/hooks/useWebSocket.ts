@@ -44,6 +44,12 @@ export function useWebSocket() {
             case 'worker_heartbeat':
               updateWorker(msg.payload)
               break
+            case 'action_queue:new':
+            case 'action_queue:executed':
+            case 'action_queue:dismissed':
+              // Invalidate pending actions query to refetch
+              window.dispatchEvent(new CustomEvent('ecodia:action-queue-update', { detail: msg }))
+              break
           }
         }
 

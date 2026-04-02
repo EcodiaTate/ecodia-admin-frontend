@@ -83,7 +83,7 @@ export function PostList({ onCompose }: PostListProps) {
                   <StatusBadge status={post.status} />
                   <StatusBadge status={post.post_type} />
                   {post.theme && (
-                    <span className="rounded-lg bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">{post.theme}</span>
+                    <span className="rounded-xl bg-surface-container px-2 py-0.5 text-label-sm text-on-surface-muted">{post.theme}</span>
                   )}
                   {post.ai_generated && (
                     <span className="text-label-sm text-primary-container">AI</span>
@@ -116,7 +116,7 @@ export function PostList({ onCompose }: PostListProps) {
                 {(post.status === 'draft' || post.status === 'scheduled') && (
                   <button
                     onClick={() => remove.mutate(post.id)}
-                    className="rounded-lg p-1.5 text-on-surface-muted transition-colors hover:bg-error/10 hover:text-error"
+                    className="rounded-xl p-1.5 text-on-surface-muted hover:bg-error/10 hover:text-error"
                   >
                     <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
                   </button>
