@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { getKGStats, getKGNode, getKGNeighborhood, getKGBriefing, triggerEmbedding, getConsolidationStats, triggerConsolidation } from '@/api/knowledgeGraph'
+import { useQuery } from '@tanstack/react-query'
+import { getKGStats, getKGNode, getKGNeighborhood, getKGBriefing, getConsolidationStats } from '@/api/knowledgeGraph'
 import { getClients } from '@/api/crm'
 import type { KGNode } from '@/api/knowledgeGraph'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
@@ -8,11 +8,11 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Network, Sparkles, ArrowRight, Zap, BookOpen, Users, Brain, GitMerge, Play } from 'lucide-react'
+import { Search, Network, Sparkles, ArrowRight, BookOpen, Users, Brain, GitMerge } from 'lucide-react'
 import { cn, formatRelative } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-type Tab = 'explore' | 'archive' | 'consolidation'
+type Tab = 'explore' | 'archive' | 'synthesis'
 
 const glide = { type: 'spring' as const, stiffness: 90, damping: 20, mass: 1 }
 
@@ -24,16 +24,7 @@ export default function KnowledgeGraphPage() {
   const [briefingQuery, setBriefingQuery] = useState('')
   const [briefing, setBriefing] = useState<string | null>(null)
 
-  const { data: stats } = useQuery({
-    queryKey: ['kgStats'],
-    queryFn: getKGStats,
-  })
-
-  const embed = useMutation({
-    mutationFn: triggerEmbedding,
-    onSuccess: (data) => toast.success(`Embedded ${data.embedded} nodes`),
-    onError: () => toast.error('Embedding failed'),
-  })
+  const { data: stats } = useQuery({ queryKey: ['kgStats'], queryFn: getKGStats })
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
@@ -75,7 +66,7 @@ export default function KnowledgeGraphPage() {
   const tabs: { key: Tab; label: string; icon: typeof Network }[] = [
     { key: 'explore', label: 'Explore', icon: Network },
     { key: 'archive', label: 'Archive', icon: BookOpen },
-    { key: 'consolidation', label: 'Synthesis', icon: GitMerge },
+    { key: 'synthesis', label: 'Synthesis', icon: GitMerge },
   ]
 
   return (
@@ -93,17 +84,16 @@ export default function KnowledgeGraphPage() {
         <div className="flex flex-wrap gap-4 sm:gap-6 sm:pt-2">
           {stats && (
             <>
-              <WhisperStat label="Active Nodes" value={stats.totalNodes.toLocaleString()} accent="text-primary" />
+              <WhisperStat label="Nodes" value={stats.totalNodes.toLocaleString()} accent="text-primary" />
               <WhisperStat label="Connections" value={stats.totalRelationships.toLocaleString()} accent="text-secondary" />
-              <WhisperStat label="Embedded" value={stats.embeddedNodes.toLocaleString()} accent="text-tertiary" />
             </>
           )}
         </div>
       </SpatialLayer>
 
       {/* Tabs */}
-      <SpatialLayer z={10} className="mb-8 flex items-center justify-between">
-        <div className="flex gap-1 rounded-2xl bg-surface-container-low/50 p-1">
+      <SpatialLayer z={10} className="mb-8">
+        <div className="flex gap-1 rounded-2xl bg-surface-container-low/50 p-1 w-fit">
           {tabs.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -126,20 +116,9 @@ export default function KnowledgeGraphPage() {
             </button>
           ))}
         </div>
-
-        {tab === 'explore' && (
-          <button
-            onClick={() => embed.mutate()}
-            disabled={embed.isPending}
-            className="btn-primary-gradient flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-medium disabled:opacity-40"
-          >
-            <Zap className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {embed.isPending ? 'Embedding...' : 'Embed Nodes'}
-          </button>
-        )}
       </SpatialLayer>
 
-      {/* AI Briefing — always visible at top, spans all tabs */}
+      {/* AI Briefing — ask the graph, it tells you */}
       <SpatialLayer z={5} className="mb-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 max-w-xl">
@@ -153,13 +132,6 @@ export default function KnowledgeGraphPage() {
               className="h-11 w-full rounded-xl bg-surface-container-low/60 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:bg-white/60"
             />
           </div>
-          <button
-            onClick={handleBriefing}
-            disabled={!briefingQuery.trim()}
-            className="h-11 rounded-xl bg-primary/10 px-5 text-sm font-medium text-primary hover:bg-primary/15 disabled:opacity-40"
-          >
-            Brief me
-          </button>
         </div>
 
         <AnimatePresence>
@@ -206,8 +178,8 @@ export default function KnowledgeGraphPage() {
             <ArchiveTab stats={stats} />
           </motion.div>
         ) : (
-          <motion.div key="consolidation" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
-            <ConsolidationTab />
+          <motion.div key="synthesis" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
+            <SynthesisTab />
           </motion.div>
         )}
       </AnimatePresence>
@@ -217,20 +189,12 @@ export default function KnowledgeGraphPage() {
 
 // ─── Explore Tab ──────────────────────────────────────────────────────
 
-interface ExploreTabProps {
-  searchQuery: string
-  setSearchQuery: (q: string) => void
-  selectedNode: KGNode | null
-  neighbors: KGNode[]
-  stats: Awaited<ReturnType<typeof getKGStats>> | undefined
-  handleSearch: () => void
-  exploreNode: (name: string) => void
-}
-
-function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stats, handleSearch, exploreNode }: ExploreTabProps) {
+function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stats, handleSearch, exploreNode }: {
+  searchQuery: string; setSearchQuery: (q: string) => void; selectedNode: KGNode | null; neighbors: KGNode[]
+  stats: Awaited<ReturnType<typeof getKGStats>> | undefined; handleSearch: () => void; exploreNode: (name: string) => void
+}) {
   return (
     <>
-      {/* Search */}
       <SpatialLayer z={0} className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-lg">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-muted" />
@@ -239,25 +203,14 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Search for a node by name..."
+            placeholder="Search for a node..."
             className="h-11 w-full rounded-xl bg-surface-container-low/60 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:bg-white/60"
           />
         </div>
-        <button
-          onClick={handleSearch}
-          disabled={!searchQuery.trim()}
-          className="h-11 rounded-xl bg-primary/10 px-5 text-sm font-medium text-primary hover:bg-primary/15 disabled:opacity-40"
-        >
-          Explore
-        </button>
       </SpatialLayer>
 
-      {/* Label Breakdown */}
       {stats && stats.labelBreakdown.length > 0 && !selectedNode && (
         <SpatialLayer z={-5} className="mb-12">
-          <h3 className="mb-4 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-            Node Types
-          </h3>
           <div className="flex flex-wrap gap-2">
             {stats.labelBreakdown.map((lb) => (
               <button
@@ -273,17 +226,10 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
         </SpatialLayer>
       )}
 
-      {/* Selected Node Detail */}
       <AnimatePresence mode="wait">
         {selectedNode && (
           <SpatialLayer z={-5}>
-            <motion.div
-              key={selectedNode.name}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={glide}
-            >
+            <motion.div key={selectedNode.name} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
               <GlassPanel depth="elevated" className="mb-8 p-8">
                 <div className="flex items-start justify-between">
                   <div>
@@ -293,21 +239,16 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
                         {selectedNode.labels.join(' · ')}
                       </span>
                     </div>
-                    <h2 className="font-display text-headline-md font-light text-on-surface">
-                      {selectedNode.name}
-                    </h2>
+                    <h2 className="font-display text-headline-md font-light text-on-surface">{selectedNode.name}</h2>
                   </div>
                   <Sparkles className="h-5 w-5 text-primary/20" strokeWidth={1.5} />
                 </div>
-
                 <div className="mt-6 space-y-2">
                   {Object.entries(selectedNode)
                     .filter(([k]) => !['name', 'labels'].includes(k))
                     .map(([key, value]) => (
                       <div key={key} className="flex items-baseline gap-3">
-                        <span className="text-label-sm uppercase tracking-wide text-on-surface-muted/50 min-w-[100px]">
-                          {key}
-                        </span>
+                        <span className="text-label-sm uppercase tracking-wide text-on-surface-muted/50 min-w-[100px]">{key}</span>
                         <span className="font-mono text-sm text-on-surface-variant">
                           {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                         </span>
@@ -317,28 +258,23 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
               </GlassPanel>
 
               {neighbors.length > 0 && (
-                <div>
-                  <h3 className="mb-4 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-                    Connected Nodes ({neighbors.length})
-                  </h3>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {neighbors.map((node, i) => (
-                      <motion.button
-                        key={node.name}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.04 }}
-                        onClick={() => exploreNode(node.name)}
-                        className="group flex items-center gap-3 rounded-2xl bg-white/40 px-5 py-4 text-left hover:bg-white/55"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-on-surface truncate">{node.name}</p>
-                          <p className="text-label-sm text-on-surface-muted">{node.labels.join(', ')}</p>
-                        </div>
-                        <ArrowRight className="h-3.5 w-3.5 text-on-surface-muted/30 group-hover:text-primary" strokeWidth={1.75} />
-                      </motion.button>
-                    ))}
-                  </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {neighbors.map((node, i) => (
+                    <motion.button
+                      key={node.name}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.04 }}
+                      onClick={() => exploreNode(node.name)}
+                      className="group flex items-center gap-3 rounded-2xl bg-white/40 px-5 py-4 text-left hover:bg-white/55"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-on-surface truncate">{node.name}</p>
+                        <p className="text-label-sm text-on-surface-muted">{node.labels.join(', ')}</p>
+                      </div>
+                      <ArrowRight className="h-3.5 w-3.5 text-on-surface-muted/30 group-hover:text-primary" strokeWidth={1.75} />
+                    </motion.button>
+                  ))}
                 </div>
               )}
             </motion.div>
@@ -352,30 +288,19 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
 // ─── Archive Tab ──────────────────────────────────────────────────────
 
 function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> | undefined }) {
-  const { data: clientData, isLoading } = useQuery({
-    queryKey: ['archivedClients'],
-    queryFn: () => getClients({ limit: 50 }),
-  })
-
-  const clients = clientData?.clients ?? []
-  const archivedClients = clients.filter(c => c.stage === 'archived')
+  const { data: clientData, isLoading } = useQuery({ queryKey: ['archivedClients'], queryFn: () => getClients({ limit: 50 }) })
+  const archivedClients = (clientData?.clients ?? []).filter(c => c.stage === 'archived')
 
   return (
     <>
       {stats && stats.labelBreakdown.length > 0 && (
         <SpatialLayer z={0} className="mb-14">
-          <h3 className="mb-6 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-            Knowledge Distribution
-          </h3>
+          <h3 className="mb-6 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">Knowledge Distribution</h3>
           <div className="flex flex-wrap gap-3">
             {stats.labelBreakdown.map((lb, i) => (
-              <motion.div
-                key={lb.label}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
+              <motion.div key={lb.label} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.04 }}
-                className="rounded-2xl bg-white/40 px-5 py-3 hover:bg-white/55"
-              >
+                className="rounded-2xl bg-white/40 px-5 py-3 hover:bg-white/55">
                 <p className="text-sm font-medium text-on-surface">{lb.label}</p>
                 <p className="font-mono text-label-sm text-on-surface-muted">{lb.count} nodes</p>
               </motion.div>
@@ -386,39 +311,22 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
 
       <SpatialLayer z={-5}>
         <h3 className="mb-6 flex items-center gap-2 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-          <Users className="h-3.5 w-3.5" strokeWidth={1.75} />
-          Archived Relationships
+          <Users className="h-3.5 w-3.5" strokeWidth={1.75} /> Archived Relationships
         </h3>
-
-        {isLoading ? (
-          <LoadingSpinner />
-        ) : archivedClients.length > 0 ? (
+        {isLoading ? <LoadingSpinner /> : archivedClients.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2">
             {archivedClients.map((client, i) => (
-              <motion.div
-                key={client.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.05 }}
-              >
+              <motion.div key={client.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.05 }}>
                 <GlassPanel depth="surface" className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-display text-sm font-medium text-on-surface">{client.name}</p>
-                      {client.company && <p className="mt-0.5 text-xs text-on-surface-muted">{client.company}</p>}
-                    </div>
-                    <BookOpen className="h-4 w-4 text-on-surface-muted/30" strokeWidth={1.5} />
-                  </div>
+                  <p className="font-display text-sm font-medium text-on-surface">{client.name}</p>
+                  {client.company && <p className="mt-0.5 text-xs text-on-surface-muted">{client.company}</p>}
                   {client.tags.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {client.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted">{tag}</span>
-                      ))}
+                      {client.tags.map(tag => <span key={tag} className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted">{tag}</span>)}
                     </div>
                   )}
-                  <p className="mt-3 font-mono text-label-sm text-on-surface-muted/40">
-                    Archived {formatRelative(client.updated_at)}
-                  </p>
+                  <p className="mt-3 font-mono text-label-sm text-on-surface-muted/40">Archived {formatRelative(client.updated_at)}</p>
                 </GlassPanel>
               </motion.div>
             ))}
@@ -426,9 +334,7 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
         ) : (
           <div className="py-16 text-center">
             <BookOpen className="mx-auto h-6 w-6 text-on-surface-muted/20" strokeWidth={1.5} />
-            <p className="mt-4 text-sm text-on-surface-muted/40">
-              The archive grows with each completed engagement.
-            </p>
+            <p className="mt-4 text-sm text-on-surface-muted/40">The archive grows with each completed engagement.</p>
           </div>
         )}
       </SpatialLayer>
@@ -436,97 +342,46 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
   )
 }
 
-// ─── Consolidation Tab ────────────────────────────────────────────────
+// ─── Synthesis Tab — read-only view of what consolidation has produced ─
 
-function ConsolidationTab() {
+function SynthesisTab() {
   const { data: cStats } = useQuery({
     queryKey: ['consolidationStats'],
     queryFn: getConsolidationStats,
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   })
 
-  const consolidate = useMutation({
-    mutationFn: () => triggerConsolidation(false),
-    onSuccess: (data) => toast.success(data.message),
-    onError: () => toast.error('Consolidation failed'),
-  })
-
-  const dryRun = useMutation({
-    mutationFn: () => triggerConsolidation(true),
-    onSuccess: () => toast.success('Dry run complete'),
-    onError: () => toast.error('Dry run failed'),
-  })
+  if (!cStats) return null
 
   return (
-    <>
-      <SpatialLayer z={0} className="mb-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h3 className="mb-2 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-              Pattern Synthesis
-            </h3>
-            <p className="max-w-md text-sm leading-relaxed text-on-surface-variant">
-              The consolidation engine discovers patterns, deduplicates entities, and builds
-              narratives from the raw knowledge graph. It runs nightly, or on demand.
-            </p>
-          </div>
+    <SpatialLayer z={-5}>
+      <p className="mb-8 max-w-lg text-sm leading-relaxed text-on-surface-muted/60">
+        The consolidation engine runs nightly — discovering patterns, deduplicating entities,
+        and building narratives from raw knowledge.
+      </p>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => dryRun.mutate()}
-              disabled={dryRun.isPending || consolidate.isPending}
-              className="h-10 rounded-xl bg-surface-container-low px-4 text-sm font-medium text-on-surface-variant hover:bg-surface-container disabled:opacity-40"
-            >
-              {dryRun.isPending ? 'Running...' : 'Dry Run'}
-            </button>
-            <button
-              onClick={() => consolidate.mutate()}
-              disabled={consolidate.isPending || dryRun.isPending}
-              className="btn-primary-gradient flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-medium disabled:opacity-40"
-            >
-              <Play className="h-3.5 w-3.5" strokeWidth={1.75} />
-              {consolidate.isPending ? 'Synthesizing...' : 'Run Synthesis'}
-            </button>
-          </div>
-        </div>
-      </SpatialLayer>
-
-      {cStats && (
-        <SpatialLayer z={-5}>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <GlassPanel depth="surface" className="p-6">
-              <WhisperStat label="Patterns Found" value={cStats.patternsFound} accent="text-primary" />
-            </GlassPanel>
-            <GlassPanel depth="surface" className="p-6">
-              <WhisperStat label="Nodes Consolidated" value={cStats.nodesConsolidated} accent="text-secondary" />
-            </GlassPanel>
-            <GlassPanel depth="surface" className="p-6">
-              <WhisperStat label="Narratives Created" value={cStats.narrativesCreated} accent="text-tertiary" />
-            </GlassPanel>
-            <GlassPanel depth="surface" className="p-6">
-              <div className="flex flex-col gap-2">
-                <span className="text-label-sm uppercase tracking-wider text-on-surface-muted">Status</span>
-                <span className={cn(
-                  'text-sm font-medium',
-                  cStats.status === 'idle' ? 'text-secondary' : cStats.status === 'running' ? 'text-tertiary' : 'text-error',
-                )}>
-                  {cStats.status === 'idle' ? 'Idle' : cStats.status === 'running' ? 'Running...' : 'Error'}
-                </span>
-                {cStats.lastRun && (
-                  <span className="font-mono text-[10px] text-on-surface-muted/40">
-                    Last: {formatRelative(cStats.lastRun)}
-                  </span>
-                )}
-                {cStats.nextScheduled && (
-                  <span className="font-mono text-[10px] text-on-surface-muted/40">
-                    Next: {formatRelative(cStats.nextScheduled)}
-                  </span>
-                )}
-              </div>
-            </GlassPanel>
-          </div>
-        </SpatialLayer>
-      )}
-    </>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <GlassPanel depth="surface" className="p-6">
+          <WhisperStat label="Patterns Found" value={cStats.patternsFound} accent="text-primary" />
+        </GlassPanel>
+        <GlassPanel depth="surface" className="p-6">
+          <WhisperStat label="Nodes Consolidated" value={cStats.nodesConsolidated} accent="text-secondary" />
+        </GlassPanel>
+        <GlassPanel depth="surface" className="p-6">
+          <WhisperStat label="Narratives Created" value={cStats.narrativesCreated} accent="text-tertiary" />
+        </GlassPanel>
+        <GlassPanel depth="surface" className="p-6">
+          <span className="text-label-sm uppercase tracking-wider text-on-surface-muted">Status</span>
+          <p className={`mt-1 text-sm font-medium ${
+            cStats.status === 'idle' ? 'text-secondary' : cStats.status === 'running' ? 'text-tertiary' : 'text-error'
+          }`}>
+            {cStats.status === 'idle' ? 'Idle' : cStats.status === 'running' ? 'Running...' : 'Error'}
+          </p>
+          {cStats.lastRun && (
+            <p className="mt-1 font-mono text-[10px] text-on-surface-muted/40">Last: {formatRelative(cStats.lastRun)}</p>
+          )}
+        </GlassPanel>
+      </div>
+    </SpatialLayer>
   )
 }

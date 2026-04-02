@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPendingActions, getActionStats, executeAction, dismissAction } from '@/api/actions'
+import { getPendingActions, executeAction, dismissAction } from '@/api/actions'
 import type { ActionItem } from '@/api/actions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatRelative } from '@/lib/utils'
@@ -45,40 +45,15 @@ export function ActionStream() {
     refetchInterval: 30000,
   })
 
-  const { data: stats } = useQuery({
-    queryKey: ['actionStats'],
-    queryFn: getActionStats,
-    refetchInterval: 60000,
-  })
-
   if (!actions || actions.length === 0) return null
 
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-            Pending Actions
-          </span>
-          {stats?.urgent ? (
-            <span className="rounded-full bg-error/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-error">
-              {stats.urgent} urgent
-            </span>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-3 text-[10px] text-on-surface-muted/40">
-          {stats && <span className="font-mono">{stats.executed_24h} done 24h</span>}
-          <span>{actions.length} pending</span>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <AnimatePresence initial={false}>
-          {actions.map((action, i) => (
-            <ActionCard key={action.id} action={action} index={i} queryClient={queryClient} />
-          ))}
-        </AnimatePresence>
-      </div>
+    <div className="space-y-2">
+      <AnimatePresence initial={false}>
+        {actions.map((action, i) => (
+          <ActionCard key={action.id} action={action} index={i} queryClient={queryClient} />
+        ))}
+      </AnimatePresence>
     </div>
   )
 }
@@ -114,16 +89,14 @@ function ActionCard({ action, index, queryClient }: { action: ActionItem; index:
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 60, transition: { type: 'spring', stiffness: 200, damping: 25 } }}
       transition={{ type: 'spring', stiffness: 100, damping: 22, delay: index * 0.03 }}
-      className="group rounded-2xl bg-white/40 px-4 py-3 transition-colors hover:bg-white/55"
+      className="group rounded-2xl bg-white/40 px-4 py-3 hover:bg-white/55"
     >
       <div className="flex items-start gap-3">
-        {/* Source icon + priority dot */}
         <div className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface-container-low/60">
           <Icon className="h-3.5 w-3.5 text-on-surface-muted" strokeWidth={1.75} />
           <div className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full ${PRIORITY_DOT[action.priority]}`} />
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-on-surface truncate">{action.title}</p>
           {action.summary && (
@@ -138,8 +111,7 @@ function ActionCard({ action, index, queryClient }: { action: ActionItem; index:
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 shrink-0 opacity-60 group-hover:opacity-100">
           {executing ? (
             <div className="flex h-8 w-8 items-center justify-center">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
@@ -148,13 +120,13 @@ function ActionCard({ action, index, queryClient }: { action: ActionItem; index:
             <>
               <button
                 onClick={() => dismissMut.mutate()}
-                className="flex h-8 w-8 items-center justify-center rounded-xl text-on-surface-muted/40 transition-colors hover:bg-surface-container hover:text-on-surface-muted"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-on-surface-muted/40 hover:bg-surface-container hover:text-on-surface-muted"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={1.75} />
               </button>
               <button
                 onClick={() => executeMut.mutate()}
-                className="flex h-8 items-center gap-1 rounded-xl bg-primary/10 px-2.5 text-xs font-medium text-primary transition-colors hover:bg-primary/15"
+                className="flex h-8 items-center gap-1 rounded-xl bg-primary/10 px-2.5 text-xs font-medium text-primary hover:bg-primary/15"
               >
                 <Check className="h-3 w-3" strokeWidth={2} />
               </button>
