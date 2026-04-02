@@ -41,12 +41,14 @@ export function GlassPanel({
   const mouseX = useMotionValue(0.5)
   const mouseY = useMotionValue(0.5)
   const localRotateX = useSpring(useTransform(mouseY, [0, 1], [3.5, -3.5]), {
-    stiffness: 50,
-    damping: 15,
+    stiffness: 40,
+    damping: 20,
+    mass: 1.4,
   })
   const localRotateY = useSpring(useTransform(mouseX, [0, 1], [-3.5, 3.5]), {
-    stiffness: 50,
-    damping: 15,
+    stiffness: 40,
+    damping: 20,
+    mass: 1.4,
   })
 
   // ── Global spatial tilt ──

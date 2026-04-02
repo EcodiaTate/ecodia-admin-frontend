@@ -19,7 +19,11 @@ import { useMotionValue, useSpring, MotionValue } from 'framer-motion'
  */
 
 // Looser springs = more floaty, organic, holographic feel
-const SPRING_CONFIG = { stiffness: 28, damping: 14, mass: 1.8 }
+// Higher damping + mass prevents micro-oscillations during fast mouse movements
+const SPRING_CONFIG = { stiffness: 22, damping: 20, mass: 2.2 }
+
+// Lerp factor for input smoothing — lower = smoother but more latent
+const MOUSE_LERP = 0.15
 
 function clamp(v: number): number {
   return Math.max(-1, Math.min(1, v))
@@ -69,8 +73,11 @@ export function useSpatialDepth(): SpatialDepthValues {
       if (hasGyro.current) return
       const nx = (e.clientX / window.innerWidth - 0.5) * 2
       const ny = (e.clientY / window.innerHeight - 0.5) * 2
-      rawX.set(clamp(nx))
-      rawY.set(clamp(ny))
+      // Lerp toward target instead of snapping — eliminates micro-jitter on fast sweeps
+      const prevX = rawX.get()
+      const prevY = rawY.get()
+      rawX.set(clamp(prevX + (nx - prevX) * MOUSE_LERP))
+      rawY.set(clamp(prevY + (ny - prevY) * MOUSE_LERP))
     },
     [rawX, rawY],
   )

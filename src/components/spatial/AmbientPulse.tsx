@@ -16,10 +16,10 @@ const DOT_COLORS = {
 }
 
 // Slow, fluid spring — matches the ambient feel
-const glide = { type: 'spring' as const, stiffness: 80, damping: 22, mass: 0.8 }
+const glide = { type: 'spring' as const, stiffness: 60, damping: 24, mass: 1.2 }
 
 export function AmbientPulse({ label, lastSyncAt, status }: AmbientPulseProps) {
-  const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   const relativeTime = lastSyncAt
     ? formatDistanceToNow(new Date(lastSyncAt), { addSuffix: false })
@@ -27,8 +27,7 @@ export function AmbientPulse({ label, lastSyncAt, status }: AmbientPulseProps) {
 
   return (
     <motion.div
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
+      onHoverStart={() => setExpanded((prev) => !prev)}
       className="inline-flex items-center gap-2 rounded-xl px-2 py-1"
     >
       {/* Breathing dot */}
@@ -51,7 +50,7 @@ export function AmbientPulse({ label, lastSyncAt, status }: AmbientPulseProps) {
 
       {/* Expanded on hover — slides in gently */}
       <AnimatePresence>
-        {hovered && lastSyncAt && (
+        {expanded && lastSyncAt && (
           <motion.span
             initial={{ opacity: 0, width: 0 }}
             animate={{ opacity: 1, width: 'auto' }}

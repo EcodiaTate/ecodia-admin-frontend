@@ -15,26 +15,25 @@ interface WhisperStatProps {
 }
 
 // Slow, viscous — like glass settling into shape
-const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
+const glide = { type: 'spring' as const, stiffness: 55, damping: 22, mass: 1.5 }
 
 export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surface', trend, subtext, onClick }: WhisperStatProps) {
-  const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <motion.div
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
+      onHoverStart={() => setExpanded((prev) => !prev)}
       onClick={onClick}
       // The WHOLE pane transforms as one — position, size, surface all together
       animate={{
-        padding: hovered ? '28px 32px' : '10px 14px',
-        backgroundColor: hovered
+        padding: expanded ? '28px 32px' : '10px 14px',
+        backgroundColor: expanded
           ? 'rgba(255, 255, 255, 0.50)'
           : 'rgba(255, 255, 255, 0)',
-        boxShadow: hovered
+        boxShadow: expanded
           ? '0 24px 60px -16px rgba(0, 104, 122, 0.06)'
           : '0 0px 0px 0px rgba(0, 104, 122, 0)',
-        borderColor: hovered
+        borderColor: expanded
           ? 'rgba(255, 255, 255, 0.6)'
           : 'rgba(255, 255, 255, 0)',
       }}
@@ -47,7 +46,7 @@ export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surfac
     >
       {/* Label — drifts from muted to visible */}
       <motion.span
-        animate={{ opacity: hovered ? 0.8 : 0.35 }}
+        animate={{ opacity: expanded ? 0.8 : 0.35 }}
         transition={glide}
         className="block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted"
       >
@@ -57,16 +56,16 @@ export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surfac
       {/* Value — the whole text element scales up as one with the pane */}
       <motion.p
         animate={{
-          fontSize: hovered ? '2rem' : '0.875rem',
-          lineHeight: hovered ? '2.5rem' : '1.25rem',
-          marginTop: hovered ? '8px' : '2px',
-          opacity: hovered ? 1 : 0.5,
-          color: hovered ? undefined : undefined,
+          fontSize: expanded ? '2rem' : '0.875rem',
+          lineHeight: expanded ? '2.5rem' : '1.25rem',
+          marginTop: expanded ? '8px' : '2px',
+          opacity: expanded ? 1 : 0.5,
+          color: expanded ? undefined : undefined,
         }}
         transition={glide}
         className={cn(
           'font-display font-light tabular-nums',
-          hovered ? accent : 'text-on-surface-muted',
+          expanded ? accent : 'text-on-surface-muted',
         )}
       >
         {value}
@@ -75,11 +74,11 @@ export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surfac
       {/* Contextual detail — grows from 0 height as part of the pane expansion */}
       <motion.div
         animate={{
-          height: hovered ? 'auto' : 0,
-          opacity: hovered ? 1 : 0,
-          marginTop: hovered ? 12 : 0,
+          height: expanded ? 'auto' : 0,
+          opacity: expanded ? 1 : 0,
+          marginTop: expanded ? 12 : 0,
         }}
-        transition={{ ...glide, opacity: { ...glide, delay: hovered ? 0.15 : 0 } }}
+        transition={{ ...glide, opacity: { ...glide, delay: expanded ? 0.15 : 0 } }}
         className="overflow-hidden"
       >
         {trend && (
@@ -102,8 +101,8 @@ export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surfac
       {/* Icon — materializes in the corner as the glass grows */}
       <motion.div
         animate={{
-          opacity: hovered ? 0.2 : 0,
-          scale: hovered ? 1 : 0.7,
+          opacity: expanded ? 0.2 : 0,
+          scale: expanded ? 1 : 0.7,
         }}
         transition={glide}
         className="absolute right-6 top-6"
