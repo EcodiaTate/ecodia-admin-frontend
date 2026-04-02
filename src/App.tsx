@@ -12,6 +12,7 @@ import WorkspacePage from './pages/Workspace'
 import SettingsPage from './pages/Settings'
 import KnowledgeGraphPage from './pages/KnowledgeGraph'
 import CodebasePage from './pages/Codebase'
+import TasksPage from './pages/Tasks'
 import LoginPage from './pages/Login'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -46,9 +47,9 @@ export default function App() {
           <Route path="/codebase" element={<CodebasePage />} />
           <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
           {/* Redirects for consolidated pages */}
           <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/tasks" element={<Navigate to="/dashboard" replace />} />
           <Route path="/archive" element={<Navigate to="/knowledge-graph" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

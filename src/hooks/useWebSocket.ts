@@ -45,10 +45,15 @@ export function useWebSocket() {
               updateWorker(msg.payload)
               break
             case 'action_queue:new':
+            case 'action_queue:updated':
             case 'action_queue:executed':
             case 'action_queue:dismissed':
               // Invalidate pending actions query to refetch
               window.dispatchEvent(new CustomEvent('ecodia:action-queue-update', { detail: msg }))
+              break
+            case 'cc:stage':
+              // Factory pipeline stage updates (reviewing → testing → deploying)
+              updateSession(msg.sessionId, { pipeline_stage: msg.data?.stage })
               break
           }
         }

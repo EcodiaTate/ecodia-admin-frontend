@@ -20,3 +20,8 @@ export async function syncVercel() {
   const { data } = await api.post('/vercel/sync')
   return data
 }
+
+export async function getDeploymentLogs(deploymentId: string) {
+  const { data } = await api.get<{ logs: string[] }>(`/vercel/deployments/${deploymentId}/logs`)
+  return data
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getKGStats, getKGNode, getKGNeighborhood, getKGBriefing, getConsolidationStats } from '@/api/knowledgeGraph'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { getKGStats, getKGNode, getKGNeighborhood, getKGBriefing, getConsolidationStats, triggerEmbedding, triggerConsolidation, getKGHealth } from '@/api/knowledgeGraph'
 import { getClients } from '@/api/crm'
 import type { KGNode } from '@/api/knowledgeGraph'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
@@ -8,7 +8,7 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Network, Sparkles, ArrowRight, BookOpen, Users, Brain, GitMerge } from 'lucide-react'
+import { Search, Network, Sparkles, ArrowRight, BookOpen, Users, Brain, GitMerge, RefreshCw, Zap, Wifi, WifiOff } from 'lucide-react'
 import { cn, formatRelative } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
@@ -342,19 +342,64 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
   )
 }
 
-// ─── Synthesis Tab — read-only view of what consolidation has produced ─
+// ─── Synthesis Tab — consolidation stats + manual triggers ─
 
 function SynthesisTab() {
-  const { data: cStats } = useQuery({
+  const queryClient = useQueryClient()
+
+  const { data: cStats, refetch: refetchStats } = useQuery({
     queryKey: ['consolidationStats'],
     queryFn: getConsolidationStats,
-    refetchInterval: 60000,
+    refetchInterval: 30000,
+  })
+
+  const { data: health } = useQuery({
+    queryKey: ['kgHealth'],
+    queryFn: getKGHealth,
+    staleTime: 60000,
+  })
+
+  const embed = useMutation({
+    mutationFn: triggerEmbedding,
+    onSuccess: (res) => {
+      toast.success(`Embedded ${res.embedded} nodes`)
+      queryClient.invalidateQueries({ queryKey: ['kgStats'] })
+    },
+    onError: () => toast.error('Embedding failed'),
+  })
+
+  const consolidate = useMutation({
+    mutationFn: () => triggerConsolidation(false),
+    onSuccess: () => {
+      toast.success('Consolidation started')
+      setTimeout(() => refetchStats(), 3000)
+    },
+    onError: () => toast.error('Consolidation failed'),
   })
 
   if (!cStats) return null
 
+  const isRunning = cStats.status === 'running'
+
   return (
     <SpatialLayer z={-5}>
+      {/* Neo4j health indicator */}
+      {health && (
+        <div className="mb-8 flex items-center gap-2 text-sm">
+          {health.neo4j === 'connected' ? (
+            <>
+              <Wifi className="h-3.5 w-3.5 text-secondary" strokeWidth={1.75} />
+              <span className="text-secondary/70">Neo4j connected</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-3.5 w-3.5 text-error" strokeWidth={1.75} />
+              <span className="text-error/70">Neo4j disconnected</span>
+            </>
+          )}
+        </div>
+      )}
+
       <p className="mb-8 max-w-lg text-sm leading-relaxed text-on-surface-muted/60">
         The consolidation engine runs nightly — discovering patterns, deduplicating entities,
         and building narratives from raw knowledge.
@@ -381,6 +426,31 @@ function SynthesisTab() {
             <p className="mt-1 font-mono text-[10px] text-on-surface-muted/40">Last: {formatRelative(cStats.lastRun)}</p>
           )}
         </GlassPanel>
+      </div>
+
+      {/* Manual triggers */}
+      <div className="mt-10 flex flex-wrap gap-3">
+        <motion.button
+          onClick={() => embed.mutate()}
+          disabled={embed.isPending}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex items-center gap-2 rounded-xl bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/15 disabled:opacity-40"
+        >
+          <Zap className={`h-3.5 w-3.5 ${embed.isPending ? 'animate-pulse' : ''}`} strokeWidth={1.75} />
+          {embed.isPending ? 'Embedding...' : 'Embed Stale Nodes'}
+        </motion.button>
+
+        <motion.button
+          onClick={() => consolidate.mutate()}
+          disabled={consolidate.isPending || isRunning}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex items-center gap-2 rounded-xl bg-tertiary/10 px-4 py-2.5 text-sm font-medium text-tertiary hover:bg-tertiary/15 disabled:opacity-40"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${consolidate.isPending || isRunning ? 'animate-spin' : ''}`} strokeWidth={1.75} />
+          {consolidate.isPending || isRunning ? 'Running...' : 'Run Consolidation'}
+        </motion.button>
       </div>
     </SpatialLayer>
   )
