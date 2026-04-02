@@ -55,7 +55,7 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       className={`rounded-2xl p-5 ${URGENCY_STYLES[block.urgency]}`}
     >
       <div className="flex items-start justify-between gap-4">

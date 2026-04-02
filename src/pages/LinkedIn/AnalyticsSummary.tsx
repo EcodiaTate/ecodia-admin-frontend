@@ -49,14 +49,15 @@ export function AnalyticsSummary() {
   const searchDiff = (tw.search_appearances ?? 0) - (lw.search_appearances ?? 0)
 
   return (
-    <div className="space-y-14">
-      {/* Hero: Connections */}
+    <div className="space-y-12 sm:space-y-14">
+      {/* Hero: Connections — centered */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
+        transition={{ type: 'spring', stiffness: 70, damping: 18, mass: 1.2 }}
+        className="text-center md:text-right md:pr-8"
       >
-        <p className="font-display text-display-lg font-light tabular-nums text-primary">
+        <p className="font-display text-4xl font-light tabular-nums text-primary sm:text-display-lg">
           {(tw.connections ?? 0).toLocaleString()}
         </p>
         <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
@@ -64,8 +65,8 @@ export function AnalyticsSummary() {
         </span>
       </motion.div>
 
-      {/* Whisper stats row */}
-      <div className="flex gap-10">
+      {/* Whisper stats row — wrap on mobile */}
+      <div className="flex flex-wrap gap-4 sm:gap-8 md:gap-10">
         <WhisperStat
           label="Profile Views"
           value={tw.profile_views ?? 0}
@@ -90,7 +91,7 @@ export function AnalyticsSummary() {
 
       {/* Post analytics whispers */}
       {postAnalytics && (
-        <div className="flex gap-10">
+        <div className="flex flex-wrap gap-4 sm:gap-8 md:gap-10 md:justify-end">
           <WhisperStat label="Total Posts" value={postAnalytics.total_posts} accent="text-on-surface" />
           <WhisperStat label="Impressions" value={postAnalytics.total_impressions.toLocaleString()} accent="text-primary" />
           <WhisperStat label="Reactions" value={postAnalytics.total_reactions.toLocaleString()} accent="text-secondary" />

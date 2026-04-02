@@ -12,6 +12,8 @@ import { TrendingUp, TrendingDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { WorkerStatus } from '@/store/workerStore'
 
+const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
+
 export default function FinancePage() {
   const [tab, setTab] = useState<'all' | 'uncategorized'>('all')
   const { data: summary } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })
@@ -25,13 +27,13 @@ export default function FinancePage() {
   ]
 
   return (
-    <div className="max-w-5xl">
-      <div className="mb-6 flex items-start justify-between">
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Capital Flow
           </span>
-          <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+          <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
             Financial <em className="not-italic font-normal text-primary">Ecosystem</em>
           </h1>
         </div>
@@ -40,15 +42,15 @@ export default function FinancePage() {
         )}
       </div>
 
-      {/* Hero net figure */}
+      {/* Hero net — centered on mobile, offset on desktop */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
-        className="mb-12"
+        transition={glide}
+        className="mb-12 text-center sm:text-left md:pl-6"
       >
         <p className={cn(
-          'font-display text-display-lg font-light tabular-nums',
+          'font-display text-4xl font-light tabular-nums sm:text-display-lg',
           net >= 0 ? 'text-secondary' : 'text-error',
         )}>
           {formatCurrency(net)}
@@ -58,8 +60,8 @@ export default function FinancePage() {
         </span>
       </motion.div>
 
-      {/* Whisper stats: Income + Expenses */}
-      <div className="mb-14 flex gap-12">
+      {/* Whisper stats — float right on desktop */}
+      <div className="mb-14 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
         <WhisperStat
           label="Income"
           value={formatCurrency(summary?.income ?? 0)}
@@ -76,7 +78,10 @@ export default function FinancePage() {
         />
       </div>
 
-      <CategoryChart />
+      {/* Chart — centered, breathes */}
+      <div className="mx-auto max-w-md md:max-w-lg">
+        <CategoryChart />
+      </div>
 
       <div className="mt-12 mb-6 flex gap-1">
         {tabs.map((t) => (
@@ -84,7 +89,7 @@ export default function FinancePage() {
             key={t.key}
             onClick={() => setTab(t.key)}
             className={cn(
-              'relative rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              'relative rounded-xl px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2',
               tab === t.key
                 ? 'text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
@@ -94,7 +99,7 @@ export default function FinancePage() {
               <motion.div
                 layoutId="finance-tab-bg"
                 className="absolute inset-0 rounded-xl bg-primary/10"
-                transition={{ type: 'spring', stiffness: 120, damping: 22 }}
+                transition={glide}
               />
             )}
             <span className="relative z-10">{t.label}</span>
@@ -108,7 +113,7 @@ export default function FinancePage() {
           initial={{ opacity: 0, x: tab === 'uncategorized' ? 20 : -20, scale: 0.98 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: tab === 'uncategorized' ? -20 : 20, scale: 0.98 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 22 }}
+          transition={glide}
         >
           {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
         </motion.div>

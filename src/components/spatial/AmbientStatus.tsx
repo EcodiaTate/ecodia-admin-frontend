@@ -10,9 +10,9 @@ export function AmbientStatus() {
   return (
     <>
       {/* Top-right cluster: search + bell */}
-      <div className="fixed right-6 top-5 z-40 flex items-center gap-2">
-        {/* Ecodia OS wordmark */}
-        <span className="mr-3 font-display text-xs font-medium tracking-widest text-on-surface-muted/50">
+      <div className="fixed right-4 top-4 z-40 flex items-center gap-1.5 md:right-6 md:top-5 md:gap-2">
+        {/* Ecodia OS wordmark — hidden on mobile */}
+        <span className="mr-2 hidden font-display text-xs font-medium tracking-widest text-on-surface-muted/50 md:block">
           ECODIA OS
         </span>
 

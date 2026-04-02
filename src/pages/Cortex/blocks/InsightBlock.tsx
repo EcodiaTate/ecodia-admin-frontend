@@ -19,7 +19,7 @@ export function InsightBlock({ block }: { block: InsightBlockType }) {
     <motion.div
       initial={{ opacity: 0, x: -4 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       className={`flex items-start gap-3 rounded-2xl px-5 py-4 ${URGENCY_BG[block.urgency]}`}
     >
       <Lightbulb className={`h-3.5 w-3.5 mt-0.5 flex-shrink-0 ${URGENCY_ICON[block.urgency]}`} strokeWidth={1.75} />

@@ -129,7 +129,7 @@ export default function CortexPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
-                transition={{ type: 'spring', stiffness: 150, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 80, damping: 20 }}
                 className="flex flex-col items-center justify-center pt-[18vh]"
               >
                 <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
@@ -240,7 +240,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 24, delay: 0.02 }}
+        transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.02 }}
         className="flex justify-end"
       >
         <div className="max-w-[80%] rounded-2xl rounded-br-lg bg-primary/8 px-5 py-3.5">
@@ -255,7 +255,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 150, damping: 20, delay: 0.05 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20, delay: 0.05 }}
       className="max-w-full"
     >
       {/* Cortex indicator */}
@@ -275,7 +275,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             key={i}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.06 }}
+            transition={{ type: 'spring', stiffness: 80, damping: 20, delay: i * 0.06 }}
           >
             <BlockRenderer block={block} />
           </motion.div>

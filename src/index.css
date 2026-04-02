@@ -112,7 +112,21 @@
     transform-style: preserve-3d;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 3rem 4rem 4rem 5.5rem;
+    /* Mobile: tight padding, clear of bottom nav */
+    padding: 2rem 1.25rem 6rem 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .scene-container {
+      /* Desktop: breathing room, clear of floating nav on left */
+      padding: 3rem 3rem 4rem 5rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .scene-container {
+      padding: 3.5rem 5rem 4rem 5.5rem;
+    }
   }
 
   /* === Ambient Particle === */

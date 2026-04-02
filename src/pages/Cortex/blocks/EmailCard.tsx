@@ -15,7 +15,7 @@ export function EmailCard({ block }: { block: EmailCardBlock }) {
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       className="glass rounded-2xl p-5"
     >
       <div className="flex items-start gap-3.5">

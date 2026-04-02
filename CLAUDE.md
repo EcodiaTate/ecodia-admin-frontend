@@ -196,19 +196,15 @@ Treat every screen like a gallery wall. The content is the art; the space is the
 
 ---
 
-## 8. Navigation: The Whisper Sidebar
+## 8. Navigation: Floating Glass Rail
 
-The sidebar (see reference screenshots) is a **narrow icon rail** — not a full-width nav panel. It should feel like it's part of the wall, not a separate UI component.
+Navigation is a **floating glass pane** that feels like part of the spatial environment.
 
-**Specifications:**
-- Narrow rail width: `w-14` to `w-16` (icons only, no text labels by default)
-- Background: `surface-container-low` or glass treatment — **never dark**
-- Icons: Muted (`on-surface-muted`), active state uses `primary` with a soft glow
-- Tooltip on hover reveals the label (Radix Tooltip)
-- No explicit dividers between nav items — spacing creates separation
-- The "ECODIA" or "ECODIA OS" wordmark sits at the top in wide-tracked uppercase `label-md`
+**Desktop (md+):** `FloatingNav` — a vertical glass pill fixed to the left edge, vertically centered. Auto-fades to near-invisible after 3s, reappears when mouse nears left edge. Glass surface with `rgba(255,255,255,0.35)` background, rounded-3xl. Icons drift with ambient animation. Active state: soft primary glow ring. Label appears on hover via CSS transition (no Radix Tooltip overhead).
 
-**Top bar** uses the same glass treatment — transparent, floating above the content with `backdrop-blur`. Contains: navigation tabs (text links, not buttons), search icon, notification bell, user avatar.
+**Mobile (<md):** Bottom glass tab bar spanning full width. Same glass surface treatment. Icons + abbreviated labels. Active state: primary/8 background pill with layoutId animation.
+
+**Top-right status cluster (`AmbientStatus`):** Search, bell, logout icons. ECODIA OS wordmark hidden on mobile. No backdrop-blur — uses tonal opacity.
 
 ---
 
@@ -383,11 +379,19 @@ Ecodia OS uses evocative, environmental language for system concepts. This is no
 
 ## 13. Responsive Behavior
 
-- **Desktop-first.** This is a command center — the primary context is a large screen.
-- **1440px+:** Full spatial layout with maximum breathing room. Outer margins `spacing-20`+.
-- **1024px-1440px:** Sidebar collapses to icon rail. Content margins reduce to `spacing-12`.
-- **768px-1024px:** Single-column layout. Cards stack vertically. Hero data scales down to `display-md`.
-- **Below 768px:** Not a primary concern, but should remain usable. Sidebar becomes a bottom tab bar or hamburger overlay (glass treatment).
+Every screen must be fully usable from mobile to ultrawide.
+
+- **Below 768px (mobile):** FloatingNav becomes a bottom glass tab bar. Scene container padding: `2rem 1.25rem 6rem` (extra bottom for nav). Hero text scales to `text-4xl` / `text-2xl`. Grids collapse to single column. Flex layouts wrap. Filter pills shrink slightly.
+- **768px-1024px (tablet):** FloatingNav appears as left glass rail. Scene padding: `3rem 3rem 4rem 5rem`. Grids go 2-column where appropriate.
+- **1024px-1280px:** Full spatial layout. Content breathes.
+- **1280px+ (desktop):** Scene padding: `3.5rem 5rem 4rem 5.5rem`. Maximum breathing room.
+
+### Organic Layout Rules
+- **Never rigidly left-align everything.** Use intentional asymmetry — hero stats can center on mobile, offset on desktop. WhisperStat rows can `justify-end` on desktop. Activity feeds can `ml-auto max-w-xl` to float right.
+- **All `max-w-*` containers use `mx-auto`** — content centers in the viewport, not pins to left.
+- **Flex layouts use `flex-wrap`** — content flows naturally on small screens instead of overflowing.
+- **Heading sizes scale:** `text-2xl sm:text-display-md` pattern for all page titles.
+- **The interface is offered, not stated.** Content drifts into comfortable positions rather than snapping to a rigid grid.
 
 ---
 

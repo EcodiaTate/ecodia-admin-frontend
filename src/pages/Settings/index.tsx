@@ -46,17 +46,17 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-16">
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-12 sm:mb-16">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           Neural Connections
         </span>
-        <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+        <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
           System <em className="not-italic font-normal text-primary">Nodes</em>
         </h1>
       </div>
 
-      <div className="grid grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
         {connections.map((conn, i) => (
           <motion.div
             key={conn.name}

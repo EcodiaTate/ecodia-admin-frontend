@@ -38,8 +38,8 @@ export default function GmailPage() {
       <motion.div
         initial={{ opacity: 0, x: 12 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
-        className="max-w-4xl space-y-8"
+        transition={{ type: 'spring', stiffness: 70, damping: 18, mass: 1.2 }}
+        className="mx-auto max-w-4xl space-y-8"
       >
         <button
           onClick={() => { setSelected(null); queryClient.invalidateQueries({ queryKey: ['gmailThreads'] }) }}
@@ -55,13 +55,14 @@ export default function GmailPage() {
   }
 
   return (
-    <div className="max-w-5xl">
-      <div className="mb-10 flex items-start justify-between">
+    <div className="mx-auto max-w-5xl">
+      {/* Header */}
+      <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Communication Stream
           </span>
-          <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+          <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
             Digital <em className="not-italic font-normal text-primary">Curator</em>
           </h1>
         </div>
@@ -70,8 +71,8 @@ export default function GmailPage() {
         )}
       </div>
 
-      {/* Whisper stats — tiny ambient counters that spring to life on hover */}
-      <div className="mb-10 flex gap-12">
+      {/* Whisper stats — flow right on desktop for asymmetry */}
+      <div className="mb-10 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
         <WhisperStat
           label="Unread"
           value={stats?.unread ?? 0}
@@ -95,14 +96,14 @@ export default function GmailPage() {
         />
       </div>
 
-      {/* Filter tabs */}
-      <div className="mb-6 flex items-center gap-1 flex-wrap">
+      {/* Filter tabs — wrap naturally */}
+      <div className="mb-6 flex flex-wrap items-center gap-1">
         {inboxTabs.map((tab) => (
           <button
             key={tab.label}
             onClick={() => setFilter(f => ({ ...f, inbox: tab.value }))}
             className={cn(
-              'relative rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              'relative rounded-xl px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2',
               filter.inbox === tab.value
                 ? 'bg-primary/10 text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
@@ -120,14 +121,14 @@ export default function GmailPage() {
           </button>
         ))}
 
-        <div className="mx-3 h-4 w-px bg-surface-container" />
+        <div className="mx-2 hidden h-4 w-px bg-surface-container sm:block" />
 
         {['all', 'unread', 'triaged', 'replied'].map((s) => (
           <button
             key={s}
             onClick={() => setFilter(f => ({ ...f, status: s === 'all' ? undefined : s }))}
             className={cn(
-              'relative rounded-xl px-4 py-2 text-sm font-medium transition-colors',
+              'relative rounded-xl px-3 py-1.5 text-sm font-medium transition-colors sm:px-4 sm:py-2',
               (s === 'all' && !filter.status) || filter.status === s
                 ? 'bg-primary/10 text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',

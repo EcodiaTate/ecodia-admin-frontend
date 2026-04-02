@@ -15,15 +15,15 @@ export function KPICards() {
 
   return (
     <div>
-      {/* Hero: Net figure — the one number that matters */}
+      {/* Hero: Net figure — centered on mobile, offset on desktop for asymmetry */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
-        className="mb-16"
+        transition={{ type: 'spring', stiffness: 70, damping: 18, mass: 1.2 }}
+        className="mb-12 text-center sm:mb-16 md:text-left lg:pl-8"
       >
         <p className={cn(
-          'font-display text-display-lg font-light tabular-nums',
+          'font-display text-4xl font-light tabular-nums sm:text-display-lg',
           net >= 0 ? 'text-secondary' : 'text-error',
         )}>
           {formatCurrency(net)}
@@ -33,12 +33,12 @@ export function KPICards() {
         </span>
       </motion.div>
 
-      {/* Whisper stats: Income + Expenses */}
+      {/* Whisper stats: wrap on mobile, float with space on desktop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.15 }}
-        className="flex gap-12"
+        className="flex flex-wrap gap-6 sm:gap-10 md:justify-end lg:gap-14"
       >
         <WhisperStat
           label="Income"

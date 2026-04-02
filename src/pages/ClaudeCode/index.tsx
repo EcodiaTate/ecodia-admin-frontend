@@ -49,12 +49,12 @@ export default function ClaudeCodePage() {
   })
 
   return (
-    <div className="max-w-5xl">
+    <div className="mx-auto max-w-5xl">
       <div className="mb-10">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           AI Operations
         </span>
-        <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+        <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
           Autonomy <em className="not-italic font-normal text-primary">Core</em>
         </h1>
       </div>
@@ -86,7 +86,7 @@ export default function ClaudeCodePage() {
             transition={{ type: 'spring', stiffness: 100, damping: 22 }}
           >
             {/* Ambient stats */}
-            <div className="mb-10 flex gap-10">
+            <div className="mb-10 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
               <WhisperStat
                 label="Running"
                 value={runningCount}
@@ -104,7 +104,7 @@ export default function ClaudeCodePage() {
             </div>
 
             {/* Input — floating, no wrapper */}
-            <div className="mb-10 flex gap-3">
+            <div className="mb-10 flex flex-col gap-3 sm:flex-row">
               <input
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}

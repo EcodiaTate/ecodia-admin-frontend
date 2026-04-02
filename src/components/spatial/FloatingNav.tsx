@@ -3,7 +3,8 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { NAV_LINKS, getSceneKey } from './spatialConfig'
-import * as Tooltip from '@radix-ui/react-tooltip'
+
+const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
 
 export function FloatingNav() {
   const location = useLocation()
@@ -11,11 +12,9 @@ export function FloatingNav() {
   const [visible, setVisible] = useState(true)
   const [hovered, setHovered] = useState(false)
 
-  // Auto-fade after 3s of no mouse near left edge
+  // Desktop: auto-fade after 3s, reappear on left-edge hover
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (e.clientX < 100) {
-      setVisible(true)
-    }
+    if (e.clientX < 100) setVisible(true)
   }, [])
 
   useEffect(() => {
@@ -23,36 +22,35 @@ export function FloatingNav() {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [handleMouseMove])
 
-  // Fade after 3s of not being hovered
   useEffect(() => {
-    if (hovered) {
-      setVisible(true)
-      return
-    }
+    if (hovered) { setVisible(true); return }
     const timer = setTimeout(() => setVisible(false), 3500)
     return () => clearTimeout(timer)
   }, [hovered, location.pathname])
 
-  // Always show briefly on route change
-  useEffect(() => {
-    setVisible(true)
-  }, [location.pathname])
+  useEffect(() => { setVisible(true) }, [location.pathname])
 
   return (
-    <Tooltip.Provider delayDuration={300}>
+    <>
+      {/* ─── Desktop: floating glass rail on the left ─── */}
       <motion.nav
-        className="fixed left-5 top-1/2 z-30 flex flex-col items-center gap-2"
-        style={{ y: '-50%' }}
-        animate={{ opacity: visible || hovered ? 1 : 0.15 }}
-        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        className="fixed left-5 top-1/2 z-30 hidden flex-col items-center gap-1 rounded-3xl py-5 px-2 md:flex"
+        style={{
+          y: '-50%',
+          backgroundColor: 'rgba(255, 255, 255, 0.35)',
+          border: '1px solid rgba(255, 255, 255, 0.4)',
+          boxShadow: '0 24px 60px -16px rgba(0, 104, 122, 0.05)',
+        }}
+        animate={{ opacity: visible || hovered ? 1 : 0.08 }}
+        transition={{ duration: 0.8, ease: 'easeInOut' }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {/* Wordmark */}
         <motion.span
-          className="mb-4 font-display text-label-sm font-medium uppercase tracking-[0.25em] text-on-surface-muted/60"
-          animate={{ opacity: visible || hovered ? 0.6 : 0 }}
-          transition={{ duration: 0.5 }}
+          className="mb-3 font-display text-[9px] font-medium uppercase tracking-[0.3em] text-on-surface-muted/50"
+          animate={{ opacity: visible || hovered ? 0.5 : 0 }}
+          transition={{ duration: 0.6 }}
         >
           EOS
         </motion.span>
@@ -62,68 +60,86 @@ export function FloatingNav() {
           const Icon = scene.icon
 
           return (
-            <Tooltip.Root key={scene.path}>
-              <Tooltip.Trigger asChild>
-                <NavLink to={scene.path} className="relative">
-                  {/* Active glow ring */}
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        layoutId="nav-active-glow"
-                        className="absolute -inset-1.5 rounded-2xl bg-primary-container/10 shadow-glow-primary"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-                      />
-                    )}
-                  </AnimatePresence>
-
-                  {/* Icon container with ambient drift */}
+            <NavLink key={scene.path} to={scene.path} className="relative group">
+              {/* Active glow */}
+              <AnimatePresence>
+                {isActive && (
                   <motion.div
-                    className={cn(
-                      'relative flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
-                      isActive
-                        ? 'text-primary'
-                        : 'text-on-surface-muted/50 hover:text-on-surface-variant',
-                    )}
-                    animate={{
-                      y: [0, -(2 + (i % 3)), 0],
-                    }}
-                    transition={{
-                      duration: 5 + i * 0.7,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                      delay: i * 0.4,
-                    }}
-                  >
-                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                    layoutId="nav-active-glow"
+                    className="absolute -inset-0.5 rounded-2xl bg-primary/8 shadow-glow-primary"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={glide}
+                  />
+                )}
+              </AnimatePresence>
 
-                    {/* Breathing dot for active */}
-                    {isActive && (
-                      <motion.div
-                        className="absolute -bottom-1 h-1 w-1 rounded-full bg-primary-container"
-                        animate={{ scale: [1, 1.4, 1], opacity: [0.5, 1, 0.5] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                    )}
-                  </motion.div>
-                </NavLink>
-              </Tooltip.Trigger>
-              <Tooltip.Portal>
-                <Tooltip.Content
-                  side="right"
-                  sideOffset={16}
-                  className="glass-elevated rounded-xl px-3 py-1.5 text-xs font-medium text-on-surface-variant"
-                >
-                  {scene.label}
-                  <Tooltip.Arrow className="fill-white/40" />
-                </Tooltip.Content>
-              </Tooltip.Portal>
-            </Tooltip.Root>
+              {/* Icon with ambient drift */}
+              <motion.div
+                className={cn(
+                  'relative flex h-10 w-10 items-center justify-center rounded-xl',
+                  isActive
+                    ? 'text-primary'
+                    : 'text-on-surface-muted/40 hover:text-on-surface-variant',
+                )}
+                animate={{ y: [0, -(1.5 + (i % 3) * 0.5), 0] }}
+                transition={{
+                  duration: 6 + i * 0.8,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: i * 0.5,
+                }}
+              >
+                <Icon className="h-[17px] w-[17px]" strokeWidth={1.75} />
+              </motion.div>
+
+              {/* Label — slides out on hover */}
+              <motion.span
+                className="pointer-events-none absolute left-full top-1/2 ml-4 -translate-y-1/2 whitespace-nowrap rounded-xl bg-white/60 px-3 py-1.5 text-xs font-medium text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              >
+                {scene.label}
+              </motion.span>
+            </NavLink>
           )
         })}
       </motion.nav>
-    </Tooltip.Provider>
+
+      {/* ─── Mobile: bottom glass bar ─── */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around px-2 py-2 md:hidden"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.50)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.4)',
+          boxShadow: '0 -12px 40px -10px rgba(0, 104, 122, 0.04)',
+        }}
+      >
+        {NAV_LINKS.map((scene) => {
+          const isActive = getSceneKey(scene.path) === activeKey
+          const Icon = scene.icon
+
+          return (
+            <NavLink
+              key={scene.path}
+              to={scene.path}
+              className={cn(
+                'relative flex flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-colors',
+                isActive ? 'text-primary' : 'text-on-surface-muted/40',
+              )}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="nav-mobile-active"
+                  className="absolute inset-0 rounded-2xl bg-primary/8"
+                  transition={glide}
+                />
+              )}
+              <Icon className="relative h-[18px] w-[18px]" strokeWidth={1.75} />
+              <span className="relative text-[9px] font-medium uppercase tracking-wider">{scene.label.split(' ')[0]}</span>
+            </NavLink>
+          )
+        })}
+      </nav>
+    </>
   )
 }

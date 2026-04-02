@@ -42,7 +42,7 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        transition={{ type: 'spring', stiffness: 80, damping: 20, mass: 1 }}
         className="relative z-10 w-full max-w-sm glass-elevated rounded-3xl p-10"
       >
         <div className="mb-10">

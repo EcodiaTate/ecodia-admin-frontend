@@ -22,12 +22,12 @@ export default function CRMPage() {
   })
 
   return (
-    <div className="max-w-6xl">
-      <div className="mb-12">
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-10 sm:mb-12">
         <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
           Client Network
         </span>
-        <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+        <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
           Flow <em className="not-italic font-normal text-primary">State</em>
         </h1>
       </div>

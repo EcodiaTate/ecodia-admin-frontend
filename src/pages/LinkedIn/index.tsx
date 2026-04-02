@@ -46,20 +46,20 @@ export default function LinkedInPage() {
   ]
 
   return (
-    <div className="max-w-6xl">
+    <div className="mx-auto max-w-6xl">
       {/* Header */}
-      <div className="mb-10 flex items-start justify-between">
+      <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
             Network Intelligence
           </span>
-          <h1 className="mt-3 font-display text-display-md font-light text-on-surface">
+          <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
             Social <em className="not-italic font-normal text-primary">Resonance</em>
           </h1>
         </div>
 
-        {/* Worker status as AmbientPulse — suspended state shows inline */}
-        <div className="flex items-center gap-3 pt-2">
+        {/* Worker status */}
+        <div className="flex items-center gap-3 sm:pt-2">
           {linkedinWorker && !isSuspended && (
             <AmbientPulse label="Worker" lastSyncAt={linkedinWorker.lastSync} status={linkedinWorker.status} />
           )}
@@ -85,8 +85,8 @@ export default function LinkedInPage() {
         </div>
       </div>
 
-      {/* Whisper stats — ambient counters */}
-      <div className="mb-10 flex gap-8">
+      {/* Whisper stats — wrap on mobile, spread on desktop */}
+      <div className="mb-10 flex flex-wrap gap-4 sm:gap-6 md:gap-8 lg:justify-center">
         <WhisperStat
           label="Unread DMs"
           value={dmStats?.unread ?? 0}
@@ -117,14 +117,14 @@ export default function LinkedInPage() {
         />
       </div>
 
-      {/* Tabs — text only, no icons */}
-      <div className="mb-8 flex items-center gap-1">
+      {/* Tabs — wrap on mobile */}
+      <div className="mb-8 flex flex-wrap items-center gap-1">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => { setTab(t.key); setSelectedDM(null); setShowComposer(false) }}
             className={cn(
-              'rounded-xl px-4 py-2.5 text-sm font-medium transition-colors',
+              'rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:px-4 sm:py-2.5',
               tab === t.key
                 ? 'bg-primary/10 text-primary'
                 : 'text-on-surface-muted hover:bg-surface-container-low hover:text-on-surface-variant',
@@ -142,7 +142,7 @@ export default function LinkedInPage() {
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: -10 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 22 }}
+          transition={{ type: 'spring', stiffness: 70, damping: 18, mass: 1.2 }}
         >
           {tab === 'dms' && (
             selectedDM ? (
