@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { getKGStats, getKGNode, getKGNeighborhood, triggerEmbedding } from '@/api/knowledgeGraph'
+import { getKGStats, getKGNode, getKGNeighborhood, getKGBriefing, triggerEmbedding, getConsolidationStats, triggerConsolidation } from '@/api/knowledgeGraph'
 import { getClients } from '@/api/crm'
 import type { KGNode } from '@/api/knowledgeGraph'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
@@ -8,11 +8,11 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Network, Sparkles, ArrowRight, Zap, BookOpen, Users } from 'lucide-react'
+import { Search, Network, Sparkles, ArrowRight, Zap, BookOpen, Users, Brain, GitMerge, Play } from 'lucide-react'
 import { cn, formatRelative } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-type Tab = 'explore' | 'archive'
+type Tab = 'explore' | 'archive' | 'consolidation'
 
 const glide = { type: 'spring' as const, stiffness: 90, damping: 20, mass: 1 }
 
@@ -21,6 +21,8 @@ export default function KnowledgeGraphPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedNode, setSelectedNode] = useState<KGNode | null>(null)
   const [neighbors, setNeighbors] = useState<KGNode[]>([])
+  const [briefingQuery, setBriefingQuery] = useState('')
+  const [briefing, setBriefing] = useState<string | null>(null)
 
   const { data: stats } = useQuery({
     queryKey: ['kgStats'],
@@ -60,9 +62,20 @@ export default function KnowledgeGraphPage() {
     }
   }
 
+  const handleBriefing = async () => {
+    if (!briefingQuery.trim()) return
+    try {
+      const result = await getKGBriefing(briefingQuery.trim())
+      setBriefing(result.briefing || result.raw || 'No briefing available.')
+    } catch {
+      toast.error('Briefing failed')
+    }
+  }
+
   const tabs: { key: Tab; label: string; icon: typeof Network }[] = [
     { key: 'explore', label: 'Explore', icon: Network },
     { key: 'archive', label: 'Archive', icon: BookOpen },
+    { key: 'consolidation', label: 'Synthesis', icon: GitMerge },
   ]
 
   return (
@@ -126,6 +139,55 @@ export default function KnowledgeGraphPage() {
         )}
       </SpatialLayer>
 
+      {/* AI Briefing — always visible at top, spans all tabs */}
+      <SpatialLayer z={5} className="mb-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-xl">
+            <Brain className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-muted" />
+            <input
+              type="text"
+              value={briefingQuery}
+              onChange={(e) => setBriefingQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleBriefing()}
+              placeholder="Ask the knowledge graph anything..."
+              className="h-11 w-full rounded-xl bg-surface-container-low/60 pl-10 pr-4 text-sm text-on-surface placeholder:text-on-surface-muted/50 outline-none focus:bg-white/60"
+            />
+          </div>
+          <button
+            onClick={handleBriefing}
+            disabled={!briefingQuery.trim()}
+            className="h-11 rounded-xl bg-primary/10 px-5 text-sm font-medium text-primary hover:bg-primary/15 disabled:opacity-40"
+          >
+            Brief me
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {briefing && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={glide}
+              className="mt-4 rounded-2xl bg-white/50 p-6"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={1.75} />
+                    <span className="text-label-sm uppercase tracking-wider text-primary font-medium">AI Briefing</span>
+                  </div>
+                  <p className="text-sm leading-relaxed text-on-surface-variant whitespace-pre-wrap">{briefing}</p>
+                </div>
+                <button onClick={() => setBriefing(null)} className="text-on-surface-muted/30 hover:text-on-surface-muted text-xs">
+                  Dismiss
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </SpatialLayer>
+
       <AnimatePresence mode="wait">
         {tab === 'explore' ? (
           <motion.div key="explore" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
@@ -139,9 +201,13 @@ export default function KnowledgeGraphPage() {
               exploreNode={exploreNode}
             />
           </motion.div>
-        ) : (
+        ) : tab === 'archive' ? (
           <motion.div key="archive" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
             <ArchiveTab stats={stats} />
+          </motion.div>
+        ) : (
+          <motion.div key="consolidation" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
+            <ConsolidationTab />
           </motion.div>
         )}
       </AnimatePresence>
@@ -165,7 +231,7 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
   return (
     <>
       {/* Search */}
-      <SpatialLayer z={5} className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <SpatialLayer z={0} className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-lg">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-muted" />
           <input
@@ -188,7 +254,7 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
 
       {/* Label Breakdown */}
       {stats && stats.labelBreakdown.length > 0 && !selectedNode && (
-        <SpatialLayer z={0} className="mb-12">
+        <SpatialLayer z={-5} className="mb-12">
           <h3 className="mb-4 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
             Node Types
           </h3>
@@ -296,9 +362,8 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
 
   return (
     <>
-      {/* Knowledge Distribution */}
       {stats && stats.labelBreakdown.length > 0 && (
-        <SpatialLayer z={5} className="mb-14">
+        <SpatialLayer z={0} className="mb-14">
           <h3 className="mb-6 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
             Knowledge Distribution
           </h3>
@@ -319,7 +384,6 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
         </SpatialLayer>
       )}
 
-      {/* Archived Clients */}
       <SpatialLayer z={-5}>
         <h3 className="mb-6 flex items-center gap-2 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
           <Users className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -368,6 +432,101 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
           </div>
         )}
       </SpatialLayer>
+    </>
+  )
+}
+
+// ─── Consolidation Tab ────────────────────────────────────────────────
+
+function ConsolidationTab() {
+  const { data: cStats } = useQuery({
+    queryKey: ['consolidationStats'],
+    queryFn: getConsolidationStats,
+    refetchInterval: 30000,
+  })
+
+  const consolidate = useMutation({
+    mutationFn: () => triggerConsolidation(false),
+    onSuccess: (data) => toast.success(data.message),
+    onError: () => toast.error('Consolidation failed'),
+  })
+
+  const dryRun = useMutation({
+    mutationFn: () => triggerConsolidation(true),
+    onSuccess: () => toast.success('Dry run complete'),
+    onError: () => toast.error('Dry run failed'),
+  })
+
+  return (
+    <>
+      <SpatialLayer z={0} className="mb-10">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h3 className="mb-2 text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
+              Pattern Synthesis
+            </h3>
+            <p className="max-w-md text-sm leading-relaxed text-on-surface-variant">
+              The consolidation engine discovers patterns, deduplicates entities, and builds
+              narratives from the raw knowledge graph. It runs nightly, or on demand.
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => dryRun.mutate()}
+              disabled={dryRun.isPending || consolidate.isPending}
+              className="h-10 rounded-xl bg-surface-container-low px-4 text-sm font-medium text-on-surface-variant hover:bg-surface-container disabled:opacity-40"
+            >
+              {dryRun.isPending ? 'Running...' : 'Dry Run'}
+            </button>
+            <button
+              onClick={() => consolidate.mutate()}
+              disabled={consolidate.isPending || dryRun.isPending}
+              className="btn-primary-gradient flex h-10 items-center gap-2 rounded-xl px-5 text-sm font-medium disabled:opacity-40"
+            >
+              <Play className="h-3.5 w-3.5" strokeWidth={1.75} />
+              {consolidate.isPending ? 'Synthesizing...' : 'Run Synthesis'}
+            </button>
+          </div>
+        </div>
+      </SpatialLayer>
+
+      {cStats && (
+        <SpatialLayer z={-5}>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <GlassPanel depth="surface" className="p-6">
+              <WhisperStat label="Patterns Found" value={cStats.patternsFound} accent="text-primary" />
+            </GlassPanel>
+            <GlassPanel depth="surface" className="p-6">
+              <WhisperStat label="Nodes Consolidated" value={cStats.nodesConsolidated} accent="text-secondary" />
+            </GlassPanel>
+            <GlassPanel depth="surface" className="p-6">
+              <WhisperStat label="Narratives Created" value={cStats.narrativesCreated} accent="text-tertiary" />
+            </GlassPanel>
+            <GlassPanel depth="surface" className="p-6">
+              <div className="flex flex-col gap-2">
+                <span className="text-label-sm uppercase tracking-wider text-on-surface-muted">Status</span>
+                <span className={cn(
+                  'text-sm font-medium',
+                  cStats.status === 'idle' ? 'text-secondary' : cStats.status === 'running' ? 'text-tertiary' : 'text-error',
+                )}>
+                  {cStats.status === 'idle' ? 'Idle' : cStats.status === 'running' ? 'Running...' : 'Error'}
+                </span>
+                {cStats.lastRun && (
+                  <span className="font-mono text-[10px] text-on-surface-muted/40">
+                    Last: {formatRelative(cStats.lastRun)}
+                  </span>
+                )}
+                {cStats.nextScheduled && (
+                  <span className="font-mono text-[10px] text-on-surface-muted/40">
+                    Next: {formatRelative(cStats.nextScheduled)}
+                  </span>
+                )}
+              </div>
+            </GlassPanel>
+          </div>
+        </SpatialLayer>
+      )}
     </>
   )
 }

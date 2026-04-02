@@ -30,3 +30,17 @@ export async function stopSession(id: string) {
   const { data } = await api.post(`/cc/sessions/${id}/stop`)
   return data
 }
+
+export interface CCPipelineStatus {
+  pipeline_stage: 'queued' | 'context' | 'executing' | 'testing' | 'review' | 'deploying' | 'complete' | 'failed'
+  confidence_score: number | null
+  deploy_status: 'pending' | 'deploying' | 'deployed' | 'reverted' | 'skipped' | null
+  files_changed: number
+  commit_sha: string | null
+  active: boolean
+}
+
+export async function getSessionPipeline(id: string) {
+  const { data } = await api.get<CCPipelineStatus>(`/cc/sessions/${id}/pipeline`)
+  return data
+}

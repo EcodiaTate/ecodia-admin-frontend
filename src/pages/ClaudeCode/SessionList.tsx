@@ -5,7 +5,18 @@ import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { formatRelative } from '@/lib/utils'
 import type { CCSession } from '@/types/claudeCode'
 import { motion } from 'framer-motion'
-import { Terminal, DollarSign, Activity } from 'lucide-react'
+import { Terminal, DollarSign, Activity, Shield, Rocket, CheckCircle2, XCircle, Clock, FileCode } from 'lucide-react'
+
+const PIPELINE_ICONS: Record<string, typeof Clock> = {
+  queued: Clock,
+  context: FileCode,
+  executing: Terminal,
+  testing: Shield,
+  reviewing: CheckCircle2,
+  deploying: Rocket,
+  complete: CheckCircle2,
+  failed: XCircle,
+}
 
 interface SessionListProps {
   onSelect: (session: CCSession) => void
@@ -32,6 +43,7 @@ export function SessionList({ onSelect }: SessionListProps) {
         {sessions.map((session, i) => {
           const isRunning = session.status === 'running' || session.status === 'initializing'
           const isAwaiting = session.status === 'awaiting_input'
+          const PipeIcon = session.pipeline_stage ? PIPELINE_ICONS[session.pipeline_stage] || Clock : null
 
           return (
             <motion.button
@@ -67,6 +79,51 @@ export function SessionList({ onSelect }: SessionListProps) {
                     </span>
                   )}
                 </div>
+
+                {/* Pipeline stage + confidence inline for active/recent sessions */}
+                {session.pipeline_stage && session.pipeline_stage !== 'complete' && session.pipeline_stage !== 'failed' && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {PipeIcon && (
+                      <PipeIcon className={`h-3 w-3 ${isRunning ? 'text-primary animate-pulse' : 'text-on-surface-muted/40'}`} strokeWidth={1.75} />
+                    )}
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-primary">
+                      {session.pipeline_stage}
+                    </span>
+                    {session.confidence_score != null && (
+                      <span className="rounded-full bg-primary/8 px-1.5 py-0.5 text-[9px] font-bold text-primary">
+                        {(session.confidence_score * 100).toFixed(0)}%
+                      </span>
+                    )}
+                    {session.files_changed && session.files_changed.length > 0 && (
+                      <span className="text-[10px] text-on-surface-muted/40">
+                        {session.files_changed.length} files
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Deploy status for completed sessions */}
+                {session.deploy_status && session.deploy_status !== 'skipped' && (
+                  <div className="mt-1.5 flex items-center gap-1.5">
+                    <Rocket className={`h-3 w-3 ${
+                      session.deploy_status === 'deployed' ? 'text-secondary' :
+                      session.deploy_status === 'reverted' ? 'text-error' :
+                      'text-tertiary'
+                    }`} strokeWidth={1.75} />
+                    <span className={`text-[10px] font-medium uppercase tracking-wider ${
+                      session.deploy_status === 'deployed' ? 'text-secondary' :
+                      session.deploy_status === 'reverted' ? 'text-error' :
+                      'text-tertiary'
+                    }`}>
+                      {session.deploy_status}
+                    </span>
+                    {session.commit_sha && (
+                      <span className="font-mono text-[10px] text-on-surface-muted/30">
+                        {session.commit_sha.slice(0, 7)}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Meta */}

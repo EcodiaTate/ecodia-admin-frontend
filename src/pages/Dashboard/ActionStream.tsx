@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPendingActions, executeAction, dismissAction } from '@/api/actions'
+import { getPendingActions, getActionStats, executeAction, dismissAction } from '@/api/actions'
 import type { ActionItem } from '@/api/actions'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatRelative } from '@/lib/utils'
@@ -45,15 +45,31 @@ export function ActionStream() {
     refetchInterval: 30000,
   })
 
+  const { data: stats } = useQuery({
+    queryKey: ['actionStats'],
+    queryFn: getActionStats,
+    refetchInterval: 60000,
+  })
+
   if (!actions || actions.length === 0) return null
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
-          Pending Actions
-        </span>
-        <span className="text-label-sm text-on-surface-muted/40">{actions.length} items</span>
+        <div className="flex items-center gap-3">
+          <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted">
+            Pending Actions
+          </span>
+          {stats?.urgent ? (
+            <span className="rounded-full bg-error/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-error">
+              {stats.urgent} urgent
+            </span>
+          ) : null}
+        </div>
+        <div className="flex items-center gap-3 text-[10px] text-on-surface-muted/40">
+          {stats && <span className="font-mono">{stats.executed_24h} done 24h</span>}
+          <span>{actions.length} pending</span>
+        </div>
       </div>
 
       <div className="space-y-2">

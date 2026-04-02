@@ -11,6 +11,7 @@ import ClaudeCodePage from './pages/ClaudeCode'
 import WorkspacePage from './pages/Workspace'
 import SettingsPage from './pages/Settings'
 import KnowledgeGraphPage from './pages/KnowledgeGraph'
+import CodebasePage from './pages/Codebase'
 import LoginPage from './pages/Login'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/workspace" element={<WorkspacePage />} />
           <Route path="/claude-code" element={<ClaudeCodePage />} />
           <Route path="/claude-code/:sessionId" element={<ClaudeCodePage />} />
+          <Route path="/codebase" element={<CodebasePage />} />
           <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           {/* Redirects for consolidated pages */}

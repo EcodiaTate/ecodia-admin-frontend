@@ -1,6 +1,7 @@
 import { KPICards } from './KPICards'
 import { ActionStream } from './ActionStream'
 import { TaskStream } from './TaskStream'
+import { OrganismVitals } from './OrganismVitals'
 import { AmbientPulse } from '@/components/spatial/AmbientPulse'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
@@ -51,6 +52,11 @@ export default function DashboardPage() {
           <TaskStream />
         </SpatialLayer>
       </div>
+
+      {/* Organism vitals — recessed, ambient awareness of the dual-body system */}
+      <SpatialLayer z={-10} className="mt-16 sm:mt-20">
+        <OrganismVitals />
+      </SpatialLayer>
     </div>
   )
 }

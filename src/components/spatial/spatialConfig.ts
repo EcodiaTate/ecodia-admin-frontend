@@ -9,6 +9,7 @@ import {
   Layers,
   CircleDollarSign,
   Network,
+  Code2,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -155,6 +156,21 @@ export const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(6, 182, 212, 0.06)', x: '60%', y: '40%', size: '65%' },
         { color: 'rgba(0, 104, 122, 0.05)', x: '30%', y: '70%', size: '55%' },
         { color: 'rgba(16, 185, 129, 0.03)', x: '80%', y: '20%', size: '40%' },
+      ],
+    },
+  },
+
+  // ── Intelligence: codebase semantic mind ──
+  codebase: {
+    path: '/codebase',
+    label: 'Code',
+    icon: Code2,
+    position: { x: 2, y: 0, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(6, 182, 212, 0.06)', x: '55%', y: '35%', size: '65%' },
+        { color: 'rgba(0, 104, 122, 0.04)', x: '25%', y: '60%', size: '50%' },
+        { color: 'rgba(16, 185, 129, 0.03)', x: '80%', y: '75%', size: '45%' },
       ],
     },
   },
