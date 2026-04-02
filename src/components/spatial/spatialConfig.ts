@@ -1,13 +1,13 @@
 import {
-  LayoutDashboard,
-  DollarSign,
+  Orbit,
+  Waypoints,
   Mail,
   Linkedin,
   Users,
   Terminal,
-  Settings,
   Brain,
-  Globe,
+  Layers,
+  CircleDollarSign,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -20,6 +20,7 @@ export interface ScenePosition {
 export interface SceneConfig {
   path: string
   label: string
+  shortLabel: string    // for mobile nav (single word)
   icon: LucideIcon
   position: ScenePosition
   aurora: AuroraConfig
@@ -36,11 +37,18 @@ export interface AuroraConfig {
   orbs: AuroraOrb[]
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// SCENES — Ordered by cognitive flow:
+//   Awareness → Intelligence → Channels → Relations → Action → Infrastructure
+// ═══════════════════════════════════════════════════════════════════════
+
 export const SCENES: Record<string, SceneConfig> = {
+  // ── Awareness: what's happening ──
   dashboard: {
     path: '/dashboard',
-    label: 'Atmospheric Vitals',
-    icon: LayoutDashboard,
+    label: 'Vital Signs',
+    shortLabel: 'Vitals',
+    icon: Orbit,
     position: { x: 0, y: 0, z: 0 },
     aurora: {
       orbs: [
@@ -50,22 +58,28 @@ export const SCENES: Record<string, SceneConfig> = {
       ],
     },
   },
-  finance: {
-    path: '/finance',
-    label: 'Financial Ecosystem',
-    icon: DollarSign,
-    position: { x: 0, y: 1, z: 0 },
+
+  // ── Intelligence: ask anything ──
+  cortex: {
+    path: '/cortex',
+    label: 'The Cortex',
+    shortLabel: 'Cortex',
+    icon: Brain,
+    position: { x: 0, y: -1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(245, 158, 11, 0.06)', x: '65%', y: '30%', size: '70%' },
-        { color: 'rgba(16, 185, 129, 0.04)', x: '25%', y: '70%', size: '55%' },
-        { color: 'rgba(6, 182, 212, 0.03)', x: '80%', y: '80%', size: '40%' },
+        { color: 'rgba(0, 104, 122, 0.07)', x: '50%', y: '40%', size: '75%' },
+        { color: 'rgba(6, 182, 212, 0.05)', x: '25%', y: '60%', size: '55%' },
+        { color: 'rgba(16, 185, 129, 0.03)', x: '75%', y: '20%', size: '40%' },
       ],
     },
   },
+
+  // ── Channels: communication streams ──
   gmail: {
     path: '/gmail',
-    label: 'Digital Curator',
+    label: 'Mail Stream',
+    shortLabel: 'Mail',
     icon: Mail,
     position: { x: -1, y: 0, z: 0 },
     aurora: {
@@ -78,7 +92,8 @@ export const SCENES: Record<string, SceneConfig> = {
   },
   linkedin: {
     path: '/linkedin',
-    label: 'Network Intelligence',
+    label: 'Social Graph',
+    shortLabel: 'Social',
     icon: Linkedin,
     position: { x: 1, y: 0, z: 0 },
     aurora: {
@@ -89,9 +104,12 @@ export const SCENES: Record<string, SceneConfig> = {
       ],
     },
   },
+
+  // ── Relations: people and money ──
   crm: {
     path: '/crm',
     label: 'Flow State',
+    shortLabel: 'Pipeline',
     icon: Users,
     position: { x: -1, y: 1, z: 0 },
     aurora: {
@@ -102,23 +120,27 @@ export const SCENES: Record<string, SceneConfig> = {
       ],
     },
   },
-  cortex: {
-    path: '/cortex',
-    label: 'The Cortex',
-    icon: Brain,
-    position: { x: 0, y: -1, z: 0 },
+  finance: {
+    path: '/finance',
+    label: 'Capital Flow',
+    shortLabel: 'Finance',
+    icon: CircleDollarSign,
+    position: { x: 0, y: 1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(0, 104, 122, 0.07)', x: '50%', y: '40%', size: '75%' },
-        { color: 'rgba(6, 182, 212, 0.05)', x: '25%', y: '60%', size: '55%' },
-        { color: 'rgba(16, 185, 129, 0.03)', x: '75%', y: '20%', size: '40%' },
+        { color: 'rgba(245, 158, 11, 0.06)', x: '65%', y: '30%', size: '70%' },
+        { color: 'rgba(16, 185, 129, 0.04)', x: '25%', y: '70%', size: '55%' },
+        { color: 'rgba(6, 182, 212, 0.03)', x: '80%', y: '80%', size: '40%' },
       ],
     },
   },
+
+  // ── Surfaces: connected platforms ──
   workspace: {
     path: '/workspace',
-    label: 'External Workspace',
-    icon: Globe,
+    label: 'Connected Surfaces',
+    shortLabel: 'Surfaces',
+    icon: Layers,
     position: { x: -1, y: -1, z: 0 },
     aurora: {
       orbs: [
@@ -128,9 +150,12 @@ export const SCENES: Record<string, SceneConfig> = {
       ],
     },
   },
+
+  // ── Action: autonomous execution ──
   'claude-code': {
     path: '/claude-code',
-    label: 'Autonomy Core',
+    label: 'The Factory',
+    shortLabel: 'Factory',
     icon: Terminal,
     position: { x: 1, y: 1, z: 0 },
     aurora: {
@@ -141,10 +166,13 @@ export const SCENES: Record<string, SceneConfig> = {
       ],
     },
   },
+
+  // ── Infrastructure: system internals ──
   settings: {
     path: '/settings',
-    label: 'System Nodes',
-    icon: Settings,
+    label: 'System Mesh',
+    shortLabel: 'System',
+    icon: Waypoints,
     position: { x: 0, y: 2, z: -1 },
     aurora: {
       orbs: [

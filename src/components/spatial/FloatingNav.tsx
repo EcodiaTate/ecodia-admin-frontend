@@ -147,7 +147,7 @@ export function FloatingNav() {
                 />
               )}
               <Icon className="relative h-[18px] w-[18px]" strokeWidth={1.75} />
-              <span className="relative text-[9px] font-medium uppercase tracking-wider">{scene.label.split(' ')[0]}</span>
+              <span className="relative text-[9px] font-medium uppercase tracking-wider">{scene.shortLabel}</span>
             </NavLink>
           )
         })}
