@@ -8,15 +8,17 @@ export function OrganismVitals() {
   const { data: vitals } = useQuery({
     queryKey: ['organismVitals'],
     queryFn: getOrganismVitals,
-    refetchInterval: 15000,
+    refetchInterval: 30000,
+    retry: 1,
   })
 
-  if (!vitals) return null
+  if (!vitals?.bridge) return null
 
+  const bridge = vitals.bridge
   const bridgeLayers = [
-    { name: 'Redis', status: vitals.bridge.redis },
-    { name: 'Neo4j', status: vitals.bridge.neo4j },
-    { name: 'HTTP', status: vitals.bridge.http },
+    { name: 'Redis', status: bridge.redis ?? 'disconnected' },
+    { name: 'Neo4j', status: bridge.neo4j ?? 'disconnected' },
+    { name: 'HTTP', status: bridge.http ?? 'disconnected' },
   ]
 
   const activeLayers = bridgeLayers.filter(l => l.status === 'connected').length
@@ -79,15 +81,17 @@ export function OrganismVitals() {
         />
         <WhisperStat
           label="Messages 24h"
-          value={`${vitals.bridge.messagesSent24h}↑ ${vitals.bridge.messagesReceived24h}↓`}
+          value={`${bridge.messagesSent24h ?? 0}↑ ${bridge.messagesReceived24h ?? 0}↓`}
           icon={Zap}
         />
-        <WhisperStat
-          label="CC Sessions"
-          value={vitals.ecodia.activeCCSessions}
-          icon={Activity}
-          accent={vitals.ecodia.activeCCSessions > 0 ? 'text-primary' : undefined}
-        />
+        {vitals.ecodia && (
+          <WhisperStat
+            label="CC Sessions"
+            value={vitals.ecodia.activeCCSessions ?? 0}
+            icon={Activity}
+            accent={vitals.ecodia?.activeCCSessions > 0 ? 'text-primary' : undefined}
+          />
+        )}
       </div>
 
       {/* Organism capabilities (if connected) */}
