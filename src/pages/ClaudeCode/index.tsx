@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getSession, createSession, getSessions } from '@/api/claudeCode'
+import { useCCSessionStore } from '@/store/ccSessionStore'
 import { SessionList } from './SessionList'
 import { CCTerminal } from './Terminal'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
@@ -28,6 +29,12 @@ export default function ClaudeCodePage() {
       return s?.status === 'running' || s?.status === 'initializing' ? 3000 : false
     },
   })
+
+  // Keep session store in sync so WebSocket cc_output lands correctly
+  const setSession = useCCSessionStore((s) => s.setSession)
+  useEffect(() => {
+    if (session) setSession(session)
+  }, [session, setSession])
 
   // Get sessions for ambient stats
   const { data: sessions } = useQuery({

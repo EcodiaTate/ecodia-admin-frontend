@@ -19,45 +19,150 @@ interface ParsedBlock {
   collapsed?: boolean
 }
 
+/**
+ * Extract JSON objects from raw NDJSON chunks.
+ * Claude Code streams output as concatenated JSON — no newlines between them.
+ * e.g. {"type":"system",...}{"type":"assistant",...}{"type":"result",...}
+ */
+function extractJsonObjects(raw: string): unknown[] {
+  const objects: unknown[] = []
+  let depth = 0
+  let start = -1
+
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i]
+    if (ch === '{') {
+      if (depth === 0) start = i
+      depth++
+    } else if (ch === '}') {
+      depth--
+      if (depth === 0 && start !== -1) {
+        try {
+          objects.push(JSON.parse(raw.slice(start, i + 1)))
+        } catch {
+          // malformed — skip
+        }
+        start = -1
+      }
+    }
+  }
+  return objects
+}
+
+/** Strip ANSI escape codes */
+function stripAnsi(str: string): string {
+  return str.replace(/\x1b\[[0-9;]*m/g, '').replace(/\[[\d;]*m/g, '')
+}
+
 /** Parse raw chunks into meaningful blocks, filtering noise */
 function parseOutput(chunks: string[]): ParsedBlock[] {
   const blocks: ParsedBlock[] = []
   const raw = chunks.join('')
 
-  // Split on double newlines or known markers
-  const lines = raw.split('\n')
+  // Try to parse as NDJSON first (Claude Code streaming format)
+  const jsonObjects = extractJsonObjects(raw)
+
+  if (jsonObjects.length > 0) {
+    for (const obj of jsonObjects) {
+      const msg = obj as Record<string, unknown>
+
+      // Skip system init, rate limits, and other noise
+      if (msg.type === 'system') continue
+      if (msg.type === 'rate_limit_event') continue
+
+      // Assistant messages — the core content
+      if (msg.type === 'assistant') {
+        const message = msg.message as Record<string, unknown> | undefined
+        if (message?.content) {
+          const contentArr = message.content as Array<Record<string, unknown>>
+          for (const block of contentArr) {
+            if (block.type === 'text' && typeof block.text === 'string') {
+              const text = block.text.trim()
+              if (text) blocks.push({ type: 'assistant', content: text })
+            } else if (block.type === 'tool_use') {
+              const toolName = String(block.name || 'tool')
+              const toolInput = block.input
+                ? JSON.stringify(block.input, null, 2).slice(0, 500)
+                : ''
+              blocks.push({
+                type: 'tool_use',
+                content: `${toolName}${toolInput ? '\n' + toolInput : ''}`,
+                collapsed: true,
+              })
+            }
+          }
+        }
+      }
+
+      // Tool results
+      if (msg.type === 'tool_result' || msg.type === 'content_block_delta') {
+        const text = typeof msg.content === 'string'
+          ? msg.content
+          : typeof msg.text === 'string'
+            ? msg.text
+            : null
+        if (text) {
+          blocks.push({ type: 'tool_result', content: text.slice(0, 2000), collapsed: true })
+        }
+      }
+
+      // Result summary — session complete
+      if (msg.type === 'result') {
+        const result = typeof msg.result === 'string' ? msg.result.trim() : null
+        if (result) {
+          blocks.push({ type: 'assistant', content: result })
+        }
+        const cost = msg.total_cost_usd
+        if (typeof cost === 'number') {
+          blocks.push({ type: 'system', content: `Session cost: $${cost.toFixed(4)}` })
+        }
+      }
+
+      // User messages (if echoed back)
+      if (msg.type === 'user' || msg.type === 'human') {
+        const text = typeof msg.content === 'string'
+          ? msg.content
+          : typeof msg.message === 'string'
+            ? msg.message
+            : null
+        if (text) blocks.push({ type: 'user', content: text })
+      }
+    }
+
+    // If we got JSON objects, return what we extracted
+    if (blocks.length > 0) return blocks
+  }
+
+  // Fallback: plain text parsing (non-JSON output)
+  const lines = stripAnsi(raw).split('\n')
   let currentBlock: ParsedBlock | null = null
 
   for (const line of lines) {
     const trimmed = line.trim()
     if (!trimmed) continue
 
-    // Skip pure noise: progress bars, blank lines, ANSI sequences
+    // Skip box-drawing characters, bare ANSI, dots
     if (/^[\s─═┌┐└┘│├┤┬┴┼]+$/.test(trimmed)) continue
-    if (/^\[[\d;]*m$/.test(trimmed)) continue
     if (/^\.{3,}$/.test(trimmed)) continue
 
-    // Detect block types from Claude Code output patterns
     if (trimmed.startsWith('> ') || trimmed.startsWith('Human:') || trimmed.startsWith('User:')) {
       if (currentBlock) blocks.push(currentBlock)
       currentBlock = { type: 'user', content: trimmed.replace(/^(> |Human: |User: )/, '') }
     } else if (trimmed.startsWith('Assistant:') || trimmed.startsWith('Claude:')) {
       if (currentBlock) blocks.push(currentBlock)
       currentBlock = { type: 'assistant', content: trimmed.replace(/^(Assistant: |Claude: )/, '') }
-    } else if (trimmed.startsWith('Tool:') || trimmed.startsWith('Using tool:') || trimmed.match(/^(Read|Write|Edit|Bash|Grep|Glob)\s/)) {
+    } else if (trimmed.match(/^(Read|Write|Edit|Bash|Grep|Glob|Tool:|Using tool:)/)) {
       if (currentBlock) blocks.push(currentBlock)
       currentBlock = { type: 'tool_use', content: trimmed, collapsed: true }
     } else if (trimmed.startsWith('Result:') || trimmed.startsWith('Tool result:')) {
       if (currentBlock) blocks.push(currentBlock)
       currentBlock = { type: 'tool_result', content: trimmed.replace(/^(Result: |Tool result: )/, ''), collapsed: true }
-    } else if (trimmed.startsWith('Error:') || trimmed.startsWith('error:') || trimmed.startsWith('ERR')) {
+    } else if (trimmed.match(/^(Error:|error:|ERR)/)) {
       if (currentBlock) blocks.push(currentBlock)
       currentBlock = { type: 'error', content: trimmed }
     } else if (currentBlock) {
-      // Append to current block
       currentBlock.content += '\n' + line
     } else {
-      // Default: treat as assistant output (the main content)
       currentBlock = { type: 'assistant', content: trimmed }
     }
   }
