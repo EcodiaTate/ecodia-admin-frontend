@@ -16,7 +16,7 @@ const EXPECTED_INTERVALS: Record<string, number> = {
   codebase_index: 12 * 60 * 60, // 12 hr
   factory_schedule: 60 * 60,  // 1 hr
   kg_consolidation: 6 * 60 * 60, // 6 hr
-  kg_embedding: 6 * 60 * 60,  // 6 hr
+  kg_embedding: 5 * 60,       // 5 min
 }
 
 function computeStaleness(ws: WorkerStatus): WorkerStatus {

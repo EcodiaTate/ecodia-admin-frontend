@@ -19,7 +19,9 @@ export default function DashboardPage() {
   const { data: vitals } = useQuery({ queryKey: ['organismVitals'], queryFn: getOrganismVitals, retry: 1, refetchInterval: 30000 })
 
   const net = finance?.net ?? 0
-  const organismAlive = vitals?.organism?.status === 'alive'
+  // null = no organism configured, true = organism healthy — both mean system is alive
+  // Only show offline when organism.healthy is explicitly false (unreachable)
+  const organismAlive = vitals ? vitals.organism.healthy !== false : false
 
   return (
     <div className="mx-auto max-w-3xl">

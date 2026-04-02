@@ -11,19 +11,21 @@ export interface SymbridgeStatus {
 }
 
 export interface OrganismVitals {
-  ecodia: {
-    db: 'ok' | 'error'
-    neo4j: 'ok' | 'error'
-    memory: { rss: number; heapUsed: number; heapTotal: number }
+  ecodiaos: {
+    healthy: boolean
+    db: boolean
+    neo4j: boolean
+    memory: { rss: number; heapUsed: number; heapTotal: number; systemFree: number }
     activeCCSessions: number
-    uptime: number
   }
   organism: {
-    status: 'alive' | 'degraded' | 'unreachable'
-    lastHeartbeat: string | null
-    capabilities: string[]
-  } | null
-  bridge: SymbridgeStatus
+    healthy: boolean | null
+    lastCheck: string | null
+    consecutiveFailures: number
+    lastResponseMs: number | null
+    data?: Record<string, unknown>
+  }
+  timestamp: string
 }
 
 export interface SymbridgeMessage {
