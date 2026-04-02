@@ -118,7 +118,7 @@ export function DriveTab() {
                   >
                     {createType === key && (
                       <motion.div layoutId="drive-create-type" className="absolute inset-0 rounded-xl bg-white/60" transition={glide}
-                        style={{ boxShadow: '0 4px 20px -4px rgba(0, 104, 122, 0.06)' }} />
+                        style={{ boxShadow: '0 4px 20px -4px rgba(27, 122, 61, 0.06)' }} />
                     )}
                     <Icon className="relative h-3.5 w-3.5" strokeWidth={1.75} />
                     <span className="relative">{label}</span>

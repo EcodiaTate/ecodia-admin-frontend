@@ -40,20 +40,15 @@ export default function CodebasePage() {
     }
   }
 
-  const totalFiles = codebases?.reduce((sum, cb) => sum + cb.file_count, 0) ?? 0
-
   return (
     <div className="mx-auto max-w-4xl">
       <SpatialLayer z={25} className="mb-14">
-        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
           Semantic Intelligence
         </span>
         <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-          Codebase <em className="not-italic font-normal text-primary">Mind</em>
+          Codebase <em className="not-italic font-normal text-gold">Mind</em>
         </h1>
-        <p className="mt-3 text-sm text-on-surface-muted/50">
-          {codebases?.length ?? 0} codebases · {totalFiles.toLocaleString()} files indexed
-        </p>
       </SpatialLayer>
 
       {/* Semantic search */}

@@ -29,21 +29,15 @@ export default function SettingsPage() {
     { name: 'Knowledge Graph', icon: Brain, category: 'World Model', connected: true, workerKey: 'kg_consolidation' },
   ]
 
-  const workerEntries = Object.values(workers)
-  const activeCount = workerEntries.filter(w => w.status === 'active').length
-
   return (
     <div className="mx-auto max-w-4xl">
       <SpatialLayer z={25} className="mb-14">
-        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
           Neural Connections
         </span>
         <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
           System <em className="not-italic font-normal text-primary">Nodes</em>
         </h1>
-        <p className="mt-3 text-sm text-on-surface-muted/50">
-          {activeCount} of {workerEntries.length} workers active
-        </p>
       </SpatialLayer>
 
       {/* Connection status — read-only, no controls */}

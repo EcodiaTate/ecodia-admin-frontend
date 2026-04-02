@@ -148,10 +148,10 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
 
             if (bothActive) {
               const pulse = Math.min(stars[i].activePulse, stars[j].activePulse)
-              ctx.strokeStyle = `rgba(6, 182, 212, ${baseOpacity + pulse * 0.12})`
+              ctx.strokeStyle = `rgba(46, 204, 113, ${baseOpacity + pulse * 0.12})`
               ctx.lineWidth = 0.5 + pulse * 0.5
             } else {
-              ctx.strokeStyle = `rgba(0, 104, 122, ${baseOpacity})`
+              ctx.strokeStyle = `rgba(27, 122, 61, ${baseOpacity})`
               ctx.lineWidth = 0.5
             }
             ctx.stroke()
@@ -172,8 +172,8 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
           const shimmer = Math.sin(time * 0.003 + star.breatheOffset) * 0.5 + 0.5
           const glowRadius = r * 6 + shimmer * r * 3
           const glowGradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, glowRadius)
-          glowGradient.addColorStop(0, `rgba(6, 182, 212, ${star.activePulse * 0.12})`)
-          glowGradient.addColorStop(1, 'rgba(6, 182, 212, 0)')
+          glowGradient.addColorStop(0, `rgba(46, 204, 113, ${star.activePulse * 0.12})`)
+          glowGradient.addColorStop(1, 'rgba(46, 204, 113, 0)')
           ctx.beginPath()
           ctx.arc(star.x, star.y, glowRadius, 0, Math.PI * 2)
           ctx.fillStyle = glowGradient
@@ -183,7 +183,7 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
         // Core dot — simple fill, no gradient for inactive stars
         ctx.beginPath()
         ctx.arc(star.x, star.y, r, 0, Math.PI * 2)
-        const color = isActive ? '6, 182, 212' : '0, 104, 122'
+        const color = isActive ? '46, 204, 113' : '27, 122, 61'
         ctx.fillStyle = `rgba(${color}, ${Math.min(alpha, 1)})`
         ctx.fill()
       }

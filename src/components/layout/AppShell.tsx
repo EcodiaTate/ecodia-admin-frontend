@@ -6,6 +6,7 @@ import { AmbientParticles } from '@/components/spatial/AmbientParticles'
 import { SpatialCanvas } from '@/components/spatial/SpatialCanvas'
 import { FloatingNav } from '@/components/spatial/FloatingNav'
 import { AmbientStatus } from '@/components/spatial/AmbientStatus'
+import { EcosystemStatusBar } from '@/components/spatial/EcosystemStatusBar'
 
 export function AppShell() {
   useWebSocket()
@@ -30,6 +31,9 @@ export function AppShell() {
 
         {/* Layer 4: Ambient status indicators */}
         <AmbientStatus />
+
+        {/* Layer 5: Persistent ecosystem status bar — bottom edge */}
+        <EcosystemStatusBar />
       </div>
     </SpatialDepthProvider>
   )

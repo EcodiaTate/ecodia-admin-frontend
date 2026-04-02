@@ -133,18 +133,12 @@ export default function CortexPage() {
                 transition={{ type: 'spring', stiffness: 80, damping: 20 }}
                 className="flex flex-col items-center justify-center pt-[18vh]"
               >
-                <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+                <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
                   World Model
                 </span>
                 <h1 className="mt-3 font-display text-display-lg font-light text-on-surface">
-                  The <em className="not-italic font-normal text-primary">Cortex</em>
+                  The <em className="not-italic font-normal text-gold">Cortex</em>
                 </h1>
-                <p className="mt-4 max-w-md text-center text-sm leading-relaxed text-on-surface-muted">
-                  Your conversational interface to everything.
-                  {stats && (
-                    <> {stats.totalNodes} memories, {stats.totalRelationships} connections.</>
-                  )}
-                </p>
               </motion.div>
             )}
           </AnimatePresence>

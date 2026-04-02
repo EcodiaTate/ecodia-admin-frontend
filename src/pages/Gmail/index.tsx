@@ -60,7 +60,7 @@ export default function GmailPage() {
       {/* Header — floats closest */}
       <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
             Communication Stream
           </span>
           <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">

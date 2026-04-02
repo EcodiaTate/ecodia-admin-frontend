@@ -23,7 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         toastOptions={{
           style: {
             background: 'rgba(255, 255, 255, 0.85)',
-            boxShadow: '0 20px 50px -12px rgba(0, 104, 122, 0.06)',
+            boxShadow: '0 20px 50px -12px rgba(27, 122, 61, 0.06)',
             borderRadius: '1.25rem',
             color: '#1A1C1C',
             fontSize: '0.875rem',

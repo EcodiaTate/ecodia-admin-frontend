@@ -25,7 +25,7 @@ export default function CRMPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <SpatialLayer z={25} className="mb-10 sm:mb-12">
-        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+        <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
           Client Network
         </span>
         <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">

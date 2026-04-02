@@ -32,9 +32,9 @@ export default function LoginPage() {
         className="pointer-events-none fixed inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 80% 60% at 20% 80%, rgba(16, 185, 129, 0.04), transparent),
-            radial-gradient(ellipse 60% 80% at 80% 20%, rgba(6, 182, 212, 0.05), transparent),
-            radial-gradient(ellipse 50% 50% at 50% 50%, rgba(245, 158, 11, 0.025), transparent)
+            radial-gradient(ellipse 80% 60% at 20% 80%, rgba(46, 204, 113, 0.06), transparent),
+            radial-gradient(ellipse 60% 80% at 80% 20%, rgba(200, 145, 10, 0.07), transparent),
+            radial-gradient(ellipse 50% 50% at 50% 50%, rgba(27, 122, 61, 0.03), transparent)
           `,
         }}
       />

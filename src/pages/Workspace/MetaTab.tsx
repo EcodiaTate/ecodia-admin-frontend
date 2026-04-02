@@ -56,7 +56,7 @@ export function MetaTab() {
         >
           {subTab === 'posts' && (
             <motion.div layoutId="meta-sub-tab" className="absolute inset-0 rounded-xl bg-white/60" transition={glide}
-              style={{ boxShadow: '0 4px 20px -4px rgba(0, 104, 122, 0.06)' }} />
+              style={{ boxShadow: '0 4px 20px -4px rgba(27, 122, 61, 0.06)' }} />
           )}
           <span className="relative">Posts</span>
         </button>
@@ -69,7 +69,7 @@ export function MetaTab() {
         >
           {subTab === 'conversations' && (
             <motion.div layoutId="meta-sub-tab" className="absolute inset-0 rounded-xl bg-white/60" transition={glide}
-              style={{ boxShadow: '0 4px 20px -4px rgba(0, 104, 122, 0.06)' }} />
+              style={{ boxShadow: '0 4px 20px -4px rgba(27, 122, 61, 0.06)' }} />
           )}
           <span className="relative">Conversations</span>
         </button>

@@ -3,7 +3,7 @@ import { getFinanceSummary } from '@/api/finance'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { formatCurrency } from '@/lib/utils'
 
-const COLORS = ['#06B6D4', '#10B981', '#F59E0B', '#00687A', '#8B5CF6', '#EC4899', '#F97316', '#3B82F6']
+const COLORS = ['#2ECC71', '#10B981', '#F59E0B', '#1B7A3D', '#8B5CF6', '#EC4899', '#F97316', '#3B82F6']
 
 export function CategoryChart() {
   const { data } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })
@@ -46,7 +46,7 @@ export function CategoryChart() {
             contentStyle={{
               background: 'rgba(255, 255, 255, 0.92)',
               borderRadius: '16px',
-              boxShadow: '0 12px 32px -8px rgba(0, 104, 122, 0.06)',
+              boxShadow: '0 12px 32px -8px rgba(27, 122, 61, 0.06)',
               color: '#1A1C1C',
               fontSize: '13px',
             }}

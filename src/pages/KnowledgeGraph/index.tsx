@@ -73,11 +73,11 @@ export default function KnowledgeGraphPage() {
     <div className="mx-auto max-w-5xl">
       <SpatialLayer z={25} className="mb-12 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
             Institutional Memory
           </span>
           <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-            Knowledge <em className="not-italic font-normal text-primary">Graph</em>
+            Knowledge <em className="not-italic font-normal text-gold">Graph</em>
           </h1>
         </div>
 
@@ -107,7 +107,7 @@ export default function KnowledgeGraphPage() {
                 <motion.div
                   layoutId="kg-tab-bg"
                   className="absolute inset-0 rounded-xl bg-white/60"
-                  style={{ boxShadow: '0 4px 20px -4px rgba(0, 104, 122, 0.06)' }}
+                  style={{ boxShadow: '0 4px 20px -4px rgba(27, 122, 61, 0.06)' }}
                   transition={glide}
                 />
               )}

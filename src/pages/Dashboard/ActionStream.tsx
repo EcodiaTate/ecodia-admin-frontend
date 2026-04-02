@@ -18,7 +18,7 @@ const SOURCE_ICON: Record<string, typeof Mail> = {
 const PRIORITY_DOT: Record<string, string> = {
   urgent: 'bg-error',
   high: 'bg-tertiary',
-  medium: 'bg-primary/40',
+  medium: 'bg-gold/40',
   low: 'bg-on-surface-muted/20',
 }
 

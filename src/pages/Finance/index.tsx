@@ -31,11 +31,11 @@ export default function FinancePage() {
     <div className="mx-auto max-w-5xl">
       <SpatialLayer z={25} className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+          <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted/60">
             Capital Flow
           </span>
           <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-            Financial <em className="not-italic font-normal text-primary">Ecosystem</em>
+            Financial <em className="not-italic font-normal text-gold">Ecosystem</em>
           </h1>
         </div>
         {financeWorker && (

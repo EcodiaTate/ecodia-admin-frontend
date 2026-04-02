@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 const tooltipStyle = {
   background: 'rgba(255, 255, 255, 0.92)',
   borderRadius: '16px',
-  boxShadow: '0 12px 32px -8px rgba(0, 104, 122, 0.06)',
+  boxShadow: '0 12px 32px -8px rgba(27, 122, 61, 0.06)',
   color: '#1A1C1C',
   fontSize: '12px',
 }
@@ -113,8 +113,8 @@ export function AnalyticsSummary() {
                   <XAxis dataKey="date" tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Line type="monotone" dataKey="connections" stroke="#06B6D4" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="followers" stroke="#00687A" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="connections" stroke="#2ECC71" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="followers" stroke="#1B7A3D" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -138,7 +138,7 @@ export function AnalyticsSummary() {
                   <XAxis dataKey="date" tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#64748B', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="profileViews" fill="#06B6D4" opacity={0.6} radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="profileViews" fill="#2ECC71" opacity={0.6} radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

@@ -28,7 +28,7 @@ export default function WorkspacePage() {
     <div className="mx-auto max-w-6xl">
       <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted">
+          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
             Connected Systems
           </span>
           <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
@@ -56,7 +56,7 @@ export default function WorkspacePage() {
               <motion.div
                 layoutId="workspace-tab-bg"
                 className="absolute inset-0 rounded-xl bg-white/60"
-                style={{ boxShadow: '0 4px 20px -4px rgba(0, 104, 122, 0.06)' }}
+                style={{ boxShadow: '0 4px 20px -4px rgba(27, 122, 61, 0.06)' }}
                 transition={glide}
               />
             )}
