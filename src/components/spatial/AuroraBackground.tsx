@@ -55,7 +55,7 @@ function AuroraOrb({
         transition={{
           duration: 6 + index * 2,
           repeat: Infinity,
-          ease: 'easeInOut',
+          ease: [0.42, 0, 0.58, 1],
         }}
         style={{
           background: `radial-gradient(ellipse at center, ${orb.color}, transparent 50%)`,
