@@ -1,5 +1,6 @@
 import { KPICards } from './KPICards'
 import { ActivityFeed } from './ActivityFeed'
+import { ActionStream } from './ActionStream'
 import { AmbientPulse } from '@/components/spatial/AmbientPulse'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
@@ -36,6 +37,11 @@ export default function DashboardPage() {
       {/* KPI cards — content plane, slightly forward */}
       <SpatialLayer z={10}>
         <KPICards />
+      </SpatialLayer>
+
+      {/* Action stream — pre-processed items ready for one-tap approval */}
+      <SpatialLayer z={15} className="mt-12 sm:mt-16">
+        <ActionStream />
       </SpatialLayer>
 
       {/* Activity feed — recessed, sits behind the KPIs */}
