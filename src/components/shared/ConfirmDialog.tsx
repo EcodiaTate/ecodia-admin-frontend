@@ -24,7 +24,7 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', 
             initial={{ opacity: 0, y: 12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+            transition={{ type: 'spring', stiffness: 120, damping: 22 }}
             onClick={(e) => e.stopPropagation()}
             className="glass-elevated w-full max-w-sm rounded-3xl p-8"
           >

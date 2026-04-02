@@ -17,7 +17,7 @@ export function ActivityFeed() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.05 }}
             className="flex items-start gap-4 rounded-2xl px-4 py-3 transition-colors hover:bg-white/30"
           >
             <StatusBadge status={n.type} />

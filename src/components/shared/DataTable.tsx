@@ -48,7 +48,7 @@ export function DataTable<T = any>({
                 key={String(r[keyField] ?? i)}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.04 }}
                 onClick={() => onRowClick?.(row)}
                 className={cn(
                   'transition-colors',

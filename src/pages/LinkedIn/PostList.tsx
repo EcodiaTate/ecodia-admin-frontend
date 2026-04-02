@@ -74,7 +74,7 @@ export function PostList({ onCompose }: PostListProps) {
             key={post.id}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.04 }}
             className="glass rounded-2xl p-6"
           >
             <div className="flex items-start justify-between gap-4">

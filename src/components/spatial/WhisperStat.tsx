@@ -14,57 +14,63 @@ interface WhisperStatProps {
   onClick?: () => void
 }
 
-const spring = { type: 'spring' as const, stiffness: 280, damping: 22 }
+// Slow, syrupy, glass-like motion — not snappy
+const glide = { type: 'spring' as const, stiffness: 90, damping: 20, mass: 1 }
+const fadeGlide = { type: 'spring' as const, stiffness: 80, damping: 22, mass: 0.8 }
 
 export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surface', trend, subtext, onClick }: WhisperStatProps) {
   const [hovered, setHovered] = useState(false)
 
   return (
     <motion.div
-      layout
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={onClick}
+      animate={{
+        backgroundColor: hovered ? 'rgba(255, 255, 255, 0.35)' : 'rgba(255, 255, 255, 0)',
+      }}
+      transition={glide}
       className={cn(
-        'relative rounded-2xl transition-colors',
+        'relative rounded-2xl px-5 py-4',
         onClick && 'cursor-pointer',
-        hovered ? 'bg-white/40 px-6 py-5' : 'px-3 py-2',
       )}
-      transition={spring}
     >
       {/* Label */}
       <motion.span
-        layout="position"
-        className={cn(
-          'block text-label-sm uppercase tracking-[0.08em]',
-          hovered ? 'text-on-surface-muted/70 mb-2' : 'text-on-surface-muted/40',
-        )}
-        transition={spring}
+        animate={{
+          opacity: hovered ? 0.7 : 0.4,
+        }}
+        transition={glide}
+        className="block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted"
       >
         {label}
       </motion.span>
 
-      {/* Value */}
+      {/* Value — animates font size via scale transform to avoid layout shift */}
       <motion.span
-        layout="position"
+        animate={{
+          scale: hovered ? 1.8 : 1,
+          opacity: hovered ? 1 : 0.6,
+        }}
+        transition={glide}
+        style={{ transformOrigin: 'left bottom' }}
         className={cn(
-          'block font-display font-light tabular-nums',
-          hovered ? `text-[2rem] ${accent}` : `text-sm text-on-surface-muted/60`,
+          'mt-1 block font-display text-sm font-light tabular-nums',
+          hovered ? accent : 'text-on-surface-muted',
         )}
-        transition={spring}
       >
         {value}
       </motion.span>
 
-      {/* Expanded details */}
+      {/* Expanded details — fade in slowly below */}
       <AnimatePresence>
         {hovered && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ ...spring, delay: 0.05 }}
-            className="mt-2 space-y-1"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={fadeGlide}
+            className="mt-6 space-y-1 overflow-hidden"
           >
             {trend && (
               <div className="flex items-center gap-1.5">
@@ -85,15 +91,15 @@ export function WhisperStat({ label, value, icon: Icon, accent = 'text-on-surfac
         )}
       </AnimatePresence>
 
-      {/* Icon floats to the right when expanded */}
+      {/* Icon drifts in when expanded */}
       <AnimatePresence>
         {hovered && Icon && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 0.3, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={spring}
-            className="absolute right-5 top-5"
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 0.25, x: 0 }}
+            exit={{ opacity: 0, x: -4 }}
+            transition={fadeGlide}
+            className="absolute right-5 top-4"
           >
             <Icon className={cn('h-5 w-5', accent)} strokeWidth={1.5} />
           </motion.div>

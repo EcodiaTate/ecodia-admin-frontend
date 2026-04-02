@@ -44,7 +44,7 @@ export default function FinancePage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
         className="mb-12"
       >
         <p className={cn(
@@ -94,7 +94,7 @@ export default function FinancePage() {
               <motion.div
                 layoutId="finance-tab-bg"
                 className="absolute inset-0 rounded-xl bg-primary/10"
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                transition={{ type: 'spring', stiffness: 120, damping: 22 }}
               />
             )}
             <span className="relative z-10">{t.label}</span>
@@ -108,7 +108,7 @@ export default function FinancePage() {
           initial={{ opacity: 0, x: tab === 'uncategorized' ? 20 : -20, scale: 0.98 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: tab === 'uncategorized' ? -20 : 20, scale: 0.98 }}
-          transition={{ type: 'spring', stiffness: 250, damping: 25 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 22 }}
         >
           {tab === 'all' ? <TransactionList /> : <ReconcilePanel />}
         </motion.div>

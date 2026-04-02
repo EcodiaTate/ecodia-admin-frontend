@@ -217,12 +217,15 @@ The sidebar (see reference screenshots) is a **narrow icon rail** — not a full
 All animation uses **Framer Motion with spring physics**. No linear easing. No CSS `transition: all 0.3s ease`. Ever.
 
 ### Motion Tokens
+
+**All motion must be slow, syrupy, and glass-like.** Never snappy or bouncy. The interface drifts, it doesn't snap.
+
 ```tsx
-// Gentle entrance — cards, panels
+// Content entrance — cards, panels, list items
 const fadeUp = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-  transition: { type: 'spring', stiffness: 200, damping: 24 }
+  transition: { type: 'spring', stiffness: 100, damping: 22 }
 }
 
 // Glass hover — lift and clarify
@@ -231,13 +234,24 @@ const glassHover = {
     y: -2,
     background: 'rgba(255, 255, 255, 0.55)',
     boxShadow: '0 24px 56px -14px rgba(0, 104, 122, 0.06)',
-    transition: { type: 'spring', stiffness: 300, damping: 20 }
+    transition: { type: 'spring', stiffness: 100, damping: 20 }
   }
 }
 
+// Ambient interactions — WhisperStat expand, AmbientPulse reveal
+const glide = { type: 'spring', stiffness: 90, damping: 20, mass: 1 }
+
 // Layout transitions — sidebar expand, panel resize
-const layoutSpring = { type: 'spring', stiffness: 180, damping: 22 }
+const layoutSpring = { type: 'spring', stiffness: 80, damping: 22 }
 ```
+
+### Spring Value Guide
+| Feel | Stiffness | Damping | Use for |
+|---|---|---|---|
+| Slow drift | 60-80 | 18-20 | Parallax, hover tilt, layout shifts |
+| Ambient glide | 80-100 | 20-22 | Content entrance, hover expand, list staggers |
+| Scene transition | 80-90 | 18-20 | Page-to-page spatial movement |
+| **NEVER** | 200+ | any | Anything — this is too fast for the aesthetic |
 
 ### Interaction Principles
 - **Hover:** Gently increases glass clarity and subtly lifts the element (-2px Y)

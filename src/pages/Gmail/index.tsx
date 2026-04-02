@@ -38,7 +38,7 @@ export default function GmailPage() {
       <motion.div
         initial={{ opacity: 0, x: 12 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
         className="max-w-4xl space-y-8"
       >
         <button

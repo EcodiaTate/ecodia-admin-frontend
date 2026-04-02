@@ -97,7 +97,7 @@ export function DMList({ onSelect }: DMListProps) {
             key={dm.id}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30, delay: i * 0.03 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.04 }}
             onClick={() => onSelect(dm)}
             className={cn(
               'flex w-full items-center gap-4 rounded-2xl px-5 py-4 text-left transition-colors hover:bg-surface-container-low/60',

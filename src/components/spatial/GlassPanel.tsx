@@ -36,12 +36,12 @@ export function GlassPanel({
 
   // Spring-smoothed rotation (max 2.5 degrees)
   const rotateX = useSpring(useTransform(mouseY, [0, 1], [2.5, -2.5]), {
-    stiffness: 150,
-    damping: 20,
+    stiffness: 60,
+    damping: 18,
   })
   const rotateY = useSpring(useTransform(mouseX, [0, 1], [-2.5, 2.5]), {
-    stiffness: 150,
-    damping: 20,
+    stiffness: 60,
+    damping: 18,
   })
 
   function handleMouseMove(e: React.MouseEvent) {
@@ -69,7 +69,7 @@ export function GlassPanel({
           ? {
               y: -3,
               boxShadow: '0 32px 72px -18px rgba(0, 104, 122, 0.08)',
-              transition: { type: 'spring', stiffness: 300, damping: 22 },
+              transition: { type: 'spring', stiffness: 100, damping: 20 },
             }
           : undefined
       }

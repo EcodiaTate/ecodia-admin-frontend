@@ -39,7 +39,7 @@ export default function CRMPage() {
             initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22 }}
             className="max-w-4xl space-y-8"
           >
             <button
@@ -111,7 +111,7 @@ export default function CRMPage() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22 }}
           >
             <Pipeline onSelectClient={setSelectedClient} />
           </motion.div>

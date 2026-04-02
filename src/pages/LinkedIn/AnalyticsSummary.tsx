@@ -54,7 +54,7 @@ export function AnalyticsSummary() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 24 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 22 }}
       >
         <p className="font-display text-display-lg font-light tabular-nums text-primary">
           {(tw.connections ?? 0).toLocaleString()}

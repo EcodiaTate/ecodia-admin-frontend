@@ -62,7 +62,7 @@ export default function SettingsPage() {
             key={conn.name}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.1 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.1 }}
           >
           <GlassPanel depth="elevated" className="p-8">
             <div className="flex items-start justify-between">

@@ -19,7 +19,7 @@ export function AmbientStatus() {
         <motion.button
           whileHover={{ scale: 1.08, backgroundColor: 'rgba(255,255,255,0.4)' }}
           whileTap={{ scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 150, damping: 18 }}
           className="flex h-9 w-9 items-center justify-center rounded-xl text-on-surface-muted/60 transition-colors hover:text-on-surface-variant"
         >
           <Search className="h-4 w-4" strokeWidth={1.75} />
@@ -29,7 +29,7 @@ export function AmbientStatus() {
           onClick={markAllRead}
           whileHover={{ scale: 1.08, backgroundColor: 'rgba(255,255,255,0.4)' }}
           whileTap={{ scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 150, damping: 18 }}
           className="relative flex h-9 w-9 items-center justify-center rounded-xl text-on-surface-muted/60 transition-colors hover:text-on-surface-variant"
         >
           <Bell className="h-4 w-4" strokeWidth={1.75} />
@@ -48,7 +48,7 @@ export function AmbientStatus() {
           onClick={logout}
           whileHover={{ scale: 1.08, backgroundColor: 'rgba(255,255,255,0.4)' }}
           whileTap={{ scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 150, damping: 18 }}
           className="flex h-9 w-9 items-center justify-center rounded-xl text-on-surface-muted/60 transition-colors hover:text-on-surface-variant"
         >
           <LogOut className="h-4 w-4" strokeWidth={1.75} />

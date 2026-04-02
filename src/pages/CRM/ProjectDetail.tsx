@@ -20,7 +20,7 @@ export function ProjectDetail({ clientId }: { clientId: string }) {
           key={p.id}
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 24, delay: i * 0.06 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 22, delay: i * 0.06 }}
         >
           <GlassPanel depth="surface" holo className="p-6">
             <div className="flex items-center justify-between">
