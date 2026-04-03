@@ -5,6 +5,8 @@ import { sendCortexChat, getCortexBriefing } from '@/api/cortex'
 import { useCortexStore } from '@/store/cortexStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUp, Brain, Sparkles, Network } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { ConstellationCanvas } from './ConstellationCanvas'
 import { BlockRenderer } from './blocks/BlockRenderer'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
@@ -278,10 +280,13 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
         {/* Fallback: if no blocks but has content */}
         {(!message.blocks || message.blocks.length === 0) && message.content && (
-          <div className="text-sm leading-[1.8] text-on-surface-variant">
-            {message.content.split('\n\n').map((para, i) => (
-              <p key={i} className={i > 0 ? 'mt-3' : ''}>{para}</p>
-            ))}
+          <div className="prose prose-sm prose-invert max-w-none text-on-surface-variant
+            [&_p]:leading-[1.8] [&_p]:my-0 [&_p+p]:mt-3
+            [&_ul]:my-2 [&_ul]:pl-5 [&_li]:my-0.5
+            [&_strong]:text-on-surface [&_strong]:font-medium
+            [&_code]:bg-surface-container [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono [&_code]:text-primary
+            [&_pre]:bg-surface-container [&_pre]:p-4 [&_pre]:rounded-xl [&_pre_code]:bg-transparent [&_pre_code]:p-0">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
           </div>
         )}
       </div>
