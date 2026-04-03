@@ -6,7 +6,6 @@ interface CCSessionStore {
   updateSession: (sessionId: string, updates: Partial<CCSession>) => void
   appendOutput: (sessionId: string, chunk: string) => void
   setSession: (session: CCSession) => void
-  removeSession: (sessionId: string) => void
 }
 
 export const useCCSessionStore = create<CCSessionStore>((set) => ({
@@ -29,12 +28,6 @@ export const useCCSessionStore = create<CCSessionStore>((set) => ({
       const sessions = new Map(s.sessions)
       const existing = sessions.get(sessionId)
       if (existing) sessions.set(sessionId, { ...existing, output: [...existing.output, chunk] })
-      return { sessions }
-    }),
-  removeSession: (sessionId) =>
-    set((s) => {
-      const sessions = new Map(s.sessions)
-      sessions.delete(sessionId)
       return { sessions }
     }),
 }))

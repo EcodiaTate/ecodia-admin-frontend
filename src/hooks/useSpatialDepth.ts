@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useMotionValue, useSpring, MotionValue } from 'framer-motion'
+import { useMetabolicSpringConfig } from './useMetabolicSpringConfig'
 
 /**
  * Unified spatial depth engine — gyroscope on mobile, mouse on desktop.
@@ -20,7 +21,7 @@ import { useMotionValue, useSpring, MotionValue } from 'framer-motion'
 
 // Looser springs = more floaty, organic, holographic feel
 // Higher damping + mass prevents micro-oscillations during fast mouse movements
-const SPRING_CONFIG = { stiffness: 22, damping: 20, mass: 2.2 }
+const BASE_SPRING = { stiffness: 22, damping: 20, mass: 2.2 }
 
 // Lerp factor for input smoothing — lower = smoother but more latent
 const MOUSE_LERP = 0.15
@@ -39,8 +40,10 @@ export function useSpatialDepth(): SpatialDepthValues {
   const rawX = useMotionValue(0)
   const rawY = useMotionValue(0)
 
-  const tiltX = useSpring(rawX, SPRING_CONFIG)
-  const tiltY = useSpring(rawY, SPRING_CONFIG)
+  // Spring config tightens under metabolic pressure — scene responds faster
+  const springConfig = useMetabolicSpringConfig(BASE_SPRING)
+  const tiltX = useSpring(rawX, springConfig)
+  const tiltY = useSpring(rawY, springConfig)
 
   const hasGyro = useRef(false)
   const gyroCalibrated = useRef(false)

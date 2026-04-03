@@ -32,12 +32,6 @@ export interface DriveStats {
   last_modified: string | null
 }
 
-export interface DriveFolderNode {
-  name: string
-  parentId: string | null
-  children: DriveFolderNode[]
-}
-
 // ─── Vercel ─────────────────────────────────────────────────────────
 
 export interface VercelProject {
@@ -77,17 +71,6 @@ export interface VercelStats {
 }
 
 // ─── Meta ───────────────────────────────────────────────────────────
-
-export interface MetaPage {
-  id: string
-  page_id: string
-  name: string
-  category: string | null
-  followers_count: number
-  fan_count: number
-  post_count: number
-  conversation_count: number
-}
 
 export interface MetaPost {
   id: string

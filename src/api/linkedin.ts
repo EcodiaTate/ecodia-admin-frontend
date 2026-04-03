@@ -1,7 +1,7 @@
 import api from './client'
 import type {
   LinkedInDM, DMStats, LinkedInPost, PostAnalytics, GeneratedPost,
-  LinkedInProfile, ConnectionRequest, NetworkSnapshot, AnalyticsSummary,
+  ConnectionRequest, NetworkSnapshot, AnalyticsSummary,
   ContentTheme, ScrapeLog, WorkerStatus, LeadAnalysis, SuggestedPostTimes,
 } from '@/types/linkedin'
 
@@ -42,11 +42,6 @@ export async function updateDM(id: string, fields: { status?: string; category?:
   return data
 }
 
-export async function linkDMToClient(id: string, clientId: string) {
-  const { data } = await api.post<LinkedInDM>(`/linkedin/dms/${id}/link-client`, { clientId })
-  return data
-}
-
 export async function analyzeDMLead(id: string) {
   const { data } = await api.post<LeadAnalysis>(`/linkedin/dms/${id}/analyze-lead`)
   return data
@@ -79,50 +74,13 @@ export async function createPost(body: { content: string; postType?: string; has
   return data
 }
 
-export async function getPost(id: string) {
-  const { data } = await api.get<LinkedInPost>(`/linkedin/posts/${id}`)
-  return data
-}
-
-export async function updatePost(id: string, body: Record<string, unknown>) {
-  const { data } = await api.patch<LinkedInPost>(`/linkedin/posts/${id}`, body)
-  return data
-}
-
 export async function deletePost(id: string) {
   const { data } = await api.delete(`/linkedin/posts/${id}`)
   return data
 }
 
-export async function schedulePost(id: string, scheduledAt: string) {
-  const { data } = await api.post<LinkedInPost>(`/linkedin/posts/${id}/schedule`, { scheduledAt })
-  return data
-}
-
 export async function generatePost(theme: string, postType?: string) {
   const { data } = await api.post<{ variations: GeneratedPost[] }>('/linkedin/posts/generate', { theme, postType })
-  return data
-}
-
-// ─── Profiles ──────────────────────────────────────────────────────────
-
-export async function getProfiles(params?: { limit?: number; offset?: number; search?: string }) {
-  const { data } = await api.get<LinkedInProfile[]>('/linkedin/profiles', { params })
-  return data
-}
-
-export async function getProfile(id: string) {
-  const { data } = await api.get<LinkedInProfile>(`/linkedin/profiles/${id}`)
-  return data
-}
-
-export async function scrapeProfile(id: string) {
-  const { data } = await api.post<LinkedInProfile>(`/linkedin/profiles/${id}/scrape`)
-  return data
-}
-
-export async function linkProfileToClient(id: string, clientId: string) {
-  const { data } = await api.post<LinkedInProfile>(`/linkedin/profiles/${id}/link-client`, { clientId })
   return data
 }
 
@@ -172,11 +130,6 @@ export async function createContentTheme(body: { name: string; description?: str
   return data
 }
 
-export async function updateContentTheme(id: string, body: Record<string, unknown>) {
-  const { data } = await api.patch<ContentTheme>(`/linkedin/content-themes/${id}`, body)
-  return data
-}
-
 export async function deleteContentTheme(id: string) {
   const { data } = await api.delete(`/linkedin/content-themes/${id}`)
   return data
@@ -209,7 +162,3 @@ export async function setSessionCookie(cookie: string) {
   return data
 }
 
-export async function getSessionStatus() {
-  const { data } = await api.get<WorkerStatus>('/linkedin/session/status')
-  return data
-}

@@ -1,17 +1,54 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { useAuthStore } from './store/authStore'
-import DashboardPage from './pages/Dashboard'
-import FinancePage from './pages/Finance'
-import GmailPage from './pages/Gmail'
-import LinkedInPage from './pages/LinkedIn'
-import CRMPage from './pages/CRM'
-import CortexPage from './pages/Cortex'
-import WorkspacePage from './pages/Workspace'
-import SettingsPage from './pages/Settings'
-import KnowledgeGraphPage from './pages/KnowledgeGraph'
-import CodebasePage from './pages/Codebase'
-import LoginPage from './pages/Login'
+import { SceneErrorBoundary } from './components/shared/SceneErrorBoundary'
+import { motion } from 'framer-motion'
+
+// ─── Code-split every route-level page ──────────────────────────────────
+const DashboardPage = lazy(() => import('./pages/Dashboard'))
+const FinancePage = lazy(() => import('./pages/Finance'))
+const GmailPage = lazy(() => import('./pages/Gmail'))
+const LinkedInPage = lazy(() => import('./pages/LinkedIn'))
+const CRMPage = lazy(() => import('./pages/CRM'))
+const CortexPage = lazy(() => import('./pages/Cortex'))
+const WorkspacePage = lazy(() => import('./pages/Workspace'))
+const SettingsPage = lazy(() => import('./pages/Settings'))
+const KnowledgeGraphPage = lazy(() => import('./pages/KnowledgeGraph'))
+const CodebasePage = lazy(() => import('./pages/Codebase'))
+const LoginPage = lazy(() => import('./pages/Login'))
+
+/** Ambient loading state — a soft breathing glow, not a spinner */
+function SceneSuspense({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex h-[50vh] items-center justify-center"
+        >
+          <motion.div
+            animate={{ opacity: [0.15, 0.3, 0.15] }}
+            transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+            className="h-2 w-2 rounded-full bg-primary"
+          />
+        </motion.div>
+      }
+    >
+      {children}
+    </Suspense>
+  )
+}
+
+/** Wrap a page with error boundary + suspense */
+function Scene({ name, children }: { name: string; children: React.ReactNode }) {
+  return (
+    <SceneErrorBoundary sceneName={name}>
+      <SceneSuspense>{children}</SceneSuspense>
+    </SceneErrorBoundary>
+  )
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore(s => s.token)
@@ -23,7 +60,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<SceneSuspense><LoginPage /></SceneSuspense>} />
         <Route
           element={
             <ProtectedRoute>
@@ -32,21 +69,19 @@ export default function App() {
           }
         >
           <Route index element={<Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/finance" element={<FinancePage />} />
-          <Route path="/gmail" element={<GmailPage />} />
-          <Route path="/linkedin" element={<LinkedInPage />} />
-          <Route path="/crm" element={<CRMPage />} />
-          <Route path="/crm/:clientId" element={<CRMPage />} />
-          <Route path="/cortex" element={<CortexPage />} />
-          <Route path="/workspace" element={<WorkspacePage />} />
-          {/* /claude-code is now absorbed into /cortex */}
+          <Route path="/dashboard" element={<Scene name="Atmospheric Vitals"><DashboardPage /></Scene>} />
+          <Route path="/finance" element={<Scene name="Financial Ecosystem"><FinancePage /></Scene>} />
+          <Route path="/gmail" element={<Scene name="Digital Curator"><GmailPage /></Scene>} />
+          <Route path="/linkedin" element={<Scene name="Social Resonance"><LinkedInPage /></Scene>} />
+          <Route path="/crm" element={<Scene name="Flow State"><CRMPage /></Scene>} />
+          <Route path="/crm/:clientId" element={<Scene name="Flow State"><CRMPage /></Scene>} />
+          <Route path="/cortex" element={<Scene name="Cortex"><CortexPage /></Scene>} />
+          <Route path="/workspace" element={<Scene name="Surfaces"><WorkspacePage /></Scene>} />
           <Route path="/claude-code" element={<Navigate to="/cortex" replace />} />
           <Route path="/claude-code/:sessionId" element={<Navigate to="/cortex" replace />} />
-          <Route path="/codebase" element={<CodebasePage />} />
-          <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          {/* Redirects for consolidated pages */}
+          <Route path="/codebase" element={<Scene name="Codebase Mind"><CodebasePage /></Scene>} />
+          <Route path="/knowledge-graph" element={<Scene name="Knowledge Graph"><KnowledgeGraphPage /></Scene>} />
+          <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
           <Route path="/tasks" element={<Navigate to="/cortex" replace />} />
           <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
           <Route path="/archive" element={<Navigate to="/knowledge-graph" replace />} />

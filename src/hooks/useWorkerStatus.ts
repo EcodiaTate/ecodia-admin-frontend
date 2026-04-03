@@ -35,8 +35,10 @@ export function useWorkerStatus(workerName?: string) {
   const { data } = useQuery({
     queryKey: ['workerStatuses'],
     queryFn: getWorkerStatuses,
-    staleTime: 60_000,
-    refetchInterval: 60_000,
+    // WS worker_heartbeat events update the store in real-time.
+    // REST poll is a slow fallback for initial load + reconnect.
+    staleTime: 120_000,
+    refetchInterval: 180_000,
   })
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useSpatialContext } from './SpatialDepthProvider'
+import { useMetabolicSpringConfig } from '@/hooks/useMetabolicSpringConfig'
 
 type GlassDepth = 'surface' | 'elevated' | 'floating' | 'deep'
 
@@ -40,16 +41,9 @@ export function GlassPanel({
   // ── Local mouse parallax (hover, desktop) ──
   const mouseX = useMotionValue(0.5)
   const mouseY = useMotionValue(0.5)
-  const localRotateX = useSpring(useTransform(mouseY, [0, 1], [3.5, -3.5]), {
-    stiffness: 40,
-    damping: 20,
-    mass: 1.4,
-  })
-  const localRotateY = useSpring(useTransform(mouseX, [0, 1], [-3.5, 3.5]), {
-    stiffness: 40,
-    damping: 20,
-    mass: 1.4,
-  })
+  const glassSpring = useMetabolicSpringConfig({ stiffness: 40, damping: 20, mass: 1.4 })
+  const localRotateX = useSpring(useTransform(mouseY, [0, 1], [3.5, -3.5]), glassSpring)
+  const localRotateY = useSpring(useTransform(mouseX, [0, 1], [-3.5, 3.5]), glassSpring)
 
   // ── Global spatial tilt ──
   const spatialX = useTransform(tiltX, (v) => v * z * Z_PARALLAX)

@@ -8,7 +8,7 @@ export interface CCSession {
   trigger_source: string | null
   initial_prompt: string
   status: 'initializing' | 'running' | 'awaiting_input' | 'complete' | 'error'
-  pipeline_stage: 'queued' | 'context' | 'executing' | 'testing' | 'reviewing' | 'deploying' | 'complete' | 'failed' | null
+  pipeline_stage: 'queued' | 'context' | 'executing' | 'testing' | 'reviewing' | 'deploying' | 'deployed' | 'complete' | 'failed' | 'error' | null
   confidence_score: number | null
   files_changed: string[] | null
   commit_sha: string | null

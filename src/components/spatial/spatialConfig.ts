@@ -12,13 +12,13 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-export interface ScenePosition {
+interface ScenePosition {
   x: number
   y: number
   z: number
 }
 
-export interface SceneConfig {
+interface SceneConfig {
   path: string
   label: string
   icon: LucideIcon
@@ -26,14 +26,14 @@ export interface SceneConfig {
   aurora: AuroraConfig
 }
 
-export interface AuroraOrb {
+interface AuroraOrb {
   color: string
   x: string
   y: string
   size: string
 }
 
-export interface AuroraConfig {
+interface AuroraConfig {
   orbs: AuroraOrb[]
 }
 
@@ -44,7 +44,7 @@ export interface AuroraConfig {
 // Aurora palette: green + gold — each scene has a distinct atmospheric signature
 // ═══════════════════════════════════════════════════════════════════════
 
-export const SCENES: Record<string, SceneConfig> = {
+const SCENES: Record<string, SceneConfig> = {
   // ── Awareness: what's happening ──
   // Centered warm gold bloom — sun at the heart of the ecosystem
   dashboard: {
@@ -234,7 +234,7 @@ export function getDirection(fromKey: string, toKey: string) {
   }
 }
 
-export interface DirectionVector {
+interface DirectionVector {
   nx: number
   ny: number
   nz: number

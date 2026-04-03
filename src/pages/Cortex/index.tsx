@@ -13,6 +13,7 @@ import { useState, useRef, useEffect, useCallback, useId } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getKGStats } from '@/api/knowledgeGraph'
 import { sendCortexChat, getCortexBriefing } from '@/api/cortex'
+import { getSession } from '@/api/claudeCode'
 import { useCortexStore } from '@/store/cortexStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -26,7 +27,6 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ChatMessage, AttachedFile, CCSessionBlock, AmbientEvent } from '@/types/cortex'
-import { useCortexStore as useStore } from '@/store/cortexStore'
 
 // ─── File helpers ─────────────────────────────────────────────────────────────
 
@@ -104,8 +104,13 @@ const AMBIENT_ICONS: Record<AmbientEvent['kind'], React.ReactNode> = {
   action_success: <CheckCircle2 className="h-2.5 w-2.5 text-secondary/60" strokeWidth={1.75} />,
   action_failure: <XCircle className="h-2.5 w-2.5 text-error/60" strokeWidth={1.75} />,
   action_dismissed: <MinusCircle className="h-2.5 w-2.5 text-on-surface-muted/40" strokeWidth={1.75} />,
+  action_expired: <MinusCircle className="h-2.5 w-2.5 text-tertiary/50" strokeWidth={1.75} />,
   cc_complete: <Zap className="h-2.5 w-2.5 text-primary/50" strokeWidth={1.75} />,
   cc_error: <XCircle className="h-2.5 w-2.5 text-error/50" strokeWidth={1.75} />,
+  cc_deployed: <CheckCircle2 className="h-2.5 w-2.5 text-secondary/70" strokeWidth={1.75} />,
+  cc_deploy_failed: <XCircle className="h-2.5 w-2.5 text-tertiary/60" strokeWidth={1.75} />,
+  cc_started: <Zap className="h-2.5 w-2.5 text-primary/40" strokeWidth={1.75} />,
+  organism_surfacing: <Brain className="h-2.5 w-2.5 text-primary/40" strokeWidth={1.75} />,
   system: <Zap className="h-2.5 w-2.5 text-on-surface-muted/30" strokeWidth={1.75} />,
 }
 
@@ -129,7 +134,7 @@ function AmbientEventNote({ event }: { event: AmbientEvent }) {
 // Does NOT block anything. Multiple can run concurrently.
 
 async function reactToCortex(summary: string, detail?: string) {
-  const s = useStore.getState()
+  const s = useCortexStore.getState()
   s.startInflight()
   try {
     const apiMessages = [
@@ -140,10 +145,10 @@ async function reactToCortex(summary: string, detail?: string) {
     ]
     const res = await sendCortexChat(apiMessages, s.sessionId)
     if (res.blocks.length > 0) {
-      useStore.getState().addAssistantMessage(res.blocks, res.mentionedNodes)
+      useCortexStore.getState().addAssistantMessage(res.blocks, res.mentionedNodes)
     }
   } catch { /* silent — ambient reactions are best-effort */ } finally {
-    useStore.getState().endInflight()
+    useCortexStore.getState().endInflight()
   }
 }
 
@@ -254,7 +259,7 @@ export default function CortexPage() {
     // Fire the request — doesn't block input
     startInflight()
     try {
-      const currentMessages = useStore.getState().messages
+      const currentMessages = useCortexStore.getState().messages
       const apiMessages = currentMessages
         .map(m => ({
           role: m.role as 'user' | 'assistant',
@@ -273,9 +278,7 @@ export default function CortexPage() {
         if (block.type === 'cc_session') {
           const ccBlock = block as CCSessionBlock
           if (ccBlock.sessionId) {
-            import('@/api/claudeCode').then(({ getSession }) =>
-              getSession(ccBlock.sessionId).then(registerCCSession).catch(() => {})
-            )
+            getSession(ccBlock.sessionId).then(registerCCSession).catch(() => {})
           }
         }
       }

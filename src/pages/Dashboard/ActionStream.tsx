@@ -28,7 +28,9 @@ export function ActionStream() {
   const { data: actions } = useQuery({
     queryKey: ['pendingActions'],
     queryFn: () => getPendingActions(6),
-    refetchInterval: 20000,
+    // WS events invalidate this cache in real-time via useWebSocket.
+    // Slow fallback poll only as safety net (2 min).
+    refetchInterval: 120_000,
   })
 
   if (!actions || actions.length === 0) return null

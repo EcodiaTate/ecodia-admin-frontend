@@ -1,6 +1,7 @@
-import { useMemo } from 'react'
-import { motion, useTransform } from 'framer-motion'
+import { useMemo, useRef } from 'react'
+import { motion, useTransform, useMotionValueEvent } from 'framer-motion'
 import { useSpatialContext } from './SpatialDepthProvider'
+import { useMetabolicContext } from './MetabolicProvider'
 
 interface Particle {
   id: number
@@ -44,12 +45,25 @@ function generateParticles(count: number): Particle[] {
   return particles
 }
 
-/** Individual particle that drifts with spatial tilt */
+/** Individual particle that drifts with spatial tilt and metabolic pressure */
 function SpatialParticle({ p }: { p: Particle }) {
   const { tiltX, tiltY } = useSpatialContext()
+  const { driftScale } = useMetabolicContext()
+  const animRef = useRef<HTMLDivElement>(null)
 
   const x = useTransform(tiltX, (v) => v * p.zFactor * 8)
   const y = useTransform(tiltY, (v) => v * p.zFactor * 8)
+
+  // driftScale: 1.0 (calm) → 2.2 (urgent)
+  // Faster drift = shorter animation duration
+  const modulatedDuration = useTransform(driftScale, (s: number) => p.duration / s)
+
+  // Imperatively update CSS animation-duration — zero re-renders
+  useMotionValueEvent(modulatedDuration, 'change', (d) => {
+    if (animRef.current) {
+      animRef.current.style.animationDuration = `${d}s`
+    }
+  })
 
   return (
     <motion.div
@@ -62,11 +76,9 @@ function SpatialParticle({ p }: { p: Particle }) {
         x,
         y,
       }}
-      // CSS custom properties applied as data attributes via inline style
-      // But framer-motion style doesn't support CSS custom props well,
-      // so we layer a plain div for the CSS animation properties
     >
       <div
+        ref={animRef}
         className="absolute inset-0 rounded-full"
         style={{
           opacity: p.opacity,

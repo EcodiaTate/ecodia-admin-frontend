@@ -21,11 +21,8 @@ interface CortexStore {
   /** Increment/decrement inflight counter. Never gates input. */
   startInflight: () => void
   endInflight: () => void
-  setActiveNodes: (nodes: string[]) => void
   setBriefingLoaded: (loaded: boolean) => void
-  clearChat: () => void
   pushAmbientEvent: (event: Omit<AmbientEvent, 'id' | 'timestamp'>) => AmbientEvent
-  clearAmbientEvents: () => void
   registerCCSession: (session: CCSession) => void
   appendCCOutput: (sessionId: string, chunk: string) => void
   updateCCSession: (sessionId: string, updates: Partial<CCSession>) => void
@@ -74,20 +71,13 @@ export const useCortexStore = create<CortexStore>((set) => ({
 
   startInflight: () => set(s => ({ inflightCount: s.inflightCount + 1 })),
   endInflight: () => set(s => ({ inflightCount: Math.max(0, s.inflightCount - 1) })),
-  setActiveNodes: (nodes) => set({ activeNodes: nodes }),
   setBriefingLoaded: (loaded) => set({ briefingLoaded: loaded }),
-
-  clearChat: () => set({
-    messages: [], ambientEvents: [], activeNodes: [], inflightCount: 0,
-    sessionId: generateId(), briefingLoaded: false, inlineSessions: new Map(),
-  }),
 
   pushAmbientEvent: (event) => {
     const full: AmbientEvent = { ...event, id: generateId(), timestamp: new Date() }
     set(state => ({ ambientEvents: [...state.ambientEvents, full] }))
     return full
   },
-  clearAmbientEvents: () => set({ ambientEvents: [] }),
 
   registerCCSession: (session) =>
     set(state => {

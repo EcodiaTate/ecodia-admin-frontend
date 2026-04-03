@@ -43,7 +43,3 @@ export async function dismissAction(id: string) {
   return data
 }
 
-export async function getRecentActions(limit = 10) {
-  const { data } = await api.get<ActionItem[]>('/actions/recent', { params: { limit } })
-  return data
-}

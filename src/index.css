@@ -164,6 +164,11 @@
   inherits: false;
 }
 
+@keyframes aurora-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 @keyframes float-particle {
   0%, 100% {
     transform: translate(0, 0) scale(1);

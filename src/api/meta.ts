@@ -1,13 +1,8 @@
 import api from './client'
-import type { MetaPage, MetaPost, MetaConversation, MetaStats } from '@/types/workspace'
+import type { MetaPost, MetaConversation, MetaStats } from '@/types/workspace'
 
 export async function getMetaStats() {
   const { data } = await api.get<MetaStats>('/meta/stats')
-  return data
-}
-
-export async function getMetaPages() {
-  const { data } = await api.get<MetaPage[]>('/meta/pages')
   return data
 }
 

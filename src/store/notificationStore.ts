@@ -15,7 +15,6 @@ interface NotificationStore {
   addNotification: (n: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void
   markRead: (id: string) => void
   markAllRead: () => void
-  setNotifications: (notifications: Notification[]) => void
 }
 
 export const useNotificationStore = create<NotificationStore>((set) => ({
@@ -43,6 +42,4 @@ export const useNotificationStore = create<NotificationStore>((set) => ({
       notifications: s.notifications.map((n) => ({ ...n, read: true })),
       unreadCount: 0,
     })),
-  setNotifications: (notifications) =>
-    set({ notifications, unreadCount: notifications.filter((n) => !n.read).length }),
 }))

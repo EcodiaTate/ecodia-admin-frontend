@@ -41,11 +41,6 @@ export async function triageThread(id: string) {
   return data
 }
 
-export async function syncGmail() {
-  const { data } = await api.post('/gmail/sync')
-  return data
-}
-
 export async function getGmailStats() {
   const { data } = await api.get('/gmail/stats')
   return data as { unread: number; urgent: number; high: number; pending_triage: number; failed_triage: number }

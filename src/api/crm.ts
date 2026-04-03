@@ -1,5 +1,5 @@
 import api from './client'
-import type { Client, Project, Task, Pipeline } from '@/types/crm'
+import type { Client, Project, Pipeline } from '@/types/crm'
 
 export async function getClients(params?: { limit?: number; offset?: number }) {
   const { data } = await api.get<{ clients: Client[]; total: number }>('/crm/clients', { params })
@@ -21,7 +21,3 @@ export async function getClientProjects(clientId: string) {
   return data
 }
 
-export async function getTasks(params?: { limit?: number; offset?: number; status?: string; clientId?: string }) {
-  const { data } = await api.get<{ tasks: Task[]; total: number }>('/tasks', { params })
-  return data
-}

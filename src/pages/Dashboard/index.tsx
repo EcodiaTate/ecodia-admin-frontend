@@ -27,7 +27,8 @@ export default function DashboardPage() {
   const { data: actionStats } = useQuery({
     queryKey: ['actionStats'],
     queryFn: getActionStats,
-    refetchInterval: 20000,
+    // WS events invalidate this cache in real-time. Slow fallback only.
+    refetchInterval: 120_000,
   })
   const { data: vitals } = useQuery({
     queryKey: ['organismVitals'],
