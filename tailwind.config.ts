@@ -15,8 +15,8 @@ export default {
         },
         'on-surface': {
           DEFAULT: '#1A1C18',
-          variant: '#3B3F36',
-          muted: '#5C6356',
+          variant: '#1A1C18',
+          muted: '#1A1C18',
         },
         primary: {
           DEFAULT: '#1B7A3D',
