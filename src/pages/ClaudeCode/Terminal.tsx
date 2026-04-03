@@ -21,7 +21,7 @@ interface ParsedBlock {
 
 /**
  * Extract JSON objects from raw NDJSON chunks.
- * Claude Code streams output as concatenated JSON — no newlines between them.
+ * Claude Code streams output as concatenated JSON - no newlines between them.
  * e.g. {"type":"system",...}{"type":"assistant",...}{"type":"result",...}
  */
 function extractJsonObjects(raw: string): unknown[] {
@@ -40,7 +40,7 @@ function extractJsonObjects(raw: string): unknown[] {
         try {
           objects.push(JSON.parse(raw.slice(start, i + 1)))
         } catch {
-          // malformed — skip
+          // malformed - skip
         }
         start = -1
       }
@@ -70,7 +70,7 @@ function parseOutput(chunks: string[]): ParsedBlock[] {
       if (msg.type === 'system') continue
       if (msg.type === 'rate_limit_event') continue
 
-      // Assistant messages — the core content
+      // Assistant messages - the core content
       if (msg.type === 'assistant') {
         const message = msg.message as Record<string, unknown> | undefined
         if (message?.content) {
@@ -106,7 +106,7 @@ function parseOutput(chunks: string[]): ParsedBlock[] {
         }
       }
 
-      // Result summary — session complete
+      // Result summary - session complete
       if (msg.type === 'result') {
         const result = typeof msg.result === 'string' ? msg.result.trim() : null
         if (result) {
@@ -236,7 +236,7 @@ export function CCTerminal({ session }: TerminalProps) {
 
   return (
     <div className="space-y-5">
-      {/* Session header — glass bar */}
+      {/* Session header - glass bar */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/8">
@@ -286,7 +286,7 @@ export function CCTerminal({ session }: TerminalProps) {
         <p className="mt-1 text-sm leading-relaxed text-on-surface-variant">{session.initial_prompt}</p>
       </div>
 
-      {/* Terminal output — elevated glass with dark interior */}
+      {/* Terminal output - elevated glass with dark interior */}
       <div style={{ transformStyle: 'flat' }}>
         <GlassPanel depth="elevated" className="overflow-hidden">
           <div
@@ -406,7 +406,7 @@ export function CCTerminal({ session }: TerminalProps) {
         </div>
       )}
 
-      {/* Input — always visible when session is active */}
+      {/* Input - always visible when session is active */}
       {isActive && (
         <motion.form
           initial={{ opacity: 0, y: 8 }}

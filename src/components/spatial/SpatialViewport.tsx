@@ -2,11 +2,11 @@ import { motion, useTransform } from 'framer-motion'
 import { useSpatialContext } from './SpatialDepthProvider'
 
 /**
- * Root 3D viewport — shifts perspective-origin based on tilt.
+ * Root 3D viewport - shifts perspective-origin based on tilt.
  * Every child with translateZ automatically separates in parallax.
  *
  * Perspective is set to 800px (closer = more dramatic depth separation).
- * Origin shifts ±15% from center — enough to clearly see depth layers separate.
+ * Origin shifts ±15% from center - enough to clearly see depth layers separate.
  */
 
 const PERSPECTIVE = 800

@@ -13,7 +13,7 @@ interface Particle {
   dx: number
   dy: number
   color: string
-  /** Simulated depth — particles at different "distances" drift differently */
+  /** Simulated depth - particles at different "distances" drift differently */
   zFactor: number
 }
 

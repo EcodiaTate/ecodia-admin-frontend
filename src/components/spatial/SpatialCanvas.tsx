@@ -8,13 +8,13 @@ import { SpatialViewport } from './SpatialViewport'
  * Spatial scene renderer with directional 3D transitions.
  *
  * Now wraps content in SpatialViewport which shifts perspective-origin
- * based on device tilt / mouse position — giving every element with
+ * based on device tilt / mouse position - giving every element with
  * a translateZ real parallax depth separation.
  *
  * The critical trick: Framer Motion's `custom` prop is re-evaluated at
  * exit time (not mount time). So we store the current direction vector
  * in a ref and pass the ref's getter as `custom`. When scene 2 exits
- * (even long after it mounted), it reads the *current* direction —
+ * (even long after it mounted), it reads the *current* direction -
  * which is the fresh 2→1 vector, not the stale 1→2 from mount time.
  */
 export function SpatialCanvas() {

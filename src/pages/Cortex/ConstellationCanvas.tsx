@@ -74,7 +74,7 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
     resize()
     window.addEventListener('resize', resize)
 
-    // Fewer stars — cap at 70 for performance
+    // Fewer stars - cap at 70 for performance
     const starCount = Math.min(Math.max(nodeCount, 20), 70)
     const stars: Star[] = []
     for (let i = 0; i < starCount; i++) {
@@ -130,7 +130,7 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
         }
       }
 
-      // Draw connections — use squared distance to avoid sqrt
+      // Draw connections - use squared distance to avoid sqrt
       for (let i = 0; i < stars.length; i++) {
         for (let j = i + 1; j < stars.length; j++) {
           const dx = stars[i].x - stars[j].x
@@ -159,7 +159,7 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
         }
       }
 
-      // Draw stars — skip expensive gradient for inactive stars
+      // Draw stars - skip expensive gradient for inactive stars
       for (const star of stars) {
         const breathe = Math.sin(time * star.breatheSpeed + star.breatheOffset) * 0.5 + 0.5
         const isActive = star.activePulse > 0.01
@@ -180,7 +180,7 @@ export function ConstellationCanvas({ nodeCount, relCount, activeNodes = [] }: P
           ctx.fill()
         }
 
-        // Core dot — simple fill, no gradient for inactive stars
+        // Core dot - simple fill, no gradient for inactive stars
         ctx.beginPath()
         ctx.arc(star.x, star.y, r, 0, Math.PI * 2)
         const color = isActive ? '46, 204, 113' : '27, 122, 61'

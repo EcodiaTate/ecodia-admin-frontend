@@ -74,7 +74,7 @@ export default function CRMPage() {
           Flow <em className="not-italic font-normal text-primary">State</em>
         </h1>
 
-        {/* Ambient signal — what the field looks like right now */}
+        {/* Ambient signal - what the field looks like right now */}
         {allClients.length > 0 && (
           <div className="mt-6 flex items-center gap-8 text-on-surface-muted/40">
             <span className="font-mono text-label-sm">
@@ -128,7 +128,7 @@ export default function CRMPage() {
   )
 }
 
-// ─── Relational Field — clients as floating nodes, not rows ──────────
+// ─── Relational Field - clients as floating nodes, not rows ──────────
 // Momentum determines visual prominence. Live clients breathe loudest.
 // Archived clients don't exist here.
 
@@ -194,7 +194,7 @@ function RelationalField({ clients, onSelect }: { clients: Client[]; onSelect: (
   )
 }
 
-// ─── Client Detail — observation only ────────────────────────────────
+// ─── Client Detail - observation only ────────────────────────────────
 
 function ClientDetail({ client }: { client: Client }) {
   const momentum = STAGE_MOMENTUM[client.stage] ?? 0
@@ -216,7 +216,7 @@ function ClientDetail({ client }: { client: Client }) {
         </div>
       </div>
 
-      {/* Momentum bar — visual pulse of where this client is in the journey */}
+      {/* Momentum bar - visual pulse of where this client is in the journey */}
       <div className="mt-6 h-px w-full bg-on-surface-muted/8">
         <motion.div
           initial={{ width: 0 }}
@@ -254,7 +254,7 @@ function ClientDetail({ client }: { client: Client }) {
         )}
       </div>
 
-      {/* Notes — what the system has observed */}
+      {/* Notes - what the system has observed */}
       {Array.isArray(client.notes) && client.notes.length > 0 && (
         <div className="mt-10 space-y-3">
           <h3 className="text-label-sm uppercase tracking-[0.1em] text-on-surface-muted/40">

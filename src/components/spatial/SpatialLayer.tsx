@@ -16,7 +16,7 @@ const PARALLAX_INTENSITY = 0.7
 export function SpatialLayer({ z, className, children, as = 'div' }: SpatialLayerProps) {
   const { tiltX, tiltY } = useSpatialContext()
 
-  // Parallax via lateral translation — no preserve-3d chain required.
+  // Parallax via lateral translation - no preserve-3d chain required.
   // Elements at z=30 shift 21px at full tilt. Elements at z=-10 shift -7px (opposite).
   const x = useTransform(tiltX, (v) => v * z * PARALLAX_INTENSITY)
   const y = useTransform(tiltY, (v) => v * z * PARALLAX_INTENSITY)

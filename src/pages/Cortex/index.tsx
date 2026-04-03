@@ -53,7 +53,7 @@ export default function CortexPage() {
           addAssistantMessage(res.blocks, res.mentionedNodes)
         }
       })
-      .catch(() => { /* silent — briefing is optional */ })
+      .catch(() => { /* silent - briefing is optional */ })
   }, [briefingLoaded, setBriefingLoaded, addAssistantMessage])
 
   // Send message
@@ -111,7 +111,7 @@ export default function CortexPage() {
 
   return (
     <div className="relative flex h-full flex-col">
-      {/* Ambient constellation — deep background */}
+      {/* Ambient constellation - deep background */}
       <SpatialLayer z={-40} className="pointer-events-none fixed inset-0 z-0 opacity-30">
         <ConstellationCanvas
           nodeCount={stats?.totalNodes ?? 0}
@@ -123,7 +123,7 @@ export default function CortexPage() {
       {/* Scrollable chat area */}
       <div className="relative z-10 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-3xl px-6">
-          {/* Header — only when no messages */}
+          {/* Header - only when no messages */}
           <AnimatePresence>
             {!hasMessages && (
               <motion.div
@@ -177,7 +177,7 @@ export default function CortexPage() {
         </div>
       </div>
 
-      {/* Input bar — floats forward */}
+      {/* Input bar - floats forward */}
       <SpatialLayer z={20} className="relative z-10">
         <div className="mx-auto max-w-3xl px-6 py-4">
           <div className="glass-elevated rounded-2xl transition-all focus-within:shadow-glass-hover">
@@ -245,7 +245,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
     )
   }
 
-  // Assistant message — render structured blocks
+  // Assistant message - render structured blocks
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

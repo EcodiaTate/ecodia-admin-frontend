@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 
 // ─── Pending Classification ────────────────────────────────────────────
 // These are transactions the system hasn't yet categorized.
-// They surface here as observation — Cortex will propose categories
+// They surface here as observation - Cortex will propose categories
 // as action_cards. No manual picker. The system handles it.
 
 export function ReconcilePanel() {
@@ -51,7 +51,7 @@ export function ReconcilePanel() {
             <span className={`font-mono text-sm shrink-0 ${tx.type === 'credit' ? 'text-secondary/60' : 'text-on-surface-muted/50'}`}>
               {tx.type === 'credit' ? '+' : ''}{formatCurrency(tx.amount_aud)}
             </span>
-            {/* Pulse — system is aware this needs classification */}
+            {/* Pulse - system is aware this needs classification */}
             <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-tertiary/40 animate-pulse" />
           </motion.div>
         ))}

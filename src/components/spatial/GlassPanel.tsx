@@ -55,7 +55,7 @@ export function GlassPanel({
   const spatialX = useTransform(tiltX, (v) => v * z * Z_PARALLAX)
   const spatialY = useTransform(tiltY, (v) => v * z * Z_PARALLAX)
 
-  // Ambient tilt — ALL glass panels breathe with the scene, not just parallax ones
+  // Ambient tilt - ALL glass panels breathe with the scene, not just parallax ones
   // ±2.5° rotation is perceptible but still elegant
   const ambientRotateX = useTransform(tiltY, (v) => v * -2.5)
   const ambientRotateY = useTransform(tiltX, (v) => v * 2.5)
@@ -86,7 +86,7 @@ export function GlassPanel({
         rotateX: parallax ? localRotateX : ambientRotateX,
         rotateY: parallax ? localRotateY : ambientRotateY,
         transformPerspective: parallax ? 600 : 900,
-        // Z-depth lateral shift (no translateZ — breaks pointer events in scroll containers)
+        // Z-depth lateral shift (no translateZ - breaks pointer events in scroll containers)
         ...(hasSpatialDepth ? { x: spatialX, y: spatialY } : {}),
       }}
       whileHover={

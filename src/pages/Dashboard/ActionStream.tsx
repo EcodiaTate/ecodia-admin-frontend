@@ -9,7 +9,7 @@ import { useState } from 'react'
 // ─── The system's voice ───────────────────────────────────────────────
 //
 // These are decisions the AI has already made. It's not asking you to
-// manage anything — it's telling you what it wants to do, and waiting
+// manage anything - it's telling you what it wants to do, and waiting
 // for a nod or a shake. One gesture. That's all.
 //
 // No icons. No labels. No priority badges.
@@ -80,16 +80,16 @@ function ActionVoice({
       transition={{ type: 'spring', stiffness: 100, damping: 22, delay: index * 0.04 }}
       className="group relative rounded-2xl px-5 py-4 hover:bg-white/30 transition-colors"
     >
-      {/* Urgency thread — a thin left line, not a badge */}
+      {/* Urgency thread - a thin left line, not a badge */}
       <div className={`absolute left-0 top-3 bottom-3 w-0.5 rounded-full ${URGENCY_LINE[action.priority] ?? URGENCY_LINE.medium}`} />
 
       <div className="pl-3">
-        {/* The decision — stated plainly, no UI chrome */}
+        {/* The decision - stated plainly, no UI chrome */}
         <p className="text-sm leading-snug text-on-surface">
           {action.title}
         </p>
 
-        {/* Draft preview — what the system actually wrote */}
+        {/* Draft preview - what the system actually wrote */}
         {draft && (
           <p className="mt-1.5 text-xs italic leading-relaxed text-on-surface-muted/50 line-clamp-2">
             &ldquo;{draft.slice(0, 140)}{draft.length > 140 ? '…' : ''}&rdquo;
@@ -102,7 +102,7 @@ function ActionVoice({
         </p>
       </div>
 
-      {/* Gestures — appear on hover, invisible at rest */}
+      {/* Gestures - appear on hover, invisible at rest */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
         {executing ? (
           <div className="flex h-7 w-7 items-center justify-center">

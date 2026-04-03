@@ -57,7 +57,7 @@ export default function GmailPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Header — floats closest */}
+      {/* Header - floats closest */}
       <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
@@ -72,7 +72,7 @@ export default function GmailPage() {
         )}
       </SpatialLayer>
 
-      {/* Whisper stats — content plane */}
+      {/* Whisper stats - content plane */}
       <SpatialLayer z={12} className="mb-10 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
         <WhisperStat
           label="Unread"
@@ -97,7 +97,7 @@ export default function GmailPage() {
         />
       </SpatialLayer>
 
-      {/* Filter tabs — neutral plane */}
+      {/* Filter tabs - neutral plane */}
       <SpatialLayer z={5} className="mb-6 flex flex-wrap items-center gap-1">
         {inboxTabs.map((tab) => (
           <button

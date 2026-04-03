@@ -45,7 +45,7 @@ export function DriveTab() {
         </div>
       )}
 
-      {/* Search — explore what the system has indexed */}
+      {/* Search - explore what the system has indexed */}
       <div className="mb-8 flex items-center gap-3 max-w-lg">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-muted" />

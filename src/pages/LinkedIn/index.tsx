@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import {
-  MessageSquare, Target, UserPlus, PenSquare, ArrowLeft,
+    MessageSquare, Target, UserPlus, PenSquare, ArrowLeft,
 } from 'lucide-react'
 
 type Tab = 'dms' | 'posts' | 'calendar' | 'connections' | 'analytics' | 'settings'
@@ -48,7 +48,7 @@ export default function LinkedInPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      {/* Header — floats closest */}
+      {/* Header - floats closest */}
       <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
@@ -86,7 +86,7 @@ export default function LinkedInPage() {
         </div>
       </SpatialLayer>
 
-      {/* Whisper stats — content plane */}
+      {/* Whisper stats - content plane */}
       <SpatialLayer z={12} className="mb-10 flex flex-wrap gap-4 sm:gap-6 md:gap-8 lg:justify-center">
         <WhisperStat
           label="Unread DMs"
@@ -118,7 +118,7 @@ export default function LinkedInPage() {
         />
       </SpatialLayer>
 
-      {/* Tabs — neutral */}
+      {/* Tabs - neutral */}
       <SpatialLayer z={5} className="mb-8 flex flex-wrap items-center gap-1">
         {tabs.map((t) => (
           <button
@@ -136,7 +136,7 @@ export default function LinkedInPage() {
         ))}
       </SpatialLayer>
 
-      {/* Tab Content — recessed */}
+      {/* Tab Content - recessed */}
       <SpatialLayer z={-8}>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div

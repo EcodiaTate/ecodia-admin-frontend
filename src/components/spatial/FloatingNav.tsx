@@ -14,7 +14,7 @@ export function FloatingNav() {
   const [hovered, setHovered] = useState(false)
   const { tiltX, tiltY } = useSpatialContext()
 
-  // Nav floats at its own Z-depth — shifts opposite to content for parallax separation
+  // Nav floats at its own Z-depth - shifts opposite to content for parallax separation
   const navX = useTransform(tiltX, (v) => v * -6)
   // Subtle rotation follows device tilt
   const navRotateY = useTransform(tiltX, (v) => v * 1.5)
@@ -105,7 +105,7 @@ export function FloatingNav() {
                 <Icon className="h-[17px] w-[17px]" strokeWidth={1.75} />
               </motion.div>
 
-              {/* Label — slides out on hover */}
+              {/* Label - slides out on hover */}
               <motion.span
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 0 }}

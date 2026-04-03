@@ -92,7 +92,7 @@ export function VercelTab() {
   )
 }
 
-// ─── Deployment Row — expand to read logs ────────────────────────────
+// ─── Deployment Row - expand to read logs ────────────────────────────
 // Logs are observational. You can read what happened. You can't trigger.
 
 function DeploymentRow({

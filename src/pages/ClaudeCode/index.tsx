@@ -94,7 +94,7 @@ export default function ClaudeCodePage() {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 100, damping: 22 }}
             >
-              {/* Prompt input — minimal, just a text field */}
+              {/* Prompt input - minimal, just a text field */}
               <div className="mb-12 flex gap-3">
                 <input
                   value={prompt}

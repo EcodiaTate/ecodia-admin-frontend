@@ -11,7 +11,7 @@ import { motion } from 'framer-motion'
 
 // ─── Atmospheric Vitals ───────────────────────────────────────────────
 //
-// Not a dashboard. Not a report. Just the truth of the moment —
+// Not a dashboard. Not a report. Just the truth of the moment -
 // a single number, the pulse of the system below it, and whatever
 // the AI needs your attention on right now.
 //
@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const net = finance?.net ?? 0
   const organismAlive = vitals ? vitals.organism.healthy !== false : false
 
-  // Workers as a single pressure reading — fraction active
+  // Workers as a single pressure reading - fraction active
   const activeWorkers = Object.values(workers).filter(w => w.status === 'active').length
   const totalWorkers = Object.keys(workers).length
   const workerFraction = totalWorkers > 0 ? activeWorkers / totalWorkers : 1
@@ -50,7 +50,7 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-2xl flex flex-col items-center">
 
-      {/* The number — hero, always */}
+      {/* The number - hero, always */}
       <SpatialLayer z={25} className="flex flex-col items-center pt-[10vh]">
         <motion.p
           initial={{ opacity: 0, y: 30 }}
@@ -72,7 +72,7 @@ export default function DashboardPage() {
         </motion.span>
       </SpatialLayer>
 
-      {/* System breath — not a status bar, just a pulse */}
+      {/* System breath - not a status bar, just a pulse */}
       <SpatialLayer z={15} className="mt-12 mb-16 flex items-center gap-6">
         {/* Organism heartbeat */}
         <motion.div
@@ -88,7 +88,7 @@ export default function DashboardPage() {
           className={`h-1.5 w-1.5 rounded-full ${organismAlive ? 'bg-secondary' : 'bg-on-surface-muted/20'}`}
         />
 
-        {/* Worker pressure — a single bar, not a grid */}
+        {/* Worker pressure - a single bar, not a grid */}
         <div className="flex items-center gap-2">
           <div className="h-px w-16 bg-on-surface-muted/10 overflow-hidden rounded-full">
             <motion.div
@@ -110,7 +110,7 @@ export default function DashboardPage() {
           </span>
         )}
 
-        {/* Activity today — only shown if there's something to say */}
+        {/* Activity today - only shown if there's something to say */}
         {actionStats && actionStats.executed_24h > 0 && (
           <span className="font-mono text-[10px] text-on-surface-muted/25">
             {actionStats.executed_24h} done today
@@ -118,10 +118,10 @@ export default function DashboardPage() {
         )}
       </SpatialLayer>
 
-      {/* The system's voice — pending decisions, if any */}
+      {/* The system's voice - pending decisions, if any */}
       {actionStats && actionStats.pending > 0 && (
         <SpatialLayer z={10} className="w-full">
-          {/* Header whisper — the system speaking, not a section title */}
+          {/* Header whisper - the system speaking, not a section title */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -136,7 +136,7 @@ export default function DashboardPage() {
         </SpatialLayer>
       )}
 
-      {/* All clear — when the system has nothing pending */}
+      {/* All clear - when the system has nothing pending */}
       {actionStats && actionStats.pending === 0 && (
         <SpatialLayer z={5}>
           <motion.p

@@ -118,7 +118,7 @@ export default function KnowledgeGraphPage() {
         </div>
       </SpatialLayer>
 
-      {/* AI Briefing — ask the graph, it tells you */}
+      {/* AI Briefing - ask the graph, it tells you */}
       <SpatialLayer z={5} className="mb-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1 max-w-xl">
@@ -342,7 +342,7 @@ function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> |
   )
 }
 
-// ─── Synthesis Tab — living readout of what the consolidation engine produced ─
+// ─── Synthesis Tab - living readout of what the consolidation engine produced ─
 // No triggers. The engine runs on its own schedule. This is what it found.
 
 function SynthesisTab() {
@@ -387,7 +387,7 @@ function SynthesisTab() {
 
       {/* Quiet explanation */}
       <p className="mt-10 max-w-md font-mono text-[10px] uppercase tracking-[0.1em] leading-loose text-on-surface-muted/20">
-        The consolidation engine runs autonomously — deduplicating entities,
+        The consolidation engine runs autonomously - deduplicating entities,
         extracting patterns, building narrative arcs from raw signals.
         It doesn't need to be told when to run.
       </p>

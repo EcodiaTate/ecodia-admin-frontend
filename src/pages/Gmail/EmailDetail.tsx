@@ -41,7 +41,7 @@ export function EmailDetail({ thread, onUpdate }: EmailDetailProps) {
     onError: () => toast.error('Triage failed'),
   })
 
-  // Sanitize HTML email body to prevent XSS — DOMPurify strips all dangerous content
+  // Sanitize HTML email body to prevent XSS - DOMPurify strips all dangerous content
   const sanitizedBody = thread.full_body ? DOMPurify.sanitize(thread.full_body) : ''
   const isHtml = thread.full_body ? thread.full_body.includes('<') : false
 

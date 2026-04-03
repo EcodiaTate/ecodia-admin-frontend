@@ -49,7 +49,7 @@ export function AnalyticsSummary() {
 
   return (
     <div className="space-y-12 sm:space-y-14">
-      {/* Hero: Connections — centered */}
+      {/* Hero: Connections - centered */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ export function AnalyticsSummary() {
         </span>
       </motion.div>
 
-      {/* Whisper stats row — wrap on mobile */}
+      {/* Whisper stats row - wrap on mobile */}
       <div className="flex flex-wrap gap-4 sm:gap-8 md:gap-10">
         <WhisperStat
           label="Profile Views"
@@ -102,7 +102,7 @@ export function AnalyticsSummary() {
         </div>
       )}
 
-      {/* Charts — stacked vertically, no glass wrappers */}
+      {/* Charts - stacked vertically, no glass wrappers */}
       <div className="space-y-12">
         <div>
           <h3 className="mb-6 text-label-md uppercase tracking-[0.05em] text-on-surface-muted">Network Growth</h3>
