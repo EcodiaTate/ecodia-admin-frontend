@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ChatMessage, CortexBlock } from '@/types/cortex'
+import type { ChatMessage, CortexBlock, AttachedFile } from '@/types/cortex'
 
 interface CortexStore {
   messages: ChatMessage[]
@@ -8,7 +8,7 @@ interface CortexStore {
   sessionId: string
   briefingLoaded: boolean
 
-  addUserMessage: (content: string) => string
+  addUserMessage: (content: string, attachments?: AttachedFile[]) => string
   addAssistantMessage: (blocks: CortexBlock[], mentionedNodes?: string[]) => void
   setThinking: (thinking: boolean) => void
   setActiveNodes: (nodes: string[]) => void
@@ -27,13 +27,14 @@ export const useCortexStore = create<CortexStore>((set, _get) => ({
   sessionId: generateId(),
   briefingLoaded: false,
 
-  addUserMessage: (content: string) => {
+  addUserMessage: (content: string, attachments?: AttachedFile[]) => {
     const id = generateId()
     set(state => ({
       messages: [...state.messages, {
         id,
         role: 'user',
         content,
+        attachments,
         timestamp: new Date(),
       }],
     }))
@@ -41,7 +42,6 @@ export const useCortexStore = create<CortexStore>((set, _get) => ({
   },
 
   addAssistantMessage: (blocks: CortexBlock[], mentionedNodes?: string[]) => {
-    // Build a content string from text blocks for conversation history
     const textContent = blocks
       .filter(b => b.type === 'text')
       .map(b => (b as { content: string }).content)
@@ -61,9 +61,7 @@ export const useCortexStore = create<CortexStore>((set, _get) => ({
   },
 
   setThinking: (thinking: boolean) => set({ isThinking: thinking }),
-
   setActiveNodes: (nodes: string[]) => set({ activeNodes: nodes }),
-
   setBriefingLoaded: (loaded: boolean) => set({ briefingLoaded: loaded }),
 
   clearChat: () => set({

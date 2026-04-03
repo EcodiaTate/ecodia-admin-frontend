@@ -56,12 +56,22 @@ export type CortexBlock =
   | StatusUpdateBlock
   | InsightBlock
 
+export interface AttachedFile {
+  id: string
+  name: string
+  type: string          // MIME type
+  size: number
+  dataUrl?: string      // for images — used for preview
+  text?: string         // for text/doc files — extracted text content
+}
+
 export interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string            // raw text for user messages
   blocks?: CortexBlock[]     // structured blocks for assistant messages
   mentionedNodes?: string[]  // nodes highlighted in constellation
+  attachments?: AttachedFile[]
   timestamp: Date
 }
 
