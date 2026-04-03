@@ -10,6 +10,7 @@ export async function sendCortexChat(
   messages: { role: 'user' | 'assistant'; content: string }[],
   sessionId?: string,
   attachments?: AttachedFile[],
+  ambientEvents?: { kind: string; summary: string; timestamp: Date }[],
 ) {
   const { data } = await api.post<CortexChatResponse>('/cortex/chat', {
     messages,
@@ -22,6 +23,7 @@ export async function sendCortexChat(
       dataUrl: a.dataUrl,
       text: a.text,
     })),
+    ambientEvents,
   })
   return data
 }

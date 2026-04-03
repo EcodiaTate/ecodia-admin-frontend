@@ -17,6 +17,8 @@ interface CortexStore {
   /** Number of inflight requests. Input is NEVER blocked — this is a display hint only. */
   inflightCount: number
   inlineSessions: Map<string, InlineCCSession>
+  /** True once the initial briefing has been loaded this session. Persists across page navigations. */
+  briefingLoaded: boolean
 
   addUserMessage: (content: string, attachments?: AttachedFile[]) => string
   addAssistantMessage: (blocks: CortexBlock[], mentionedNodes?: string[]) => void
@@ -27,6 +29,7 @@ interface CortexStore {
   registerCCSession: (session: CCSession) => void
   appendCCOutput: (sessionId: string, chunk: string) => void
   updateCCSession: (sessionId: string, updates: Partial<CCSession>) => void
+  markBriefingLoaded: () => void
 }
 
 function generateId() {
@@ -39,6 +42,7 @@ export const useCortexStore = create<CortexStore>((set) => ({
   activeNodes: [],
   inflightCount: 0,
   inlineSessions: new Map(),
+  briefingLoaded: false,
 
   addUserMessage: (content, attachments) => {
     const id = generateId()
@@ -76,6 +80,8 @@ export const useCortexStore = create<CortexStore>((set) => ({
     set(state => ({ ambientEvents: [...state.ambientEvents, full].slice(-MAX_AMBIENT_EVENTS) }))
     return full
   },
+
+  markBriefingLoaded: () => set({ briefingLoaded: true }),
 
   registerCCSession: (session) =>
     set(state => {

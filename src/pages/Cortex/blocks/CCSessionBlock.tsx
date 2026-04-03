@@ -90,7 +90,7 @@ function parseOutput(chunks: string[]): OutputLine[] {
 
 // ─── Pipeline dots ────────────────────────────────────────────────────────────
 
-const STAGES = ['queued', 'context', 'executing', 'testing', 'reviewing', 'deploying', 'complete'] as const
+const STAGES = ['queued', 'context', 'executing', 'testing', 'reviewing', 'awaiting_review', 'deploying', 'complete'] as const
 
 function PipelineDots({ stage }: { stage: string }) {
   const idx = STAGES.indexOf(stage as typeof STAGES[number])

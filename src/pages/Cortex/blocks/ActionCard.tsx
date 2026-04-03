@@ -1,7 +1,8 @@
 /**
  * ActionCard — proposed action from the Cortex.
  *
- * Outcomes feed ambient events AND trigger Cortex reactions — all non-blocking.
+ * Outcomes feed ambient events. No LLM round-trip on action completion —
+ * Cortex sees ambient events as context on the human's next message.
  */
 import { useState } from 'react'
 import { motion } from 'framer-motion'
@@ -9,7 +10,6 @@ import { Play, X, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { executeCortexAction } from '@/api/cortex'
 import { createSession } from '@/api/claudeCode'
 import { useCortexStore } from '@/store/cortexStore'
-import { reactToCortex } from '@/pages/Cortex/index'
 import type { ActionCardBlock } from '@/types/cortex'
 
 const URGENCY_STYLES = {
@@ -58,7 +58,6 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
         })
         setResult(res.message)
         setState('done')
-        reactToCortex(`Action "${block.action}" completed: ${res.message}`, detail)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Action failed'
@@ -69,14 +68,12 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
       setResult(msg)
       setFailed(true)
       setState('done')
-      reactToCortex(`Action "${block.action}" failed: ${msg}`, detail)
     }
   }
 
   function handleDismiss() {
     setState('dismissed')
     useCortexStore.getState().pushAmbientEvent({ kind: 'action_dismissed', summary: `${block.title} dismissed` })
-    reactToCortex(`Action dismissed by user: "${block.title}" (${block.action})`)
   }
 
   if (state === 'dismissed') return null

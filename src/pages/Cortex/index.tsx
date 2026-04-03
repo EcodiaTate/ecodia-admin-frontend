@@ -420,7 +420,8 @@ export default function CortexPage() {
   const [selfModProposal, setSelfModProposal] = useState<{ reasoning: string; drives?: string[]; code_paths?: string[] } | null>(null)
   const [sessionId] = useState(() => crypto.randomUUID())
   useEffect(() => { setReactionSessionId(sessionId) }, [sessionId])
-  const briefingLoadedRef = useRef(false)
+  const briefingLoaded = useCortexStore(s => s.briefingLoaded)
+  const markBriefingLoaded = useCortexStore(s => s.markBriefingLoaded)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -457,14 +458,14 @@ export default function CortexPage() {
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
-  // Briefing
+  // Briefing — only once per app session, not on every page navigation
   useEffect(() => {
-    if (briefingLoadedRef.current) return
-    briefingLoadedRef.current = true
+    if (briefingLoaded) return
+    markBriefingLoaded()
     getCortexBriefing()
       .then(res => { if (res.blocks.length > 0) addAssistantMessage(res.blocks, res.mentionedNodes) })
       .catch(() => {})
-  }, [addAssistantMessage])
+  }, [briefingLoaded, markBriefingLoaded, addAssistantMessage])
 
   // Listen for organism surfacings
   useEffect(() => {
@@ -491,7 +492,8 @@ export default function CortexPage() {
     return () => window.removeEventListener('ecodia:self-modification', handler)
   }, [])
 
-  // Auto-react to CC session completions
+  // Track CC session completions as ambient events — no LLM round-trip.
+  // Cortex sees these as context on the human's next message.
   const reactedSessionsRef = useRef<Set<string>>(new Set())
   useEffect(() => {
     for (const [sid, session] of inlineSessions) {
@@ -500,11 +502,15 @@ export default function CortexPage() {
         const summary = session.status === 'complete'
           ? `CC session completed: "${session.initial_prompt?.slice(0, 100) ?? sid}"`
           : `CC session failed: ${session.error_message ?? sid}`
-        reactToCortex(summary, JSON.stringify({
-          sessionId: sid, status: session.status,
-          filesChanged: session.files_changed, commitSha: session.commit_sha,
-          deployStatus: session.deploy_status, cost: session.cc_cost_usd,
-        }))
+        useCortexStore.getState().pushAmbientEvent({
+          kind: session.status === 'complete' ? 'action_success' : 'action_failure',
+          summary,
+          detail: JSON.stringify({
+            sessionId: sid, status: session.status,
+            filesChanged: session.files_changed, commitSha: session.commit_sha,
+            deployStatus: session.deploy_status, cost: session.cc_cost_usd,
+          }),
+        })
       }
     }
   }, [inlineSessions])
@@ -559,7 +565,13 @@ export default function CortexPage() {
         }))
         .filter(m => m.content.trim())
 
-      const res = await sendCortexChat(apiMessages, sessionId, currentAttachments.length ? currentAttachments : undefined)
+      // Include recent ambient events so Cortex knows what happened this session
+      // (action approvals, dismissals, CC completions, deploys) without an LLM round-trip
+      const recentAmbient = useCortexStore.getState().ambientEvents.slice(-20).map(e => ({
+        kind: e.kind, summary: e.summary, timestamp: e.timestamp,
+      }))
+
+      const res = await sendCortexChat(apiMessages, sessionId, currentAttachments.length ? currentAttachments : undefined, recentAmbient)
 
       for (const block of res.blocks) {
         if (block.type === 'cc_session') {

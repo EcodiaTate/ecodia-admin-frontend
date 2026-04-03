@@ -7,8 +7,8 @@ export interface CCSession {
   triggered_by: 'crm_stage' | 'manual' | 'task' | 'simula' | 'thymos' | 'scheduled' | 'cortex'
   trigger_source: string | null
   initial_prompt: string
-  status: 'initializing' | 'running' | 'awaiting_input' | 'complete' | 'error'
-  pipeline_stage: 'queued' | 'context' | 'executing' | 'testing' | 'reviewing' | 'deploying' | 'deployed' | 'complete' | 'failed' | 'error' | null
+  status: 'initializing' | 'running' | 'awaiting_input' | 'complete' | 'error' | 'stopped'
+  pipeline_stage: 'queued' | 'context' | 'executing' | 'testing' | 'reviewing' | 'deploying' | 'deployed' | 'awaiting_review' | 'complete' | 'failed' | 'error' | null
   confidence_score: number | null
   files_changed: string[] | null
   commit_sha: string | null

@@ -34,6 +34,7 @@ const STAGE_COLORS: Record<string, string> = {
   executing: 'rgba(0, 104, 122, 0.25)',
   testing: 'rgba(200, 145, 10, 0.3)',
   reviewing: 'rgba(46, 204, 113, 0.3)',
+  awaiting_review: 'rgba(200, 145, 10, 0.35)',
   deploying: 'rgba(200, 145, 10, 0.25)',
   deployed: 'rgba(46, 204, 113, 0.3)',
   complete: 'rgba(46, 204, 113, 0.2)',
