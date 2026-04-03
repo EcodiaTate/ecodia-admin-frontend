@@ -77,14 +77,9 @@ export default function App() {
           <Route path="/crm/:clientId" element={<Scene name="Flow State"><CRMPage /></Scene>} />
           <Route path="/cortex" element={<Scene name="Cortex"><CortexPage /></Scene>} />
           <Route path="/workspace" element={<Scene name="Surfaces"><WorkspacePage /></Scene>} />
-          <Route path="/claude-code" element={<Navigate to="/cortex" replace />} />
-          <Route path="/claude-code/:sessionId" element={<Navigate to="/cortex" replace />} />
           <Route path="/codebase" element={<Scene name="Codebase Mind"><CodebasePage /></Scene>} />
           <Route path="/knowledge-graph" element={<Scene name="Knowledge Graph"><KnowledgeGraphPage /></Scene>} />
           <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
-          <Route path="/tasks" element={<Navigate to="/cortex" replace />} />
-          <Route path="/notifications" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/archive" element={<Navigate to="/knowledge-graph" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

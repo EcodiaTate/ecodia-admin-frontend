@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { useMotionValue, useSpring, MotionValue } from 'framer-motion'
+import { useMotionValue, useSpring } from 'framer-motion'
 import { useMetabolicSpringConfig } from './useMetabolicSpringConfig'
 
 /**
@@ -30,13 +30,7 @@ function clamp(v: number): number {
   return Math.max(-1, Math.min(1, v))
 }
 
-export interface SpatialDepthValues {
-  tiltX: MotionValue<number>
-  tiltY: MotionValue<number>
-  hasGyroscope: boolean
-}
-
-export function useSpatialDepth(): SpatialDepthValues {
+export function useSpatialDepth() {
   const rawX = useMotionValue(0)
   const rawY = useMotionValue(0)
 

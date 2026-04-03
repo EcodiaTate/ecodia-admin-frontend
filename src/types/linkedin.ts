@@ -35,14 +35,15 @@ export interface LinkedInDM {
   updated_at: string
 }
 
-export interface DMMessage {
+interface DMMessage {
   sender: string
   text: string
   timestamp: string | null
 }
 
+type DMPriority = 'urgent' | 'high' | 'normal' | 'low' | 'spam'
+
 export type DMCategory = 'lead' | 'networking' | 'recruiter' | 'spam' | 'support' | 'personal' | 'uncategorized'
-export type DMPriority = 'urgent' | 'high' | 'normal' | 'low' | 'spam'
 
 export interface DMStats {
   unread: number
@@ -95,28 +96,6 @@ export interface GeneratedPost {
   hashtags: string[]
   characterCount: number
   hookLine: string
-}
-
-export interface LinkedInProfile {
-  id: string
-  linkedin_url: string
-  name: string
-  headline: string | null
-  location: string | null
-  company: string | null
-  company_url: string | null
-  about_snippet: string | null
-  connection_degree: string | null
-  mutual_connections: number | null
-  is_connection: boolean
-  profile_image_url: string | null
-  tags: string[]
-  relevance_score: number | null
-  relevance_reason: string | null
-  client_id: string | null
-  last_scraped_at: string | null
-  created_at: string
-  updated_at: string
 }
 
 export interface ConnectionRequest {
@@ -182,7 +161,7 @@ export interface ScrapeLog {
   created_at: string
 }
 
-export interface WorkerStatus {
+export interface LinkedInWorkerStatus {
   status: 'active' | 'inactive' | 'suspended' | 'captcha'
   reason: string | null
   lastActive: string | null

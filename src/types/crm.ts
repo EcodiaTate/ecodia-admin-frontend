@@ -29,20 +29,4 @@ export interface Project {
   updated_at: string
 }
 
-export interface Task {
-  id: string
-  title: string
-  description: string | null
-  source: 'gmail' | 'linkedin' | 'crm' | 'manual' | 'cc'
-  client_id: string | null
-  project_id: string | null
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  status: 'open' | 'in_progress' | 'done' | 'cancelled'
-  due_date: string | null
-  client_name?: string
-  project_name?: string
-  created_at: string
-  updated_at: string
-}
-
 export type Pipeline = Record<PipelineStage, Client[]>

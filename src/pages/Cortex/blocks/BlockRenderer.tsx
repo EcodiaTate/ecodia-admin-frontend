@@ -5,7 +5,7 @@ import { EmailCard } from './EmailCard'
 import { TaskCard } from './TaskCard'
 import { StatusUpdate } from './StatusUpdate'
 import { InsightBlock } from './InsightBlock'
-import { CCSessionBlock } from './CCSessionBlock'
+import { LivingSession } from './LivingSession'
 
 export function BlockRenderer({ block }: { block: CortexBlock }) {
   switch (block.type) {
@@ -22,7 +22,7 @@ export function BlockRenderer({ block }: { block: CortexBlock }) {
     case 'insight':
       return <InsightBlock block={block} />
     case 'cc_session':
-      return <CCSessionBlock block={block} />
+      return <LivingSession block={block} />
     default:
       return null
   }

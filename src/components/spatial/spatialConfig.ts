@@ -213,11 +213,20 @@ export function getScene(pathname: string): SceneConfig {
   return SCENES[getSceneKey(pathname)] ?? SCENES.dashboard
 }
 
+
+export interface DirectionVector {
+  nx: number
+  ny: number
+  nz: number
+  distance: number
+  mode: 'shift' | 'drift' | 'submerge'
+}
+
 /**
- * Compute a normalized direction vector between two scenes.
- * Returns { nx, ny, nz } used by the variant functions.
+ * Compute a normalized direction vector between two scenes
+ * plus cognitive distance mode (shift / drift / submerge).
  */
-export function getDirection(fromKey: string, toKey: string) {
+export function getDirection(fromKey: string, toKey: string): DirectionVector {
   const from = SCENES[fromKey] ?? SCENES.dashboard
   const to = SCENES[toKey] ?? SCENES.dashboard
 
@@ -225,72 +234,127 @@ export function getDirection(fromKey: string, toKey: string) {
   const dy = to.position.y - from.position.y
   const dz = to.position.z - from.position.z
 
-  const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1
+  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0
+  const magnitude = distance || 1
+
+  const mode: DirectionVector['mode'] =
+    distance <= 1.1 ? 'shift' : distance <= 2.2 ? 'drift' : 'submerge'
 
   return {
     nx: dx / magnitude,
     ny: dy / magnitude,
     nz: dz / magnitude,
+    distance,
+    mode,
   }
 }
 
-interface DirectionVector {
-  nx: number
-  ny: number
-  nz: number
-}
-
 /**
- * Framer Motion variant functions.
+ * Framer Motion variant functions with cognitive distance.
  *
- * These are evaluated dynamically via the `custom` prop. The `custom` value
- * is a DirectionVector that gets re-read at animation time — critically,
- * the `exit` variant reads the CURRENT direction (not the stale one from
- * mount time). This is what makes 1→2→pause→1 work correctly.
+ * Three transition modes based on spatial distance:
+ *   - Shift  (≤1.1): 60vw slide, fast spring, no zoom. A head turn.
+ *   - Drift  (≤2.2): 110vw slide, medium spring, slight scale. Walking across a room.
+ *   - Submerge (>2.2): Z-axis dominant, scale down/up, heavy spring. Sinking into deep memory.
  *
- * The content travels 110vw/vh so it fully leaves the viewport.
- * During the crossfade overlap, blur + partial opacity creates the
- * depth-of-field "same holographic plane" illusion.
+ * The `custom` prop is re-evaluated at exit time for correct reverse direction.
  */
 export const sceneVariants = {
-  initial: (d: DirectionVector) => ({
-    opacity: 0.2,
-    x: `${d.nx * 110}vw`,
-    y: `${d.ny * 110}vh`,
-    scale: 1 + d.nz * 0.04,
-    rotateY: d.nx * 2,
-    rotateX: -d.ny * 1.5,
-  }),
-  animate: {
+  initial: (d: DirectionVector) => {
+    if (d.mode === 'submerge') {
+      return {
+        opacity: 0,
+        scale: 0.92,
+        y: '0vh',
+        x: '0vw',
+        rotateY: d.nx * 3,
+        rotateX: -d.ny * 2,
+      }
+    }
+    const travel = d.mode === 'shift' ? 60 : 110
+    return {
+      opacity: 0.2,
+      x: `${d.nx * travel}vw`,
+      y: `${d.ny * travel}vh`,
+      scale: d.mode === 'drift' ? 1 + d.nz * 0.04 : 1,
+      rotateY: d.nx * 2,
+      rotateX: -d.ny * 1.5,
+    }
+  },
+  animate: (d: DirectionVector) => ({
     opacity: 1,
     x: '0vw',
     y: '0vh',
     scale: 1,
     rotateY: 0,
     rotateX: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 80,
-      damping: 18,
-      mass: 1,
-      opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-    },
-  },
-  exit: (d: DirectionVector) => ({
-    opacity: 0,
-    x: `${-d.nx * 110}vw`,
-    y: `${-d.ny * 110}vh`,
-    scale: 1 - d.nz * 0.04,
-    rotateY: -d.nx * 2,
-    rotateX: d.ny * 1.5,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 90,
-      damping: 20,
-      mass: 0.8,
-      opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
-    },
+    transition: d.mode === 'submerge'
+      ? {
+          type: 'spring' as const,
+          stiffness: 60,
+          damping: 22,
+          mass: 1.4,
+          opacity: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+        }
+      : d.mode === 'shift'
+        ? {
+            type: 'spring' as const,
+            stiffness: 100,
+            damping: 20,
+            mass: 0.8,
+            opacity: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+          }
+        : {
+            type: 'spring' as const,
+            stiffness: 80,
+            damping: 18,
+            mass: 1,
+            opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+          },
   }),
+  exit: (d: DirectionVector) => {
+    if (d.mode === 'submerge') {
+      return {
+        opacity: 0,
+        scale: 1.06,
+        x: '0vw',
+        y: '0vh',
+        rotateY: -d.nx * 3,
+        rotateX: d.ny * 2,
+        transition: {
+          type: 'spring' as const,
+          stiffness: 60,
+          damping: 22,
+          mass: 1.4,
+          opacity: { duration: 0.5, ease: [0.64, 0, 0.78, 0] },
+        },
+      }
+    }
+    const travel = d.mode === 'shift' ? 60 : 110
+    return {
+      opacity: 0,
+      x: `${-d.nx * travel}vw`,
+      y: `${-d.ny * travel}vh`,
+      scale: d.mode === 'drift' ? 1 - d.nz * 0.04 : 1,
+      rotateY: -d.nx * 2,
+      rotateX: d.ny * 1.5,
+      transition: d.mode === 'shift'
+        ? {
+            type: 'spring' as const,
+            stiffness: 110,
+            damping: 22,
+            mass: 0.7,
+            opacity: { duration: 0.3, ease: [0.64, 0, 0.78, 0] },
+          }
+        : {
+            type: 'spring' as const,
+            stiffness: 90,
+            damping: 20,
+            mass: 0.8,
+            opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
+          },
+    }
+  },
 }
 
 /** Ordered list of nav links */

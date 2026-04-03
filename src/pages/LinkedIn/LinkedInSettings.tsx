@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getWorkerStatus, resumeWorker, triggerJob, getWorkerLogs, setSessionCookie } from '@/api/linkedin'
+import type { LinkedInWorkerStatus } from '@/types/linkedin'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { formatRelative } from '@/lib/utils'
@@ -21,7 +22,7 @@ export function LinkedInSettings() {
   const [cookie, setCookie] = useState('')
   const queryClient = useQueryClient()
 
-  const { data: status, isLoading: loadingStatus } = useQuery({
+  const { data: status, isLoading: loadingStatus } = useQuery<LinkedInWorkerStatus>({
     queryKey: ['linkedinWorkerStatus'],
     queryFn: getWorkerStatus,
     refetchInterval: 15000,

@@ -2,7 +2,7 @@ import api from './client'
 import type {
   LinkedInDM, DMStats, LinkedInPost, PostAnalytics, GeneratedPost,
   ConnectionRequest, NetworkSnapshot, AnalyticsSummary,
-  ContentTheme, ScrapeLog, WorkerStatus, LeadAnalysis, SuggestedPostTimes,
+  ContentTheme, ScrapeLog, LinkedInWorkerStatus, LeadAnalysis, SuggestedPostTimes,
 } from '@/types/linkedin'
 
 // ─── DMs ────────────────────────────────────────────────────────────────
@@ -74,11 +74,6 @@ export async function createPost(body: { content: string; postType?: string; has
   return data
 }
 
-export async function deletePost(id: string) {
-  const { data } = await api.delete(`/linkedin/posts/${id}`)
-  return data
-}
-
 export async function generatePost(theme: string, postType?: string) {
   const { data } = await api.post<{ variations: GeneratedPost[] }>('/linkedin/posts/generate', { theme, postType })
   return data
@@ -138,7 +133,7 @@ export async function deleteContentTheme(id: string) {
 // ─── Worker / Session ──────────────────────────────────────────────────
 
 export async function getWorkerStatus() {
-  const { data } = await api.get<WorkerStatus>('/linkedin/worker/status')
+  const { data } = await api.get<LinkedInWorkerStatus>('/linkedin/worker/status')
   return data
 }
 

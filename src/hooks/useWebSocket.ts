@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationStore } from '@/store/notificationStore'
-import { useCCSessionStore } from '@/store/ccSessionStore'
 import { useCortexStore } from '@/store/cortexStore'
 import { useWorkerStore } from '@/store/workerStore'
 import type { CCSession } from '@/types/claudeCode'
@@ -20,8 +19,6 @@ export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null)
   const token = useAuthStore((s) => s.token)
   const addNotification = useNotificationStore((s) => s.addNotification)
-  const appendOutput = useCCSessionStore((s) => s.appendOutput)
-  const updateSession = useCCSessionStore((s) => s.updateSession)
   const updateWorker = useWorkerStore((s) => s.updateWorker)
   const queryClient = useQueryClient()
 
@@ -58,7 +55,6 @@ export function useWebSocket() {
             // ─── CC Session Output ────────────────────────────────
             case 'cc:output': {
               const chunk = typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data)
-              appendOutput(msg.sessionId, chunk)
               cortex.appendCCOutput(msg.sessionId, chunk)
               break
             }
@@ -67,7 +63,6 @@ export function useWebSocket() {
             case 'cc:status': {
               const newStatus = msg.data?.status ?? msg.data
               const statusUpdate = { status: newStatus }
-              updateSession(msg.sessionId, statusUpdate)
               cortex.updateCCSession(msg.sessionId, statusUpdate)
 
               if (newStatus === 'complete' || newStatus === 'error') {
@@ -85,7 +80,6 @@ export function useWebSocket() {
             // ─── CC Pipeline Stage ────────────────────────────────
             case 'cc:stage': {
               const stageUpdate = { pipeline_stage: msg.data?.stage }
-              updateSession(msg.sessionId, stageUpdate)
               cortex.updateCCSession(msg.sessionId, stageUpdate)
               break
             }
@@ -99,7 +93,6 @@ export function useWebSocket() {
                 confidence_score: result?.confidence ?? null,
                 commit_sha: result?.commitSha ?? null,
               }
-              updateSession(msg.sessionId, statusUpdate)
               cortex.updateCCSession(msg.sessionId, statusUpdate)
               cortex.pushAmbientEvent({
                 kind: result?.success ? 'cc_deployed' : 'cc_deploy_failed',
@@ -204,5 +197,5 @@ export function useWebSocket() {
       wsRef.current?.close()
       setConnectionState('disconnected')
     }
-  }, [token, addNotification, appendOutput, updateSession, updateWorker, queryClient])
+  }, [token, addNotification, updateWorker, queryClient])
 }

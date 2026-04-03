@@ -2,17 +2,26 @@ import { createContext, useContext, useEffect } from 'react'
 import { motionValue } from 'framer-motion'
 import { useMetabolicPressure, type MetabolicValues } from '@/hooks/useMetabolicPressure'
 
-// Static fallback — zero pressure, all modulators at calm defaults
+// Static fallback — zero pressure, all modulators at calm defaults (Growth tier)
 const ZERO = motionValue(0)
 const ONE = motionValue(1)
+const GROWTH_BREATH = motionValue(1.2)
+const GROWTH_DRIFT = motionValue(0.6)
+const GROWTH_SAT = motionValue(1.3)
+const GROWTH_GLASS = motionValue(0.45)
+const GROWTH_CONSTELLATION = motionValue(0.5)
 
 const FALLBACK: MetabolicValues = {
   pressure: ZERO,
-  breathScale: ONE,
-  driftScale: ONE,
+  breathScale: GROWTH_BREATH,
+  driftScale: GROWTH_DRIFT,
   stiffnessBoost: ZERO,
-  dampingShift: ZERO,
   warmth: ZERO,
+  auroraSaturation: GROWTH_SAT,
+  auroraIntensity: ONE,
+  glassOpacity: GROWTH_GLASS,
+  particleGravity: ZERO,
+  constellationVisibility: GROWTH_CONSTELLATION,
 }
 
 const Ctx = createContext<MetabolicValues>(FALLBACK)

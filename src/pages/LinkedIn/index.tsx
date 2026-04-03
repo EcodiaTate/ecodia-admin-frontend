@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getDMStats, getWorkerStatus, getConnectionRequests, getPosts, resumeWorker } from '@/api/linkedin'
+import type { LinkedInWorkerStatus } from '@/types/linkedin'
 import { DMList } from './DMList'
 import { DMDetail } from './DMDetail'
 import { PostList } from './PostList'
-import { PostComposer } from './PostComposer'
 import { ConnectionRequests } from './ConnectionRequests'
 import { ContentCalendar } from './ContentCalendar'
 import { AnalyticsSummary } from './AnalyticsSummary'
@@ -18,6 +18,7 @@ import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
+import { useFocusStore } from '@/store/focusStore'
 import {
     MessageSquare, Target, UserPlus, PenSquare, ArrowLeft,
 } from 'lucide-react'
@@ -27,15 +28,17 @@ type Tab = 'dms' | 'posts' | 'calendar' | 'connections' | 'analytics' | 'setting
 export default function LinkedInPage() {
   const [tab, setTab] = useState<Tab>('dms')
   const [selectedDM, setSelectedDM] = useState<LinkedInDM | null>(null)
-  const [showComposer, setShowComposer] = useState(false)
 
   const { data: dmStats } = useQuery({ queryKey: ['linkedinDMStats'], queryFn: getDMStats })
-  const { data: workerStatus } = useQuery({ queryKey: ['linkedinWorkerStatus'], queryFn: getWorkerStatus, refetchInterval: 30000 })
+  const { data: workerStatus } = useQuery<LinkedInWorkerStatus>({ queryKey: ['linkedinWorkerStatus'], queryFn: getWorkerStatus, refetchInterval: 30000 })
   const { data: connRequests } = useQuery({ queryKey: ['linkedinConnectionRequests'], queryFn: () => getConnectionRequests({ status: 'pending' }) })
   const { data: posts } = useQuery({ queryKey: ['linkedinPostsWeek'], queryFn: () => getPosts({ status: 'posted', limit: 7 }) })
 
   const linkedinWorker = useWorkerStatus('linkedin') as WorkerStatus | null
   const isSuspended = workerStatus?.status === 'suspended'
+  const setFocused = useFocusStore((s) => s.setFocused)
+
+  useEffect(() => { setFocused(!!selectedDM); return () => setFocused(false) }, [selectedDM, setFocused])
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'dms', label: 'DMs' },
@@ -123,7 +126,7 @@ export default function LinkedInPage() {
         {tabs.map((t) => (
           <button
             key={t.key}
-            onClick={() => { setTab(t.key); setSelectedDM(null); setShowComposer(false) }}
+            onClick={() => { setTab(t.key); setSelectedDM(null) }}
             className={cn(
               'rounded-xl px-3 py-2 text-sm font-medium transition-colors sm:px-4 sm:py-2.5',
               tab === t.key
@@ -140,7 +143,7 @@ export default function LinkedInPage() {
       <SpatialLayer z={-8}>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div
-          key={tab + (tab === 'dms' && selectedDM ? '-detail' : '') + (tab === 'posts' && showComposer ? '-compose' : '')}
+          key={tab + (tab === 'dms' && selectedDM ? '-detail' : '')}
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: -10 }}
@@ -162,21 +165,7 @@ export default function LinkedInPage() {
             )
           )}
 
-          {tab === 'posts' && (
-            showComposer ? (
-              <div>
-                <button
-                  onClick={() => setShowComposer(false)}
-                  className="mb-6 flex items-center gap-2 text-sm text-on-surface-muted transition-colors hover:text-on-surface-variant"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} /> Back to posts
-                </button>
-                <PostComposer onSaved={() => setShowComposer(false)} />
-              </div>
-            ) : (
-              <PostList onCompose={() => setShowComposer(true)} />
-            )
-          )}
+          {tab === 'posts' && <PostList />}
 
           {tab === 'calendar' && <ContentCalendar />}
           {tab === 'connections' && <ConnectionRequests />}

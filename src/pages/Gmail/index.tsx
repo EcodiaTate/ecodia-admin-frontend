@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getGmailStats } from '@/api/gmail'
 import { EmailList } from './EmailList'
 import { EmailDetail } from './EmailDetail'
-import { DraftReview } from './DraftReview'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
 import { AmbientPulse } from '@/components/spatial/AmbientPulse'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
@@ -12,6 +11,7 @@ import type { WorkerStatus } from '@/store/workerStore'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
+import { useFocusStore } from '@/store/focusStore'
 import { ArrowLeft, Mail, AlertTriangle, AlertCircle, X } from 'lucide-react'
 
 type Filter = {
@@ -24,6 +24,10 @@ export default function GmailPage() {
   const [selected, setSelected] = useState<EmailThread | null>(null)
   const [filter, setFilter] = useState<Filter>({})
   const queryClient = useQueryClient()
+  const setFocused = useFocusStore((s) => s.setFocused)
+
+  // Signal focus context to spatial layer
+  useEffect(() => { setFocused(!!selected); return () => setFocused(false) }, [selected, setFocused])
 
   const { data: stats } = useQuery({ queryKey: ['gmailStats'], queryFn: getGmailStats })
   const gmailWorker = useWorkerStatus('gmail') as WorkerStatus | null
@@ -50,7 +54,6 @@ export default function GmailPage() {
           Back to inbox
         </button>
         <EmailDetail thread={selected} onUpdate={(t) => setSelected(t)} />
-        <DraftReview thread={selected} onUpdate={(t) => setSelected(t)} />
       </motion.div>
     )
   }

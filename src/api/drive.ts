@@ -7,6 +7,6 @@ export async function getDriveStats() {
 }
 
 export async function searchDrive(query: string, limit = 20) {
-  const { data } = await api.post<DriveFile[]>('/drive/search', { query, limit })
+  const { data } = await api.get<DriveFile[]>('/drive/search', { params: { q: query, limit } })
   return data
 }

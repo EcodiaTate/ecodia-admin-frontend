@@ -1,10 +1,11 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useSpatialContext } from './SpatialDepthProvider'
+import { useMetabolicContext } from './MetabolicProvider'
 import { useMetabolicSpringConfig } from '@/hooks/useMetabolicSpringConfig'
 
-type GlassDepth = 'surface' | 'elevated' | 'floating' | 'deep'
+type GlassDepth = 'surface' | 'elevated'
 
 interface GlassPanelProps {
   depth?: GlassDepth
@@ -20,8 +21,6 @@ interface GlassPanelProps {
 const depthClasses: Record<GlassDepth, string> = {
   surface: 'glass',
   elevated: 'glass-elevated',
-  floating: 'glass-floating',
-  deep: 'glass-deep',
 }
 
 const Z_PARALLAX = 0.5
@@ -37,6 +36,20 @@ export function GlassPanel({
 }: GlassPanelProps) {
   const ref = useRef<HTMLDivElement>(null)
   const { tiltX, tiltY } = useSpatialContext()
+  const { glassOpacity } = useMetabolicContext()
+
+  // Imperatively modulate glass background opacity from pressure tiers
+  useEffect(() => {
+    const unsub = glassOpacity.on('change', (v: number) => {
+      if (ref.current) {
+        const base = depth === 'elevated' ? 0.70 : 0.55
+        // Scale the base opacity by the pressure-tier multiplier
+        const scaled = base * (v / 0.55) // normalize around default 0.55
+        ref.current.style.backgroundColor = `rgba(255, 255, 255, ${Math.min(0.9, scaled).toFixed(3)})`
+      }
+    })
+    return unsub
+  }, [glassOpacity, depth])
 
   // ── Local mouse parallax (hover, desktop) ──
   const mouseX = useMotionValue(0.5)

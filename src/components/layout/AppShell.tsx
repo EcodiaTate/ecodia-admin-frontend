@@ -8,6 +8,9 @@ import { SpatialCanvas } from '@/components/spatial/SpatialCanvas'
 import { FloatingNav } from '@/components/spatial/FloatingNav'
 import { AmbientStatus } from '@/components/spatial/AmbientStatus'
 import { EcosystemStatusBar } from '@/components/spatial/EcosystemStatusBar'
+import { GlobalConstellation } from '@/components/spatial/GlobalConstellation'
+import { OrganismSurfacings } from '@/components/spatial/OrganismSurfacings'
+import { HomecomingOverlay } from '@/components/spatial/HomecomingOverlay'
 
 export function AppShell() {
   useWebSocket()
@@ -19,7 +22,10 @@ export function AppShell() {
           {/* Layer 0: Reactive aurora - deepest background */}
           <AuroraBackground />
 
-          {/* Layer 0.5: Directional light glare - follows tilt */}
+          {/* Layer 0.5: Global constellation - peripheral nervous system */}
+          <GlobalConstellation />
+
+          {/* Layer 0.75: Directional light glare - follows tilt */}
           <SpatialEdgeLight />
 
           {/* Layer 1.5: Ambient particles - scattered at various depths */}
@@ -34,7 +40,13 @@ export function AppShell() {
           {/* Layer 4: Ambient status indicators */}
           <AmbientStatus />
 
-          {/* Layer 5: Persistent ecosystem status bar - bottom edge */}
+          {/* Layer 5: Organism surfacings - cognitive broadcasts + self-mod proposals */}
+          <OrganismSurfacings />
+
+          {/* Layer 6: Homecoming overlay — drift state on return after absence */}
+          <HomecomingOverlay />
+
+          {/* Layer 7: Persistent ecosystem status bar - bottom edge */}
           <EcosystemStatusBar />
         </div>
       </SpatialDepthProvider>

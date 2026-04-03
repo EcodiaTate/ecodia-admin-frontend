@@ -29,8 +29,6 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
   const [result, setResult] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
 
-  const store = useCortexStore()
-
   async function handleApprove() {
     setState('executing')
     try {
@@ -44,15 +42,16 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
           clientId: block.params.clientId as string | undefined,
           workingDir: block.params.workingDir as string | undefined,
         })
-        store.registerCCSession(session)
-        store.addAssistantMessage([{ type: 'cc_session', sessionId: session.id, title: block.title }])
-        store.pushAmbientEvent({ kind: 'action_success', summary: `CC session started: ${block.title}` })
+        const s = useCortexStore.getState()
+        s.registerCCSession(session)
+        s.addAssistantMessage([{ type: 'cc_session', sessionId: session.id, title: block.title }])
+        s.pushAmbientEvent({ kind: 'action_success', summary: `CC session started: ${block.title}` })
         setResult('Running')
         setState('done')
       } else {
         const res = await executeCortexAction(block.action, block.params)
         const detail = JSON.stringify(res)
-        store.pushAmbientEvent({
+        useCortexStore.getState().pushAmbientEvent({
           kind: res.success !== false ? 'action_success' : 'action_failure',
           summary: `${block.action.replace(/_/g, ' ')}: ${res.message}`,
           detail,
@@ -66,7 +65,7 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
       const detail = err instanceof Error && 'response' in err
         ? JSON.stringify((err as { response?: { data?: unknown } }).response?.data)
         : msg
-      store.pushAmbientEvent({ kind: 'action_failure', summary: `${block.action.replace(/_/g, ' ')} failed: ${msg}`, detail })
+      useCortexStore.getState().pushAmbientEvent({ kind: 'action_failure', summary: `${block.action.replace(/_/g, ' ')} failed: ${msg}`, detail })
       setResult(msg)
       setFailed(true)
       setState('done')
@@ -76,7 +75,7 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
 
   function handleDismiss() {
     setState('dismissed')
-    store.pushAmbientEvent({ kind: 'action_dismissed', summary: `${block.title} dismissed` })
+    useCortexStore.getState().pushAmbientEvent({ kind: 'action_dismissed', summary: `${block.title} dismissed` })
     reactToCortex(`Action dismissed by user: "${block.title}" (${block.action})`)
   }
 

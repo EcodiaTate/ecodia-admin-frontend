@@ -6,14 +6,16 @@ export interface InlineCCSession extends CCSession {
   output: string[]
 }
 
+const MAX_MESSAGES = 500
+const MAX_AMBIENT_EVENTS = 300
+const MAX_SESSION_OUTPUT_CHUNKS = 2000
+
 interface CortexStore {
   messages: ChatMessage[]
   ambientEvents: AmbientEvent[]
   activeNodes: string[]
   /** Number of inflight requests. Input is NEVER blocked — this is a display hint only. */
   inflightCount: number
-  sessionId: string
-  briefingLoaded: boolean
   inlineSessions: Map<string, InlineCCSession>
 
   addUserMessage: (content: string, attachments?: AttachedFile[]) => string
@@ -21,7 +23,6 @@ interface CortexStore {
   /** Increment/decrement inflight counter. Never gates input. */
   startInflight: () => void
   endInflight: () => void
-  setBriefingLoaded: (loaded: boolean) => void
   pushAmbientEvent: (event: Omit<AmbientEvent, 'id' | 'timestamp'>) => AmbientEvent
   registerCCSession: (session: CCSession) => void
   appendCCOutput: (sessionId: string, chunk: string) => void
@@ -37,14 +38,12 @@ export const useCortexStore = create<CortexStore>((set) => ({
   ambientEvents: [],
   activeNodes: [],
   inflightCount: 0,
-  sessionId: generateId(),
-  briefingLoaded: false,
   inlineSessions: new Map(),
 
   addUserMessage: (content, attachments) => {
     const id = generateId()
     set(state => ({
-      messages: [...state.messages, { id, role: 'user', content, attachments, timestamp: new Date() }],
+      messages: [...state.messages, { id, role: 'user' as const, content, attachments, timestamp: new Date() }].slice(-MAX_MESSAGES),
     }))
     return id
   },
@@ -63,19 +62,18 @@ export const useCortexStore = create<CortexStore>((set) => ({
 
     set(state => ({
       messages: [...state.messages, {
-        id: generateId(), role: 'assistant', content: textContent, blocks, mentionedNodes, timestamp: new Date(),
-      }],
+        id: generateId(), role: 'assistant' as const, content: textContent, blocks, mentionedNodes, timestamp: new Date(),
+      }].slice(-MAX_MESSAGES),
       activeNodes: mentionedNodes || state.activeNodes,
     }))
   },
 
   startInflight: () => set(s => ({ inflightCount: s.inflightCount + 1 })),
   endInflight: () => set(s => ({ inflightCount: Math.max(0, s.inflightCount - 1) })),
-  setBriefingLoaded: (loaded) => set({ briefingLoaded: loaded }),
 
   pushAmbientEvent: (event) => {
     const full: AmbientEvent = { ...event, id: generateId(), timestamp: new Date() }
-    set(state => ({ ambientEvents: [...state.ambientEvents, full] }))
+    set(state => ({ ambientEvents: [...state.ambientEvents, full].slice(-MAX_AMBIENT_EVENTS) }))
     return full
   },
 
@@ -89,7 +87,7 @@ export const useCortexStore = create<CortexStore>((set) => ({
     set(state => {
       const m = new Map(state.inlineSessions)
       const existing = m.get(sessionId)
-      if (existing) m.set(sessionId, { ...existing, output: [...existing.output, chunk] })
+      if (existing) m.set(sessionId, { ...existing, output: [...existing.output, chunk].slice(-MAX_SESSION_OUTPUT_CHUNKS) })
       return { inlineSessions: m }
     }),
   updateCCSession: (sessionId, updates) =>
