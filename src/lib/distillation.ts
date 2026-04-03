@@ -36,7 +36,7 @@ export interface DistilledState {
 }
 
 export interface ActivityEntry {
-  kind: 'read' | 'edit' | 'bash' | 'thought' | 'test' | 'error' | 'cost' | 'tool'
+  kind: 'read' | 'edit' | 'bash' | 'thought' | 'test' | 'error' | 'cost' | 'tool' | 'system'
   content: string
   timestamp: number
 }
@@ -99,7 +99,15 @@ export function distillOutput(
   if (objects.length > 0) {
     for (const obj of objects) {
       const msg = obj as Record<string, unknown>
-      if (msg.type === 'system' || msg.type === 'rate_limit_event') continue
+      // System messages and rate-limit events are valuable self-knowledge — don't filter them
+      if (msg.type === 'system') {
+        state.activities.push({ kind: 'system', content: JSON.stringify(msg).slice(0, 500), timestamp: now })
+        continue
+      }
+      if (msg.type === 'rate_limit_event') {
+        state.activities.push({ kind: 'system', content: `Rate limit: ${JSON.stringify(msg)}`.slice(0, 500), timestamp: now })
+        continue
+      }
 
       if (msg.type === 'assistant') {
         const message = msg.message as Record<string, unknown> | undefined
@@ -108,7 +116,7 @@ export function distillOutput(
             if (block.type === 'text' && typeof block.text === 'string') {
               const text = block.text.trim()
               if (text) {
-                state.activities.push({ kind: 'thought', content: text.slice(0, 200), timestamp: now })
+                state.activities.push({ kind: 'thought', content: text.slice(0, 1000), timestamp: now })
               }
             } else if (block.type === 'tool_use') {
               state.toolCount++
@@ -130,7 +138,7 @@ export function distillOutput(
                 if (path) state.filesEdited.push(path)
                 state.activities.push({ kind: 'edit', content: `${shortenPath(path)} (new)`, timestamp: now })
               } else if (name === 'Bash' || name === 'bash') {
-                const cmd = String(input?.command || '').slice(0, 80)
+                const cmd = String(input?.command || '').slice(0, 500)
                 state.activities.push({ kind: 'bash', content: cmd, timestamp: now })
                 // Check for test results
                 const cmdLower = cmd.toLowerCase()
@@ -184,7 +192,7 @@ export function distillOutput(
 function buildNarrative(state: DistilledState, stage: string | null): string {
   const { filesRead, filesEdited, toolCount, testsPassed, testsFailed, error } = state
 
-  if (error) return error.slice(0, 120)
+  if (error) return error.slice(0, 500)  // Full error context for self-diagnosis
 
   switch (stage) {
     case 'queued':
@@ -248,5 +256,5 @@ function uniqueDirs(paths: string[]): string[] {
       dirs.add(parts.slice(-2, -1)[0])
     }
   }
-  return Array.from(dirs).slice(0, 3)
+  return Array.from(dirs)  // Full directory context — no truncation
 }

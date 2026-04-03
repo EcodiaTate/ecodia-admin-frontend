@@ -27,7 +27,7 @@ export function ActionStream() {
 
   const { data: actions } = useQuery({
     queryKey: ['pendingActions'],
-    queryFn: () => getPendingActions(6),
+    queryFn: () => getPendingActions(100),  // Full queue visibility — system sees all pending decisions
     // WS events invalidate this cache in real-time via useWebSocket.
     // Slow fallback poll only as safety net (2 min).
     refetchInterval: 120_000,

@@ -116,7 +116,7 @@ export function CCSessionBlock({ block }: { block: CCSessionBlockType }) {
 
   const { data: logs } = useQuery({
     queryKey: ['ccLogs', block.sessionId],
-    queryFn: () => getSessionLogs(block.sessionId, { limit: 500 }),
+    queryFn: () => getSessionLogs(block.sessionId, { limit: 10000 }),  // Full session trace
     enabled: !!block.sessionId,
   })
 

@@ -6,9 +6,9 @@ export interface InlineCCSession extends CCSession {
   output: string[]
 }
 
-const MAX_MESSAGES = 500
-const MAX_AMBIENT_EVENTS = 300
-const MAX_SESSION_OUTPUT_CHUNKS = 2000
+const MAX_MESSAGES = 5000              // 10x — full conversation history for deep self-knowledge
+const MAX_AMBIENT_EVENTS = 3000        // 10x — retain system event history for pattern recognition
+const MAX_SESSION_OUTPUT_CHUNKS = 20000 // 10x — full CC session output for complete observability
 
 interface CortexStore {
   messages: ChatMessage[]

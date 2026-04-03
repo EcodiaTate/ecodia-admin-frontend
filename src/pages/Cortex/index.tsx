@@ -357,13 +357,13 @@ function SelfModPanel({ proposal, onApprove, onExpand }: {
 
 // ─── Peripheral Awareness Marks ──────────────────────────────────────
 function PeripheralMarks({ events }: { events: AmbientEvent[] }) {
-  // Show right-edge tick marks for processed events, fade over 30s
-  const recent = events.filter(e => Date.now() - e.timestamp.getTime() < 30_000)
+  // Show right-edge tick marks for processed events, fade over 5 min — full awareness window
+  const recent = events.filter(e => Date.now() - e.timestamp.getTime() < 300_000)
   if (recent.length === 0) return null
 
   return (
     <div className="fixed right-2 top-1/3 z-20 flex flex-col gap-1 pointer-events-none">
-      {recent.slice(-8).map(e => (
+      {recent.slice(-30).map(e => (
         <motion.div
           key={e.id}
           initial={{ opacity: 0.4, width: 12 }}

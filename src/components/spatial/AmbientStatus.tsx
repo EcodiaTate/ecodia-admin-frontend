@@ -109,7 +109,7 @@ export function AmbientStatus() {
 
                 <div className="space-y-1">
                   <AnimatePresence initial={false}>
-                    {notifications.slice(0, 20).map((n, i) => {
+                    {notifications.slice(0, 100).map((n, i) => {
                       const Icon = TYPE_ICON[n.type] || Bell
                       return (
                         <motion.div

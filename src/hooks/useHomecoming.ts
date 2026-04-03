@@ -89,8 +89,8 @@ function collectWhispers(): SceneWhisper[] {
     sessionStorage.removeItem('ecodia:surfacings-while-away')
   }
 
-  // Sort by priority descending, cap at 4
-  return whispers.sort((a, b) => b.priority - a.priority).slice(0, 4)
+  // Sort by priority descending — show all significant events from absence
+  return whispers.sort((a, b) => b.priority - a.priority)
 }
 
 export function useHomecoming(): HomecomingState {

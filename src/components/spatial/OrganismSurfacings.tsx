@@ -16,8 +16,8 @@ interface Surfacing {
   timestamp: number
 }
 
-const MAX_VISIBLE = 3
-const FADE_AFTER_MS = 60_000
+const MAX_VISIBLE = 10           // Show more concurrent surfacings — the organism's thoughts matter
+const FADE_AFTER_MS = 300_000    // 5 minutes — give time to absorb proposals before fading
 
 const spring = { type: 'spring' as const, stiffness: 80, damping: 20, mass: 1 }
 

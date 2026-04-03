@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-const MAX_NOTIFICATIONS = 200
+const MAX_NOTIFICATIONS = 2000   // Full notification history for system self-awareness
 
 export interface Notification {
   id: string
