@@ -16,8 +16,8 @@ import { sendCortexChat, getCortexBriefing } from '@/api/cortex'
 import { useCortexStore } from '@/store/cortexStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowUp, Brain, Sparkles, Network, Paperclip,
-  X, FileText, Image as ImageIcon, File, Trash2,
+  ArrowUp, Brain, Network, Paperclip,
+  X, FileText, Image as ImageIcon, Trash2,
   CheckCircle2, XCircle, MinusCircle, Zap,
 } from 'lucide-react'
 import { ConstellationCanvas } from './ConstellationCanvas'
