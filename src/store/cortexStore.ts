@@ -46,6 +46,13 @@ export const useCortexStore = create<CortexStore>((set, _get) => ({
       .filter(b => b.type === 'text')
       .map(b => (b as { content: string }).content)
       .join('\n')
+      // Fallback: pull titles/messages from non-text blocks so content is never empty
+      || blocks.map(b => {
+        if ('title' in b) return (b as { title: string }).title
+        if ('message' in b) return (b as { message: string }).message
+        return ''
+      }).filter(Boolean).join('; ')
+      || '[response]'
 
     set(state => ({
       messages: [...state.messages, {

@@ -220,15 +220,23 @@ export default function CortexPage() {
     setAttachments([])
     if (inputRef.current) inputRef.current.style.height = 'auto'
 
-    addUserMessage(text || '[attachment]', currentAttachments.length ? currentAttachments : undefined)
+    const userContent = text || (currentAttachments.length ? `[Attached ${currentAttachments.map(a => a.name).join(', ')}]` : '')
+    addUserMessage(userContent, currentAttachments.length ? currentAttachments : undefined)
     setThinking(true)
 
     try {
       const currentMessages = useStore.getState().messages
-      const apiMessages = currentMessages.map(m => ({
-        role: m.role as 'user' | 'assistant',
-        content: m.content,
-      }))
+      const apiMessages = currentMessages
+        .map(m => ({
+          role: m.role as 'user' | 'assistant',
+          // Fallback for assistant messages where all blocks were non-text
+          content: m.content || (m.blocks?.map(b => {
+            if ('title' in b) return (b as { title: string }).title
+            if ('message' in b) return (b as { message: string }).message
+            return ''
+          }).filter(Boolean).join('; ')) || '[response]',
+        }))
+        .filter(m => m.content.trim())
       const res = await sendCortexChat(apiMessages, sessionId, currentAttachments.length ? currentAttachments : undefined)
       addAssistantMessage(res.blocks, res.mentionedNodes)
     } catch {
