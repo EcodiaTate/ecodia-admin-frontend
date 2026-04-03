@@ -48,6 +48,17 @@ export interface InsightBlock {
   urgency: 'low' | 'medium' | 'high'
 }
 
+/**
+ * Inline Claude Code session — lives directly in the chat thread.
+ * The backend returns this block when it creates a CC session on the user's behalf.
+ * The frontend then subscribes to live output via WebSocket and renders it inline.
+ */
+export interface CCSessionBlock {
+  type: 'cc_session'
+  sessionId: string       // maps to CCSession.id
+  title: string           // short description of what was asked
+}
+
 export type CortexBlock =
   | TextBlock
   | ActionCardBlock
@@ -55,6 +66,7 @@ export type CortexBlock =
   | TaskCardBlock
   | StatusUpdateBlock
   | InsightBlock
+  | CCSessionBlock
 
 export interface AttachedFile {
   id: string

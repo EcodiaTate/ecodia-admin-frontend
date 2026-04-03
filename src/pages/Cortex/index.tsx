@@ -13,7 +13,7 @@ import { BlockRenderer } from './blocks/BlockRenderer'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { ChatMessage, AttachedFile } from '@/types/cortex'
+import type { ChatMessage, AttachedFile, CCSessionBlock } from '@/types/cortex'
 import { useCortexStore as useStore } from '@/store/cortexStore'
 
 // ─── File helpers ────────────────────────────────────────────────────────────
@@ -154,6 +154,7 @@ export default function CortexPage() {
     addAssistantMessage,
     setThinking,
     setBriefingLoaded,
+    registerCCSession,
   } = useCortexStore()
 
   const { data: stats } = useQuery({
@@ -229,7 +230,6 @@ export default function CortexPage() {
       const apiMessages = currentMessages
         .map(m => ({
           role: m.role as 'user' | 'assistant',
-          // Fallback for assistant messages where all blocks were non-text
           content: m.content || (m.blocks?.map(b => {
             if ('title' in b) return (b as { title: string }).title
             if ('message' in b) return (b as { message: string }).message
@@ -237,7 +237,23 @@ export default function CortexPage() {
           }).filter(Boolean).join('; ')) || '[response]',
         }))
         .filter(m => m.content.trim())
+
       const res = await sendCortexChat(apiMessages, sessionId, currentAttachments.length ? currentAttachments : undefined)
+
+      // Register any CC sessions that the backend spun up as part of the response.
+      // The backend can return cc_session blocks when it decides to run code autonomously.
+      for (const block of res.blocks) {
+        if (block.type === 'cc_session') {
+          const ccBlock = block as CCSessionBlock
+          // Fetch the session record so we have metadata for the inline terminal.
+          // We do this lazily — the CCSessionBlock component also fetches logs,
+          // so even if this races we're covered.
+          import('@/api/claudeCode').then(({ getSession }) =>
+            getSession(ccBlock.sessionId).then(registerCCSession).catch(() => {})
+          )
+        }
+      }
+
       addAssistantMessage(res.blocks, res.mentionedNodes)
     } catch {
       addAssistantMessage([{ type: 'text', content: 'The Cortex encountered an error. The knowledge graph may be unreachable.' }])
@@ -245,7 +261,7 @@ export default function CortexPage() {
       setThinking(false)
       inputRef.current?.focus()
     }
-  }, [input, attachments, isThinking, sessionId, addUserMessage, addAssistantMessage, setThinking])
+  }, [input, attachments, isThinking, sessionId, addUserMessage, addAssistantMessage, setThinking, registerCCSession])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -321,7 +337,7 @@ export default function CortexPage() {
                   The <em className="not-italic font-normal text-gold">Cortex</em>
                 </h1>
                 <p className="mt-4 text-sm text-on-surface-muted/50 text-center max-w-sm leading-relaxed">
-                  Your unified control centre. Ask anything, attach files, and let the world model work.
+                  Your unified control centre. Ask anything, run code, attach files — the world model and the factory are one.
                 </p>
               </motion.div>
             )}
@@ -431,7 +447,7 @@ export default function CortexPage() {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                placeholder="Ask anything, attach files, paste images..."
+                placeholder="Ask anything, run code, attach files..."
                 rows={1}
                 className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/40 outline-none leading-relaxed"
                 style={{ maxHeight: 200 }}

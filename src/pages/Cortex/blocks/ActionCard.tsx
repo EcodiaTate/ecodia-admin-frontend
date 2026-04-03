@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Play, X, Loader2, CheckCircle2 } from 'lucide-react'
 import { executeCortexAction } from '@/api/cortex'
+import { createSession } from '@/api/claudeCode'
+import { useCortexStore } from '@/store/cortexStore'
 import type { ActionCardBlock } from '@/types/cortex'
 
 const URGENCY_STYLES = {
@@ -20,12 +22,38 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
   const [state, setState] = useState<'idle' | 'executing' | 'done' | 'dismissed'>('idle')
   const [result, setResult] = useState<string | null>(null)
 
+  const { registerCCSession, addAssistantMessage } = useCortexStore()
+
   async function handleApprove() {
     setState('executing')
     try {
-      const res = await executeCortexAction(block.action, block.params)
-      setResult(res.message)
-      setState('done')
+      if (block.action === 'start_cc_session') {
+        // Create the CC session directly then inject an inline terminal block
+        // into the Cortex chat — no navigation, no separate page.
+        const initialPrompt = (block.params.initialPrompt as string | undefined)
+          || (block.params.prompt as string | undefined)
+          || block.description
+        const session = await createSession({
+          initialPrompt,
+          projectId: block.params.projectId as string | undefined,
+          clientId: block.params.clientId as string | undefined,
+          workingDir: block.params.workingDir as string | undefined,
+        })
+        // Register in cortexStore so the inline terminal can subscribe to output
+        registerCCSession(session)
+        // Add a cc_session block into the chat thread
+        addAssistantMessage([{
+          type: 'cc_session',
+          sessionId: session.id,
+          title: block.title,
+        }])
+        setResult('Session started')
+        setState('done')
+      } else {
+        const res = await executeCortexAction(block.action, block.params)
+        setResult(res.message)
+        setState('done')
+      }
     } catch (err) {
       setResult(err instanceof Error ? err.message : 'Action failed')
       setState('idle')
@@ -87,7 +115,7 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
                 className="flex h-8 items-center gap-1.5 rounded-xl bg-primary/10 px-3 text-xs font-medium text-primary transition-colors hover:bg-primary/15"
               >
                 <Play className="h-3 w-3" strokeWidth={2} />
-                Approve
+                {block.action === 'start_cc_session' ? 'Run' : 'Approve'}
               </button>
             </>
           )}

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import { useNotificationStore } from '@/store/notificationStore'
 import { useCCSessionStore } from '@/store/ccSessionStore'
+import { useCortexStore } from '@/store/cortexStore'
 import { useWorkerStore } from '@/store/workerStore'
 import api from '@/api/client'
 
@@ -31,32 +32,58 @@ export function useWebSocket() {
 
         ws.onmessage = (event) => {
           const msg = JSON.parse(event.data)
+          const cortex = useCortexStore.getState()
+
           switch (msg.type) {
             case 'notification':
               addNotification(msg.payload)
               break
+
             case 'cc:output':
-            case 'cc_output':
-              appendOutput(msg.sessionId, typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data))
+            case 'cc_output': {
+              const chunk = typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data)
+              // Feed both stores — ccSessionStore for the standalone Factory page,
+              // cortexStore for any inline session blocks living in Cortex chat.
+              appendOutput(msg.sessionId, chunk)
+              cortex.appendCCOutput(msg.sessionId, chunk)
               break
+            }
+
             case 'cc:status':
-            case 'cc_status':
-              updateSession(msg.sessionId, { status: msg.data?.status ?? msg.data })
+            case 'cc_status': {
+              const statusUpdate = { status: msg.data?.status ?? msg.data }
+              updateSession(msg.sessionId, statusUpdate)
+              cortex.updateCCSession(msg.sessionId, statusUpdate)
               break
+            }
+
             case 'worker_heartbeat':
               updateWorker(msg.payload)
               break
+
             case 'action_queue:new':
             case 'action_queue:updated':
             case 'action_queue:executed':
             case 'action_queue:dismissed':
-              // Invalidate pending actions query to refetch
               window.dispatchEvent(new CustomEvent('ecodia:action-queue-update', { detail: msg }))
               break
-            case 'cc:stage':
-              // Factory pipeline stage updates (reviewing → testing → deploying)
-              updateSession(msg.sessionId, { pipeline_stage: msg.data?.stage })
+
+            case 'cc:stage': {
+              const stageUpdate = { pipeline_stage: msg.data?.stage }
+              updateSession(msg.sessionId, stageUpdate)
+              cortex.updateCCSession(msg.sessionId, stageUpdate)
               break
+            }
+
+            case 'cc:session_created': {
+              // Backend tells us a new CC session was created (e.g. triggered by Cortex
+              // internally without going through the ActionCard approve flow).
+              // Register it in cortexStore so inline blocks can find it.
+              if (msg.session) {
+                cortex.registerCCSession(msg.session)
+              }
+              break
+            }
           }
         }
 
