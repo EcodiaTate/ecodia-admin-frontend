@@ -1,5 +1,5 @@
 /**
- * Inline Claude Code session block — renders live terminal output directly in
+ * Inline Claude Code session block - renders live terminal output directly in
  * the Cortex chat thread. No navigation, no separate page, no stop/start clunk.
  *
  * Subscribes to cortexStore.inlineSessions[sessionId] for live output.
@@ -125,7 +125,7 @@ export function CCSessionBlock({ block }: { block: CCSessionBlockType }) {
 
   const session = useCortexStore(s => s.inlineSessions.get(block.sessionId))
 
-  // Fetch historical logs (from DB, not WS — fills gaps on mount)
+  // Fetch historical logs (from DB, not WS - fills gaps on mount)
   const { data: logs } = useQuery({
     queryKey: ['ccLogs', block.sessionId],
     queryFn: () => getSessionLogs(block.sessionId, { limit: 500 }),
@@ -302,7 +302,7 @@ export function CCSessionBlock({ block }: { block: CCSessionBlockType }) {
                     {isActive
                       ? <><div className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-pulse" /><span>Initialising…</span></>
                       : hasError
-                        ? <span className="text-error/50">Session failed — no parseable output.</span>
+                        ? <span className="text-error/50">Session failed - no parseable output.</span>
                         : <span>No output.</span>
                     }
                   </div>

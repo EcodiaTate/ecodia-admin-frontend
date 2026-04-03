@@ -1,3 +1,11 @@
+/**
+ * Cortex — The unified mind. World model + factory in one continuous stream.
+ *
+ * Philosophy: "The system runs. You observe. Occasionally you approve."
+ * - Action outcomes feed back to the Cortex automatically
+ * - CC sessions run inline — no navigation away
+ * - Dismissals, failures, completions all visible to the brain
+ */
 import { useState, useRef, useEffect, useCallback, useId } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getKGStats } from '@/api/knowledgeGraph'
@@ -7,13 +15,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowUp, Brain, Sparkles, Network, Paperclip,
   X, FileText, Image as ImageIcon, File, Trash2,
+  CheckCircle2, XCircle, MinusCircle, Zap,
 } from 'lucide-react'
 import { ConstellationCanvas } from './ConstellationCanvas'
 import { BlockRenderer } from './blocks/BlockRenderer'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { ChatMessage, AttachedFile, CCSessionBlock } from '@/types/cortex'
+import type { ChatMessage, AttachedFile, CCSessionBlock, AmbientEvent } from '@/types/cortex'
 import { useCortexStore as useStore } from '@/store/cortexStore'
 
 // ─── File helpers ────────────────────────────────────────────────────────────
@@ -55,7 +64,7 @@ async function readFileAsAttachment(file: File): Promise<AttachedFile> {
     return { id, name: file.name, type: file.type || 'text/plain', size: file.size, text }
   }
 
-  // For PDFs and other docs — just send name/type/size, backend handles
+  // For PDFs and other docs - just send name/type/size, backend handles
   return { id, name: file.name, type: file.type || 'application/octet-stream', size: file.size }
 }
 
@@ -133,6 +142,32 @@ function UserAttachments({ attachments }: { attachments: AttachedFile[] }) {
   )
 }
 
+// ─── Ambient event note ───────────────────────────────────────────────────────
+
+const AMBIENT_ICONS: Record<AmbientEvent['kind'], React.ReactNode> = {
+  action_success: <CheckCircle2 className="h-2.5 w-2.5 text-secondary/60" strokeWidth={1.75} />,
+  action_failure: <XCircle className="h-2.5 w-2.5 text-error/60" strokeWidth={1.75} />,
+  action_dismissed: <MinusCircle className="h-2.5 w-2.5 text-on-surface-muted/40" strokeWidth={1.75} />,
+  cc_complete: <Zap className="h-2.5 w-2.5 text-primary/50" strokeWidth={1.75} />,
+  cc_error: <XCircle className="h-2.5 w-2.5 text-error/50" strokeWidth={1.75} />,
+  system: <Zap className="h-2.5 w-2.5 text-on-surface-muted/30" strokeWidth={1.75} />,
+}
+
+function AmbientEventNote({ event }: { event: AmbientEvent }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 3 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 22 }}
+      className="flex items-center gap-2 py-0.5"
+    >
+      {AMBIENT_ICONS[event.kind]}
+      <span className="text-[10px] font-mono text-on-surface-muted/35 leading-snug">{event.summary}</span>
+    </motion.div>
+  )
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function CortexPage() {
@@ -146,6 +181,7 @@ export default function CortexPage() {
 
   const {
     messages,
+    ambientEvents,
     activeNodes,
     isThinking,
     sessionId,
@@ -155,6 +191,7 @@ export default function CortexPage() {
     setThinking,
     setBriefingLoaded,
     registerCCSession,
+    inlineSessions,
   } = useCortexStore()
 
   const { data: stats } = useQuery({
@@ -162,10 +199,10 @@ export default function CortexPage() {
     queryFn: getKGStats,
   })
 
-  // Auto-scroll
+  // Auto-scroll whenever anything in the stream changes
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isThinking])
+  }, [messages, ambientEvents, isThinking])
 
   // Focus
   useEffect(() => { inputRef.current?.focus() }, [])
@@ -178,6 +215,42 @@ export default function CortexPage() {
       .then(res => { if (res.blocks.length > 0) addAssistantMessage(res.blocks, res.mentionedNodes) })
       .catch(() => {})
   }, [briefingLoaded, setBriefingLoaded, addAssistantMessage])
+
+  // ── Auto-react to CC session completions ──────────────────────────────────
+  // When a session finishes, the Cortex observes and may respond without prompting.
+  const reactedSessionsRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    for (const [sid, session] of inlineSessions) {
+      if ((session.status === 'complete' || session.status === 'error') && !reactedSessionsRef.current.has(sid)) {
+        reactedSessionsRef.current.add(sid)
+        const summary = session.status === 'complete'
+          ? `CC session completed: "${session.initial_prompt?.slice(0, 100) ?? sid}"`
+          : `CC session failed: ${session.error_message ?? sid}`
+        const detail = JSON.stringify({
+          sessionId: sid, status: session.status,
+          filesChanged: session.files_changed, commitSha: session.commit_sha,
+          deployStatus: session.deploy_status, cost: session.cc_cost_usd,
+        })
+        ;(async () => {
+          const s = useStore.getState()
+          if (s.isThinking) return
+          s.setThinking(true)
+          try {
+            const apiMessages = [
+              ...s.messages
+                .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content || '[response]' }))
+                .filter(m => m.content.trim()),
+              { role: 'user' as const, content: `[SYSTEM EVENT] ${summary}\n\nContext:\n${detail}` },
+            ]
+            const res = await sendCortexChat(apiMessages, s.sessionId)
+            if (res.blocks.length > 0) s.addAssistantMessage(res.blocks, res.mentionedNodes)
+          } catch { /* silent */ } finally {
+            useStore.getState().setThinking(false)
+          }
+        })()
+      }
+    }
+  }, [inlineSessions])
 
   // Paste images
   const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
@@ -246,7 +319,7 @@ export default function CortexPage() {
         if (block.type === 'cc_session') {
           const ccBlock = block as CCSessionBlock
           // Fetch the session record so we have metadata for the inline terminal.
-          // We do this lazily — the CCSessionBlock component also fetches logs,
+          // We do this lazily - the CCSessionBlock component also fetches logs,
           // so even if this races we're covered.
           import('@/api/claudeCode').then(({ getSession }) =>
             getSession(ccBlock.sessionId).then(registerCCSession).catch(() => {})
@@ -320,7 +393,7 @@ export default function CortexPage() {
       <div className="relative z-10 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-3xl px-6">
 
-          {/* Hero — only when empty */}
+          {/* Hero - only when empty */}
           <AnimatePresence>
             {!hasMessages && (
               <motion.div
@@ -337,18 +410,28 @@ export default function CortexPage() {
                   The <em className="not-italic font-normal text-gold">Cortex</em>
                 </h1>
                 <p className="mt-4 text-sm text-on-surface-muted/50 text-center max-w-sm leading-relaxed">
-                  Your unified control centre. Ask anything, run code, attach files — the world model and the factory are one.
+                  Your unified control centre. Ask anything, run code, attach files - the world model and the factory are one.
                 </p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Messages */}
+          {/* Stream — messages + ambient events interleaved by time */}
           {hasMessages && (
-            <div className="pb-8 pt-6 space-y-6">
-              {messages.map((msg, i) => (
-                <MessageBubble key={msg.id} message={msg} isLast={i === messages.length - 1} />
-              ))}
+            <div className="pb-8 pt-6 space-y-4">
+              <AnimatePresence initial={false}>
+                {[
+                  ...messages.map(m => ({ kind: 'message' as const, ts: m.timestamp.getTime(), data: m })),
+                  ...ambientEvents.map(e => ({ kind: 'event' as const, ts: e.timestamp.getTime(), data: e })),
+                ]
+                  .sort((a, b) => a.ts - b.ts)
+                  .map(item =>
+                    item.kind === 'message'
+                      ? <MessageBubble key={item.data.id} message={item.data} isLast={item.data.id === messages[messages.length - 1]?.id} />
+                      : <AmbientEventNote key={item.data.id} event={item.data} />
+                  )
+                }
+              </AnimatePresence>
 
               {/* Thinking */}
               <AnimatePresence>
@@ -495,6 +578,9 @@ export default function CortexPage() {
 // ─── Message Bubble ──────────────────────────────────────────────────────────
 
 function MessageBubble({ message, isLast }: { message: ChatMessage; isLast: boolean }) {
+  // Hide internal system event injections — they're ambient context for the AI, not for display
+  if (message.role === 'user' && message.content?.startsWith('[SYSTEM EVENT]')) return null
+
   if (message.role === 'user') {
     return (
       <motion.div
@@ -505,7 +591,7 @@ function MessageBubble({ message, isLast }: { message: ChatMessage; isLast: bool
       >
         <div className="max-w-[82%]">
           {message.attachments && <UserAttachments attachments={message.attachments} />}
-          {message.content && message.content !== '[attachment]' && (
+          {message.content && (
             <div className="rounded-2xl rounded-br-lg bg-primary/8 px-5 py-3.5">
               <p className="text-sm leading-relaxed text-on-surface">{message.content}</p>
             </div>

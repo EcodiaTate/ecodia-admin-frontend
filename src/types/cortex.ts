@@ -87,6 +87,22 @@ export interface ChatMessage {
   timestamp: Date
 }
 
+/**
+ * Ambient system event — an observation from the environment that the Cortex
+ * can see and optionally react to. Not a user message, not an assistant reply.
+ * Rendered as a subtle inline note in the chat stream.
+ *
+ * Examples: "create_sheet failed: 500", "CC session abc123 completed",
+ * "action dismissed by user", "email sent successfully"
+ */
+export interface AmbientEvent {
+  id: string
+  kind: 'action_success' | 'action_failure' | 'action_dismissed' | 'cc_complete' | 'cc_error' | 'system'
+  summary: string           // one-line human-readable summary
+  detail?: string           // raw response / error body (for the AI to read)
+  timestamp: Date
+}
+
 export interface CortexChatResponse {
   blocks: CortexBlock[]
   mentionedNodes: string[]

@@ -352,7 +352,7 @@ export function CCTerminal({ session }: TerminalProps) {
                   </div>
                 ) : hasError ? (
                   <div>
-                    <span className="text-error/50">Session failed — no parseable output captured.</span>
+                    <span className="text-error/50">Session failed - no parseable output captured.</span>
                     {allChunks.length > 0 && (
                       <pre className="mt-3 whitespace-pre-wrap break-words text-[11px] text-on-surface-muted/30">
                         {allChunks.join('\n').slice(0, 2000)}

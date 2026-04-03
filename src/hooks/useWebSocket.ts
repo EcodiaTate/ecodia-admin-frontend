@@ -51,9 +51,19 @@ export function useWebSocket() {
 
             case 'cc:status':
             case 'cc_status': {
-              const statusUpdate = { status: msg.data?.status ?? msg.data }
+              const newStatus = msg.data?.status ?? msg.data
+              const statusUpdate = { status: newStatus }
               updateSession(msg.sessionId, statusUpdate)
               cortex.updateCCSession(msg.sessionId, statusUpdate)
+              // When a session completes or errors, push an ambient event so the
+              // Cortex can react (e.g. "the refactor completed, want me to review?")
+              if (newStatus === 'complete' || newStatus === 'error') {
+                cortex.pushAmbientEvent({
+                  kind: newStatus === 'complete' ? 'cc_complete' : 'cc_error',
+                  summary: `CC session ${newStatus}: ${msg.sessionId}`,
+                  detail: JSON.stringify(msg.data),
+                })
+              }
               break
             }
 

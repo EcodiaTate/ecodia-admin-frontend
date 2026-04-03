@@ -1,23 +1,21 @@
 import { create } from 'zustand'
-import type { ChatMessage, CortexBlock, AttachedFile } from '@/types/cortex'
+import type { ChatMessage, CortexBlock, AttachedFile, AmbientEvent } from '@/types/cortex'
 import type { CCSession } from '@/types/claudeCode'
 
 // ─── Inline CC session state ──────────────────────────────────────────────────
-// Each CC session launched from Cortex is tracked here so the inline terminal
-// block can subscribe to live output without navigating away.
 
 export interface InlineCCSession extends CCSession {
-  output: string[]  // raw chunks from cc:output WS events
+  output: string[]
 }
 
 interface CortexStore {
   messages: ChatMessage[]
+  ambientEvents: AmbientEvent[]
   activeNodes: string[]
   isThinking: boolean
   sessionId: string
   briefingLoaded: boolean
 
-  // Inline CC sessions keyed by session ID
   inlineSessions: Map<string, InlineCCSession>
 
   addUserMessage: (content: string, attachments?: AttachedFile[]) => string
@@ -27,7 +25,11 @@ interface CortexStore {
   setBriefingLoaded: (loaded: boolean) => void
   clearChat: () => void
 
-  // CC session management — called by WebSocket handler
+  // Ambient event system — the Cortex sees everything
+  pushAmbientEvent: (event: Omit<AmbientEvent, 'id' | 'timestamp'>) => AmbientEvent
+  clearAmbientEvents: () => void
+
+  // CC session management
   registerCCSession: (session: CCSession) => void
   appendCCOutput: (sessionId: string, chunk: string) => void
   updateCCSession: (sessionId: string, updates: Partial<CCSession>) => void
@@ -39,6 +41,7 @@ function generateId() {
 
 export const useCortexStore = create<CortexStore>((set, _get) => ({
   messages: [],
+  ambientEvents: [],
   activeNodes: [],
   isThinking: false,
   sessionId: generateId(),
@@ -90,12 +93,21 @@ export const useCortexStore = create<CortexStore>((set, _get) => ({
 
   clearChat: () => set({
     messages: [],
+    ambientEvents: [],
     activeNodes: [],
     isThinking: false,
     sessionId: generateId(),
     briefingLoaded: false,
     inlineSessions: new Map(),
   }),
+
+  pushAmbientEvent: (event) => {
+    const full: AmbientEvent = { ...event, id: generateId(), timestamp: new Date() }
+    set(state => ({ ambientEvents: [...state.ambientEvents, full] }))
+    return full
+  },
+
+  clearAmbientEvents: () => set({ ambientEvents: [] }),
 
   registerCCSession: (session: CCSession) =>
     set(state => {
