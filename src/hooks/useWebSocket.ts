@@ -35,11 +35,13 @@ export function useWebSocket() {
             case 'notification':
               addNotification(msg.payload)
               break
+            case 'cc:output':
             case 'cc_output':
-              appendOutput(msg.sessionId, msg.data)
+              appendOutput(msg.sessionId, typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data))
               break
+            case 'cc:status':
             case 'cc_status':
-              updateSession(msg.sessionId, { status: msg.data })
+              updateSession(msg.sessionId, { status: msg.data?.status ?? msg.data })
               break
             case 'worker_heartbeat':
               updateWorker(msg.payload)

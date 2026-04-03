@@ -344,11 +344,24 @@ export function CCTerminal({ session }: TerminalProps) {
             </AnimatePresence>
 
             {blocks.length === 0 && (
-              <div className="flex items-center gap-2 text-on-surface-muted/30">
-                {isActive && (
-                  <div className="h-2 w-2 rounded-full bg-primary/30 animate-pulse-glow" />
+              <div className="text-on-surface-muted/40">
+                {isActive ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-primary/30 animate-pulse-glow" />
+                    <span>Processing...</span>
+                  </div>
+                ) : hasError ? (
+                  <div>
+                    <span className="text-error/50">Session failed — no parseable output captured.</span>
+                    {allChunks.length > 0 && (
+                      <pre className="mt-3 whitespace-pre-wrap break-words text-[11px] text-on-surface-muted/30">
+                        {allChunks.join('\n').slice(0, 2000)}
+                      </pre>
+                    )}
+                  </div>
+                ) : (
+                  <span>No output recorded.</span>
                 )}
-                <span>{isActive ? 'Processing...' : 'Awaiting output...'}</span>
               </div>
             )}
 
