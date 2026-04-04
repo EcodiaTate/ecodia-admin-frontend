@@ -56,6 +56,7 @@ export function useWebSocket() {
             case 'cc:output': {
               const chunk = typeof msg.data === 'string' ? msg.data : JSON.stringify(msg.data)
               cortex.appendCCOutput(msg.sessionId, chunk)
+              window.dispatchEvent(new CustomEvent('ecodia:cc-session-update', { detail: { sessionId: msg.sessionId, type: 'output' } }))
               break
             }
 
@@ -64,6 +65,7 @@ export function useWebSocket() {
               const newStatus = msg.data?.status ?? msg.data
               const statusUpdate = { status: newStatus }
               cortex.updateCCSession(msg.sessionId, statusUpdate)
+              window.dispatchEvent(new CustomEvent('ecodia:cc-session-update', { detail: { sessionId: msg.sessionId, type: 'status', status: newStatus } }))
 
               if (newStatus === 'complete' || newStatus === 'error') {
                 cortex.pushAmbientEvent({
@@ -71,9 +73,9 @@ export function useWebSocket() {
                   summary: `CC session ${newStatus}: ${msg.sessionId}`,
                   detail: JSON.stringify(msg.data),
                 })
-                // Invalidate session list so React Query refetches once
-                queryClient.invalidateQueries({ queryKey: ['ccSessions'] })
               }
+              // Always invalidate session list on status change
+              queryClient.invalidateQueries({ queryKey: ['ccSessions'] })
               break
             }
 
@@ -81,6 +83,8 @@ export function useWebSocket() {
             case 'cc:stage': {
               const stageUpdate = { pipeline_stage: msg.data?.stage }
               cortex.updateCCSession(msg.sessionId, stageUpdate)
+              queryClient.invalidateQueries({ queryKey: ['ccSessions'] })
+              window.dispatchEvent(new CustomEvent('ecodia:cc-session-update', { detail: { sessionId: msg.sessionId, type: 'stage', stage: msg.data?.stage } }))
               break
             }
 
@@ -102,6 +106,7 @@ export function useWebSocket() {
                 detail: JSON.stringify(result),
               })
               queryClient.invalidateQueries({ queryKey: ['ccSessions'] })
+              window.dispatchEvent(new CustomEvent('ecodia:cc-session-update', { detail: { sessionId: msg.sessionId, type: 'pipeline_result' } }))
               break
             }
 
@@ -116,6 +121,7 @@ export function useWebSocket() {
                   detail: JSON.stringify(session),
                 })
                 queryClient.invalidateQueries({ queryKey: ['ccSessions'] })
+                window.dispatchEvent(new CustomEvent('ecodia:cc-session-update', { detail: { sessionId: session.id, type: 'created' } }))
               }
               break
             }

@@ -163,16 +163,16 @@ function LogViewer({ sessionId, isLive }: { sessionId: string; isLive: boolean }
     }
   }, [data])
 
-  // Live output from WebSocket (cortex store)
+  // Live output from WebSocket (cortex store) — this updates in real time
   const inlineSession = useCortexStore(s => s.inlineSessions.get(sessionId))
   const liveOutput = inlineSession?.output ?? []
 
-  // Auto-scroll
+  // Auto-scroll — triggers on every new live chunk
   useEffect(() => {
     if (autoScroll && logEndRef.current) {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [logs, liveOutput, autoScroll])
+  }, [logs, liveOutput.length, autoScroll])
 
   // Detect manual scroll
   const handleScroll = useCallback(() => {
@@ -358,11 +358,29 @@ function SessionRow({ session, isSelected, onSelect }: {
   const isLive = session.status === 'running' || session.status === 'initializing' || session.status === 'awaiting_input'
   const age = session.started_at ? timeAgo(session.started_at) : ''
 
+  // Flash on WS updates — brief highlight when session data changes live
+  const [flash, setFlash] = useState(false)
+  const prevStageRef = useRef(session.pipeline_stage)
+  const prevStatusRef = useRef(session.status)
+  useEffect(() => {
+    if (session.pipeline_stage !== prevStageRef.current || session.status !== prevStatusRef.current) {
+      prevStageRef.current = session.pipeline_stage
+      prevStatusRef.current = session.status
+      setFlash(true)
+      const t = setTimeout(() => setFlash(false), 1200)
+      return () => clearTimeout(t)
+    }
+  }, [session.pipeline_stage, session.status])
+
+  // Live output chunk count — shows activity for running sessions
+  const liveChunks = useCortexStore(s => s.inlineSessions.get(session.id)?.output?.length ?? 0)
+
   return (
     <div
       onClick={onSelect}
-      className={`px-3 py-2.5 cursor-pointer border-b border-gray-100/50 transition-colors
-        ${isSelected ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-gray-50/50 border-l-2 border-l-transparent'}`}
+      className={`px-3 py-2.5 cursor-pointer border-b border-gray-100/50 transition-all duration-300
+        ${isSelected ? 'bg-primary/5 border-l-2 border-l-primary' : 'hover:bg-gray-50/50 border-l-2 border-l-transparent'}
+        ${flash ? 'bg-primary/8' : ''}`}
     >
       <div className="flex items-center gap-2 mb-1">
         <StatusBadge status={session.status} />
@@ -386,7 +404,12 @@ function SessionRow({ session, isSelected, onSelect }: {
         {session.cc_cost_usd != null && session.cc_cost_usd > 0 && (
           <span>${session.cc_cost_usd.toFixed(4)}</span>
         )}
-        {isLive && <span className="text-green-500 flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> live</span>}
+        {isLive && (
+          <span className="text-green-500 flex items-center gap-0.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> live
+            {liveChunks > 0 && <span className="text-green-400 ml-1">({liveChunks})</span>}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -394,7 +417,18 @@ function SessionRow({ session, isSelected, onSelect }: {
 
 // ─── Session Detail Panel ─────────────────────────────────────────────
 
-function SessionDetail({ session }: { session: CCSession }) {
+function SessionDetail({ session: apiSession }: { session: CCSession }) {
+  // Merge with live WS data — WS updates are fresher than polled API data
+  const liveSession = useCortexStore(s => s.inlineSessions.get(apiSession.id))
+  const session = liveSession
+    ? {
+        ...apiSession,
+        status: liveSession.status ?? apiSession.status,
+        pipeline_stage: liveSession.pipeline_stage ?? apiSession.pipeline_stage,
+        confidence_score: liveSession.confidence_score ?? apiSession.confidence_score,
+        commit_sha: liveSession.commit_sha ?? apiSession.commit_sha,
+      }
+    : apiSession
   const isLive = session.status === 'running' || session.status === 'initializing' || session.status === 'awaiting_input'
   const canMessage = session.status === 'running' || session.status === 'awaiting_input'
   const queryClient = useQueryClient()
@@ -581,6 +615,36 @@ export default function FactoryDevPage() {
   const total = data?.total ?? 0
   const selected = sessions.find(s => s.id === selectedId)
 
+  // Register all running sessions in cortexStore so WS output chunks are captured.
+  // Without this, cc:output events for sessions that existed before page load are lost.
+  const registerCCSession = useCortexStore(s => s.registerCCSession)
+  useEffect(() => {
+    for (const s of sessions) {
+      if (s.status === 'running' || s.status === 'initializing' || s.status === 'awaiting_input') {
+        registerCCSession(s)
+      }
+    }
+  }, [sessions, registerCCSession])
+
+  // Listen for WS-driven session updates and immediately invalidate React Query caches.
+  // The WebSocket hook updates cortexStore, but React Query caches (session list + detail)
+  // still show stale data until their next poll. This bridges the gap.
+  useEffect(() => {
+    function handleWSEvent(e: Event) {
+      const detail = (e as CustomEvent).detail
+      if (!detail) return
+      // Invalidate the selected session detail immediately
+      if (detail.sessionId && detail.sessionId === selectedId) {
+        queryClient.invalidateQueries({ queryKey: ['ccSession', selectedId] })
+        queryClient.invalidateQueries({ queryKey: ['sessionLogs', selectedId] })
+      }
+      // Invalidate session list for stage/status changes
+      queryClient.invalidateQueries({ queryKey: ['ccSessions'] })
+    }
+    window.addEventListener('ecodia:cc-session-update', handleWSEvent)
+    return () => window.removeEventListener('ecodia:cc-session-update', handleWSEvent)
+  }, [selectedId, queryClient])
+
   // Also fetch fresh detail for selected
   const { data: freshSelected } = useQuery({
     queryKey: ['ccSession', selectedId],
@@ -594,11 +658,17 @@ export default function FactoryDevPage() {
   // Live session updates from WS
   const inlineSessions = useCortexStore(s => s.inlineSessions)
 
-  // Merge live WS status into sessions
+  // Merge live WS status into sessions — WS data is fresher than polled API data
   const mergedSessions = sessions.map(s => {
     const live = inlineSessions.get(s.id)
     if (live) {
-      return { ...s, status: live.status ?? s.status, pipeline_stage: live.pipeline_stage ?? s.pipeline_stage }
+      return {
+        ...s,
+        status: live.status ?? s.status,
+        pipeline_stage: live.pipeline_stage ?? s.pipeline_stage,
+        confidence_score: live.confidence_score ?? s.confidence_score,
+        commit_sha: live.commit_sha ?? s.commit_sha,
+      }
     }
     return s
   })
