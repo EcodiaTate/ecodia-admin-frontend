@@ -10,6 +10,8 @@ import {
   Terminal, GitBranch, AlertTriangle, CheckCircle, Clock, Loader2,
   Zap, Eye, FileCode, X, ChevronUp,
 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 // ─── Status / Pipeline helpers ────────────────────────────────────────
 
@@ -267,9 +269,24 @@ function LogViewer({ sessionId, isLive }: { sessionId: string; isLive: boolean }
                 {line.toolName && (
                   <span className="text-[9px] bg-blue-100 text-blue-700 px-1 rounded shrink-0">{line.toolName}</span>
                 )}
-                <pre className="whitespace-pre-wrap break-all flex-1 min-w-0">
-                  {truncated ? line.content.slice(0, 300) + '…' : line.content}
-                </pre>
+                {line.type === 'text' ? (
+                  <div className="flex-1 min-w-0 prose prose-sm prose-slate max-w-none
+                    prose-headings:text-sm prose-headings:font-semibold prose-headings:mt-2 prose-headings:mb-1
+                    prose-p:my-0.5 prose-p:leading-snug prose-pre:bg-gray-100 prose-pre:text-[11px] prose-pre:p-2 prose-pre:rounded
+                    prose-code:text-[11px] prose-code:bg-gray-100 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
+                    prose-ul:my-0.5 prose-ol:my-0.5 prose-li:my-0 prose-li:leading-snug
+                    prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                    prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:pl-2 prose-blockquote:my-1 prose-blockquote:text-gray-600
+                    prose-table:text-xs prose-th:p-1 prose-td:p-1">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {truncated ? line.content.slice(0, 300) + '…' : line.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <pre className="whitespace-pre-wrap break-all flex-1 min-w-0">
+                    {truncated ? line.content.slice(0, 300) + '…' : line.content}
+                  </pre>
+                )}
                 {line.content.length > 300 && (
                   <button className="text-gray-400 shrink-0 pt-0.5">
                     {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -591,7 +608,7 @@ export default function FactoryDevPage() {
 
   return (
     <SpatialLayer z={20} className="h-full">
-      <div className="flex h-[calc(100vh-80px)] gap-0">
+      <div className="flex h-[calc(100vh-48px)] gap-0">
         {/* Left: Session list */}
         <div className="w-[380px] shrink-0 flex flex-col border-r border-gray-200/40 bg-white/20">
           {/* Header */}
