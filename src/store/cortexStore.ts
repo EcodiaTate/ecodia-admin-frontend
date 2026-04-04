@@ -19,6 +19,8 @@ interface CortexStore {
   inlineSessions: Map<string, InlineCCSession>
   /** True once the initial briefing has been loaded this session. Persists across page navigations. */
   briefingLoaded: boolean
+  /** Action card keys (action:title) that have been approved or dismissed this session. Survives page navigation. */
+  actionedCards: Set<string>
 
   addUserMessage: (content: string, attachments?: AttachedFile[]) => string
   addAssistantMessage: (blocks: CortexBlock[], mentionedNodes?: string[]) => void
@@ -30,19 +32,24 @@ interface CortexStore {
   appendCCOutput: (sessionId: string, chunk: string) => void
   updateCCSession: (sessionId: string, updates: Partial<CCSession>) => void
   markBriefingLoaded: () => void
+  /** Mark an action card as actioned (approved or dismissed). Key format: "action:title" */
+  markCardActioned: (action: string, title: string) => void
+  /** Check if an action card has already been actioned. */
+  isCardActioned: (action: string, title: string) => boolean
 }
 
 function generateId() {
   return crypto.randomUUID()
 }
 
-export const useCortexStore = create<CortexStore>((set) => ({
+export const useCortexStore = create<CortexStore>((set, get) => ({
   messages: [],
   ambientEvents: [],
   activeNodes: [],
   inflightCount: 0,
   inlineSessions: new Map(),
   briefingLoaded: false,
+  actionedCards: new Set<string>(),
 
   addUserMessage: (content, attachments) => {
     const id = generateId()
@@ -103,4 +110,13 @@ export const useCortexStore = create<CortexStore>((set) => ({
       if (existing) m.set(sessionId, { ...existing, ...updates })
       return { inlineSessions: m }
     }),
+
+  markCardActioned: (action, title) =>
+    set(state => {
+      const next = new Set(state.actionedCards)
+      next.add(`${action}:${title}`)
+      return { actionedCards: next }
+    }),
+
+  isCardActioned: (action, title) => get().actionedCards.has(`${action}:${title}`),
 }))

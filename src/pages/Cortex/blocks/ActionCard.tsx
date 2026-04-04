@@ -25,7 +25,8 @@ const URGENCY_ACCENT = {
 }
 
 export function ActionCard({ block }: { block: ActionCardBlock }) {
-  const [state, setState] = useState<'idle' | 'executing' | 'done' | 'dismissed'>('idle')
+  const alreadyActioned = useCortexStore.getState().isCardActioned(block.action, block.title)
+  const [state, setState] = useState<'idle' | 'executing' | 'done' | 'dismissed'>(alreadyActioned ? 'dismissed' : 'idle')
   const [result, setResult] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -46,16 +47,19 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
         s.registerCCSession(session)
         s.addAssistantMessage([{ type: 'cc_session', sessionId: session.id, title: block.title }])
         s.pushAmbientEvent({ kind: 'action_success', summary: `CC session started: ${block.title}` })
+        s.markCardActioned(block.action, block.title)
         setResult('Running')
         setState('done')
       } else {
         const res = await executeCortexAction(block.action, block.params)
         const detail = JSON.stringify(res)
-        useCortexStore.getState().pushAmbientEvent({
+        const s = useCortexStore.getState()
+        s.pushAmbientEvent({
           kind: res.success !== false ? 'action_success' : 'action_failure',
           summary: `${block.action.replace(/_/g, ' ')}: ${res.message}`,
           detail,
         })
+        s.markCardActioned(block.action, block.title)
         setResult(res.message)
         setState('done')
       }
@@ -73,7 +77,9 @@ export function ActionCard({ block }: { block: ActionCardBlock }) {
 
   function handleDismiss() {
     setState('dismissed')
-    useCortexStore.getState().pushAmbientEvent({ kind: 'action_dismissed', summary: `${block.title} dismissed` })
+    const s = useCortexStore.getState()
+    s.pushAmbientEvent({ kind: 'action_dismissed', summary: `${block.title} dismissed` })
+    s.markCardActioned(block.action, block.title)
   }
 
   if (state === 'dismissed') return null
