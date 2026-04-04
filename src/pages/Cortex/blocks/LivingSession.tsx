@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   Square, ChevronDown, ChevronUp,
   GitBranch, Rocket, DollarSign, Wrench,
-  FileText, Terminal, MessageSquare, AlertCircle, Cpu,
+  FileText, Terminal, MessageSquare, AlertCircle, Cpu, Monitor,
 } from 'lucide-react'
 import { useCortexStore } from '@/store/cortexStore'
 import { getSessionLogs, stopSession } from '@/api/claudeCode'
@@ -81,6 +81,7 @@ const ACTIVITY_ICONS: Record<ActivityEntry['kind'], React.ReactNode> = {
   error: <AlertCircle className="h-2.5 w-2.5" strokeWidth={1.5} />,
   cost: <DollarSign className="h-2.5 w-2.5" strokeWidth={1.5} />,
   tool: <Wrench className="h-2.5 w-2.5" strokeWidth={1.5} />,
+  system: <Monitor className="h-2.5 w-2.5" strokeWidth={1.5} />,
 }
 
 function ActivityLogEntry({ entry }: { entry: ActivityEntry }) {

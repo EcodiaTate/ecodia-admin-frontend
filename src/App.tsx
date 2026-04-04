@@ -17,6 +17,7 @@ const SettingsPage = lazy(() => import('./pages/Settings'))
 const KnowledgeGraphPage = lazy(() => import('./pages/KnowledgeGraph'))
 const CodebasePage = lazy(() => import('./pages/Codebase'))
 const LoginPage = lazy(() => import('./pages/Login'))
+const FactoryDevPage = lazy(() => import('./pages/FactoryDev'))
 
 /** Ambient loading state — a soft breathing glow, not a spinner */
 function SceneSuspense({ children }: { children: React.ReactNode }) {
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/codebase" element={<Scene name="Codebase Mind"><CodebasePage /></Scene>} />
           <Route path="/knowledge-graph" element={<Scene name="Knowledge Graph"><KnowledgeGraphPage /></Scene>} />
           <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
+          <Route path="/factory-dev" element={<Scene name="Factory Dev"><FactoryDevPage /></Scene>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

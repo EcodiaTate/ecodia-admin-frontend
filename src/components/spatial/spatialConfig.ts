@@ -9,6 +9,7 @@ import {
   CircleDollarSign,
   Network,
   Code2,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -197,6 +198,21 @@ const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(27, 122, 61, 0.05)', x: '50%', y: '50%', size: '80%' },
         { color: 'rgba(200, 145, 10, 0.03)', x: '30%', y: '30%', size: '50%' },
         { color: 'rgba(46, 204, 113, 0.03)', x: '70%', y: '70%', size: '45%' },
+      ],
+    },
+  },
+
+  // ── Dev: Factory session debugger ──
+  'factory-dev': {
+    path: '/factory-dev',
+    label: 'Factory',
+    icon: Wrench,
+    position: { x: 1, y: 2, z: -1 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(27, 122, 61, 0.06)', x: '50%', y: '40%', size: '70%' },
+        { color: 'rgba(200, 145, 10, 0.04)', x: '30%', y: '70%', size: '50%' },
+        { color: 'rgba(46, 204, 113, 0.03)', x: '70%', y: '30%', size: '45%' },
       ],
     },
   },

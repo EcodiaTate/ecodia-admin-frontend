@@ -26,6 +26,7 @@ const SCENE_WORKERS: Record<string, string[]> = {
   codebase: ['codebase_index'],
   'knowledge-graph': ['kg_consolidation', 'kg_embedding'],
   settings: [],
+  'factory-dev': [],
 }
 
 type GlyphState = 'idle' | 'attention' | 'active' | 'error' | 'completed'
@@ -36,7 +37,7 @@ function useGlyphState(sceneKey: string): { state: GlyphState; detail: string } 
 
   return useMemo(() => {
     // Factory/codebase: check for running CC sessions
-    if (sceneKey === 'codebase' || sceneKey === 'cortex') {
+    if (sceneKey === 'codebase' || sceneKey === 'cortex' || sceneKey === 'factory-dev') {
       const running = Array.from(inlineSessions.values()).filter(
         (s) => s.status === 'running' || s.status === 'initializing',
       )
