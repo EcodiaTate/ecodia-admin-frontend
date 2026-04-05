@@ -12,14 +12,14 @@ export async function sendCortexChat(
   attachments?: AttachedFile[],
   ambientEvents?: { kind: string; summary: string; timestamp: Date }[],
 ) {
-  const { data } = await api.post<CortexChatResponse>('/cortex/chat', {
+  // Use /cortex/do for auto-execution: Cortex proposes actions → they run → results feed back
+  const { data } = await api.post<CortexChatResponse>('/cortex/do', {
     messages,
     sessionId,
     attachments: attachments?.map(a => ({
       name: a.name,
       type: a.type,
       size: a.size,
-      // Send image dataUrls and extracted text — backend decides what to pass to Claude
       dataUrl: a.dataUrl,
       text: a.text,
     })),
