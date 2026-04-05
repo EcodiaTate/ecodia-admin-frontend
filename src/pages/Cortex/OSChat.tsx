@@ -346,9 +346,34 @@ export default function OSChat() {
 
       addAssistantMessage(result.blocks)
     } catch (err: any) {
-      const upstream = err?.response?.data?.upstream ? ` | ${JSON.stringify(err.response.data.upstream)}` : ''
-      const detail = (err?.response?.data?.error || err?.message || 'Unknown error') + upstream
-      addAssistantMessage([{ type: 'text', content: `Error: ${detail}` }])
+      const isNetworkError = !err?.response && (err?.message === 'Network Error' || err?.code === 'ECONNABORTED' || err?.code === 'ERR_NETWORK')
+
+      if (isNetworkError && taskId) {
+        // Connection dropped (nginx timeout) but backend may still be working.
+        // Poll the task session to get results.
+        addAssistantMessage([{ type: 'text', content: 'Connection timed out — checking if the task completed...' }])
+        try {
+          // Wait a moment then check
+          await new Promise(r => setTimeout(r, 3000))
+          const task = await getTask(taskId)
+          if (task?.history?.length) {
+            const lastAssistant = [...task.history].reverse().find((t: { role: string }) => t.role === 'assistant')
+            if (lastAssistant?.blocks) {
+              addAssistantMessage(lastAssistant.blocks)
+            } else if (lastAssistant?.content) {
+              addAssistantMessage([{ type: 'text', content: lastAssistant.content }])
+            } else {
+              addAssistantMessage([{ type: 'text', content: 'Task is still running. Send another message to continue.' }])
+            }
+          }
+        } catch {
+          addAssistantMessage([{ type: 'text', content: 'Still working — send another message to check progress.' }])
+        }
+      } else {
+        const upstream = err?.response?.data?.upstream ? ` | ${JSON.stringify(err.response.data.upstream)}` : ''
+        const detail = (err?.response?.data?.error || err?.message || 'Unknown error') + upstream
+        addAssistantMessage([{ type: 'text', content: `Error: ${detail}` }])
+      }
     } finally {
       setLoading(false)
     }
