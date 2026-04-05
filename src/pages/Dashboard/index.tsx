@@ -2,12 +2,16 @@ import { useQuery } from '@tanstack/react-query'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
 import { getOrganismVitals } from '@/api/symbridge'
+import { getMomentum } from '@/api/momentum'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
+import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import type { WorkerStatus } from '@/store/workerStore'
 import { ActionStream } from './ActionStream'
 import { formatCurrency } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { Flame, Rocket, FileCode, Cpu } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 // ─── Atmospheric Vitals ───────────────────────────────────────────────
 //
@@ -35,6 +39,11 @@ export default function DashboardPage() {
     queryFn: getOrganismVitals,
     retry: 1,
     refetchInterval: 30000,
+  })
+  const { data: momentum } = useQuery({
+    queryKey: ['momentum'],
+    queryFn: getMomentum,
+    refetchInterval: 60_000,
   })
 
   const net = finance?.net ?? 0
@@ -118,6 +127,56 @@ export default function DashboardPage() {
           </span>
         )}
       </SpatialLayer>
+
+      {/* Momentum tracker — recent Factory activity */}
+      {momentum && (
+        <SpatialLayer z={12} className="mb-10 w-full">
+          <Link to="/momentum" className="block">
+            <GlassPanel depth="surface" className="px-5 py-4 transition-all hover:ring-1 hover:ring-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-mono text-[10px] uppercase tracking-[0.15em] text-on-surface-muted/30">
+                  Momentum — 7 days
+                </h3>
+                <span className="font-mono text-[10px] text-on-surface-muted/20">→</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="flex items-center gap-2">
+                  <Flame className="h-3 w-3 text-gold/50" strokeWidth={1.5} />
+                  <span className="font-display text-lg font-light tabular-nums text-on-surface/70">
+                    {momentum.summary.complete}
+                  </span>
+                  <span className="font-mono text-[10px] text-on-surface-muted/25">
+                    {momentum.summary.successRate != null && `${momentum.summary.successRate}%`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Rocket className="h-3 w-3 text-secondary/50" strokeWidth={1.5} />
+                  <span className="font-display text-lg font-light tabular-nums text-on-surface/70">
+                    {momentum.summary.deployed}
+                  </span>
+                  <span className="font-mono text-[10px] text-on-surface-muted/25">deployed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileCode className="h-3 w-3 text-tertiary/50" strokeWidth={1.5} />
+                  <span className="font-display text-lg font-light tabular-nums text-on-surface/70">
+                    {momentum.summary.filesChanged}
+                  </span>
+                  <span className="font-mono text-[10px] text-on-surface-muted/25">files</span>
+                </div>
+                {momentum.health?.ecodiaos && (
+                  <div className="flex items-center gap-2">
+                    <Cpu className="h-3 w-3 text-on-surface-muted/30" strokeWidth={1.5} />
+                    <span className="font-mono text-lg font-light tabular-nums text-on-surface/70">
+                      {momentum.health.ecodiaos.cpu != null ? `${Math.round(momentum.health.ecodiaos.cpu)}%` : '—'}
+                    </span>
+                    <span className="font-mono text-[10px] text-on-surface-muted/25">cpu</span>
+                  </div>
+                )}
+              </div>
+            </GlassPanel>
+          </Link>
+        </SpatialLayer>
+      )}
 
       {/* The system's voice - pending decisions, if any */}
       {actionStats && actionStats.pending > 0 && (

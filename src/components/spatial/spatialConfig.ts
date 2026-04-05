@@ -4,22 +4,24 @@ import {
   Mail,
   Linkedin,
   Users,
+  Terminal,
   Brain,
   Layers,
   CircleDollarSign,
   Network,
   Code2,
-  Wrench,
+  Database,
+  Flame,
   type LucideIcon,
 } from 'lucide-react'
 
-interface ScenePosition {
+export interface ScenePosition {
   x: number
   y: number
   z: number
 }
 
-interface SceneConfig {
+export interface SceneConfig {
   path: string
   label: string
   icon: LucideIcon
@@ -27,14 +29,14 @@ interface SceneConfig {
   aurora: AuroraConfig
 }
 
-interface AuroraOrb {
+export interface AuroraOrb {
   color: string
   x: string
   y: string
   size: string
 }
 
-interface AuroraConfig {
+export interface AuroraConfig {
   orbs: AuroraOrb[]
 }
 
@@ -45,7 +47,7 @@ interface AuroraConfig {
 // Aurora palette: green + gold — each scene has a distinct atmospheric signature
 // ═══════════════════════════════════════════════════════════════════════
 
-const SCENES: Record<string, SceneConfig> = {
+export const SCENES: Record<string, SceneConfig> = {
   // ── Awareness: what's happening ──
   // Centered warm gold bloom — sun at the heart of the ecosystem
   dashboard: {
@@ -154,6 +156,22 @@ const SCENES: Record<string, SceneConfig> = {
     },
   },
 
+  // ── Action: autonomous execution ──
+  // Intense emerald — machine precision
+  'claude-code': {
+    path: '/claude-code',
+    label: 'Factory',
+    icon: Terminal,
+    position: { x: 1, y: 1, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(27, 122, 61, 0.09)', x: '55%', y: '45%', size: '70%' },
+        { color: 'rgba(46, 204, 113, 0.06)', x: '30%', y: '70%', size: '55%' },
+        { color: 'rgba(200, 145, 10, 0.03)', x: '80%', y: '20%', size: '40%' },
+      ],
+    },
+  },
+
   // ── Intelligence: codebase semantic mind ──
   // Green with gold sparks — knowledge embedded in code
   codebase: {
@@ -166,6 +184,22 @@ const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(46, 204, 113, 0.07)', x: '45%', y: '35%', size: '65%' },
         { color: 'rgba(200, 145, 10, 0.05)', x: '75%', y: '65%', size: '55%' },
         { color: 'rgba(27, 122, 61, 0.04)', x: '20%', y: '70%', size: '45%' },
+      ],
+    },
+  },
+
+  // ── KG Explorer: direct Cypher access ──
+  // Cool teal/green — technical depth, raw graph access
+  'kg-explorer': {
+    path: '/kg-explorer',
+    label: 'Explorer',
+    icon: Database,
+    position: { x: -2, y: 2, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(27, 122, 61, 0.07)', x: '35%', y: '45%', size: '65%' },
+        { color: 'rgba(46, 204, 113, 0.05)', x: '65%', y: '30%', size: '55%' },
+        { color: 'rgba(200, 145, 10, 0.03)', x: '50%', y: '75%', size: '45%' },
       ],
     },
   },
@@ -186,6 +220,22 @@ const SCENES: Record<string, SceneConfig> = {
     },
   },
 
+  // ── Momentum: forward motion tracker ──
+  // Warm gold + green — energy and growth
+  momentum: {
+    path: '/momentum',
+    label: 'Momentum',
+    icon: Flame,
+    position: { x: 1, y: -1, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(200, 145, 10, 0.09)', x: '40%', y: '40%', size: '75%' },
+        { color: 'rgba(46, 204, 113, 0.07)', x: '70%', y: '65%', size: '55%' },
+        { color: 'rgba(245, 200, 66, 0.05)', x: '25%', y: '75%', size: '45%' },
+      ],
+    },
+  },
+
   // ── Infrastructure: system internals ──
   // Subtle, muted — infrastructure hum
   settings: {
@@ -198,21 +248,6 @@ const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(27, 122, 61, 0.05)', x: '50%', y: '50%', size: '80%' },
         { color: 'rgba(200, 145, 10, 0.03)', x: '30%', y: '30%', size: '50%' },
         { color: 'rgba(46, 204, 113, 0.03)', x: '70%', y: '70%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Dev: Factory session debugger ──
-  'factory-dev': {
-    path: '/factory-dev',
-    label: 'Factory',
-    icon: Wrench,
-    position: { x: 1, y: 2, z: -1 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(27, 122, 61, 0.06)', x: '50%', y: '40%', size: '70%' },
-        { color: 'rgba(200, 145, 10, 0.04)', x: '30%', y: '70%', size: '50%' },
-        { color: 'rgba(46, 204, 113, 0.03)', x: '70%', y: '30%', size: '45%' },
       ],
     },
   },
@@ -229,20 +264,11 @@ export function getScene(pathname: string): SceneConfig {
   return SCENES[getSceneKey(pathname)] ?? SCENES.dashboard
 }
 
-
-export interface DirectionVector {
-  nx: number
-  ny: number
-  nz: number
-  distance: number
-  mode: 'shift' | 'drift' | 'submerge'
-}
-
 /**
- * Compute a normalized direction vector between two scenes
- * plus cognitive distance mode (shift / drift / submerge).
+ * Compute a normalized direction vector between two scenes.
+ * Returns { nx, ny, nz } used by the variant functions.
  */
-export function getDirection(fromKey: string, toKey: string): DirectionVector {
+export function getDirection(fromKey: string, toKey: string) {
   const from = SCENES[fromKey] ?? SCENES.dashboard
   const to = SCENES[toKey] ?? SCENES.dashboard
 
@@ -250,127 +276,72 @@ export function getDirection(fromKey: string, toKey: string): DirectionVector {
   const dy = to.position.y - from.position.y
   const dz = to.position.z - from.position.z
 
-  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz) || 0
-  const magnitude = distance || 1
-
-  const mode: DirectionVector['mode'] =
-    distance <= 1.1 ? 'shift' : distance <= 2.2 ? 'drift' : 'submerge'
+  const magnitude = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1
 
   return {
     nx: dx / magnitude,
     ny: dy / magnitude,
     nz: dz / magnitude,
-    distance,
-    mode,
   }
 }
 
+export interface DirectionVector {
+  nx: number
+  ny: number
+  nz: number
+}
+
 /**
- * Framer Motion variant functions with cognitive distance.
+ * Framer Motion variant functions.
  *
- * Three transition modes based on spatial distance:
- *   - Shift  (≤1.1): 60vw slide, fast spring, no zoom. A head turn.
- *   - Drift  (≤2.2): 110vw slide, medium spring, slight scale. Walking across a room.
- *   - Submerge (>2.2): Z-axis dominant, scale down/up, heavy spring. Sinking into deep memory.
+ * These are evaluated dynamically via the `custom` prop. The `custom` value
+ * is a DirectionVector that gets re-read at animation time — critically,
+ * the `exit` variant reads the CURRENT direction (not the stale one from
+ * mount time). This is what makes 1→2→pause→1 work correctly.
  *
- * The `custom` prop is re-evaluated at exit time for correct reverse direction.
+ * The content travels 110vw/vh so it fully leaves the viewport.
+ * During the crossfade overlap, blur + partial opacity creates the
+ * depth-of-field "same holographic plane" illusion.
  */
 export const sceneVariants = {
-  initial: (d: DirectionVector) => {
-    if (d.mode === 'submerge') {
-      return {
-        opacity: 0,
-        scale: 0.92,
-        y: '0vh',
-        x: '0vw',
-        rotateY: d.nx * 3,
-        rotateX: -d.ny * 2,
-      }
-    }
-    const travel = d.mode === 'shift' ? 60 : 110
-    return {
-      opacity: 0.2,
-      x: `${d.nx * travel}vw`,
-      y: `${d.ny * travel}vh`,
-      scale: d.mode === 'drift' ? 1 + d.nz * 0.04 : 1,
-      rotateY: d.nx * 2,
-      rotateX: -d.ny * 1.5,
-    }
-  },
-  animate: (d: DirectionVector) => ({
+  initial: (d: DirectionVector) => ({
+    opacity: 0.2,
+    x: `${d.nx * 110}vw`,
+    y: `${d.ny * 110}vh`,
+    scale: 1 + d.nz * 0.04,
+    rotateY: d.nx * 2,
+    rotateX: -d.ny * 1.5,
+  }),
+  animate: {
     opacity: 1,
     x: '0vw',
     y: '0vh',
     scale: 1,
     rotateY: 0,
     rotateX: 0,
-    transition: d.mode === 'submerge'
-      ? {
-          type: 'spring' as const,
-          stiffness: 60,
-          damping: 22,
-          mass: 1.4,
-          opacity: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-        }
-      : d.mode === 'shift'
-        ? {
-            type: 'spring' as const,
-            stiffness: 100,
-            damping: 20,
-            mass: 0.8,
-            opacity: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
-          }
-        : {
-            type: 'spring' as const,
-            stiffness: 80,
-            damping: 18,
-            mass: 1,
-            opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-          },
-  }),
-  exit: (d: DirectionVector) => {
-    if (d.mode === 'submerge') {
-      return {
-        opacity: 0,
-        scale: 1.06,
-        x: '0vw',
-        y: '0vh',
-        rotateY: -d.nx * 3,
-        rotateX: d.ny * 2,
-        transition: {
-          type: 'spring' as const,
-          stiffness: 60,
-          damping: 22,
-          mass: 1.4,
-          opacity: { duration: 0.5, ease: [0.64, 0, 0.78, 0] },
-        },
-      }
-    }
-    const travel = d.mode === 'shift' ? 60 : 110
-    return {
-      opacity: 0,
-      x: `${-d.nx * travel}vw`,
-      y: `${-d.ny * travel}vh`,
-      scale: d.mode === 'drift' ? 1 - d.nz * 0.04 : 1,
-      rotateY: -d.nx * 2,
-      rotateX: d.ny * 1.5,
-      transition: d.mode === 'shift'
-        ? {
-            type: 'spring' as const,
-            stiffness: 110,
-            damping: 22,
-            mass: 0.7,
-            opacity: { duration: 0.3, ease: [0.64, 0, 0.78, 0] },
-          }
-        : {
-            type: 'spring' as const,
-            stiffness: 90,
-            damping: 20,
-            mass: 0.8,
-            opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
-          },
-    }
+    transition: {
+      type: 'spring' as const,
+      stiffness: 80,
+      damping: 18,
+      mass: 1,
+      opacity: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    },
   },
+  exit: (d: DirectionVector) => ({
+    opacity: 0,
+    x: `${-d.nx * 110}vw`,
+    y: `${-d.ny * 110}vh`,
+    scale: 1 - d.nz * 0.04,
+    rotateY: -d.nx * 2,
+    rotateX: d.ny * 1.5,
+    transition: {
+      type: 'spring' as const,
+      stiffness: 90,
+      damping: 20,
+      mass: 0.8,
+      opacity: { duration: 0.4, ease: [0.64, 0, 0.78, 0] },
+    },
+  }),
 }
 
 /** Ordered list of nav links */
