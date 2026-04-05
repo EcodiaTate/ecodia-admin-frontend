@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  getStagedCounts, getStaged, postStaged, ignoreStaged, batchPost,
-  uploadCSV, importXero,
+  getStagedCounts, getStaged, updateStaged, postStaged, ignoreStaged, batchPost,
+  uploadCSV, triggerCategorize,
   getLedgerTransactions, getTrialBalance,
   getBAS, getPnL, getBalanceSheet, getExpenseBreakdown, getGSTSummary,
   getDirectorLoanBalance,
   getRules, createRule, deleteRule,
+  getAccounts,
   cents,
 } from '@/api/bookkeeping'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
@@ -14,7 +15,8 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Receipt, BookOpen, FileSpreadsheet, Scale, Landmark, ListFilter, Upload, RefreshCw, Zap,
+  Receipt, BookOpen, FileSpreadsheet, Scale, Landmark, ListFilter, Upload, Zap,
+  Check, X, User, ChevronDown,
 } from 'lucide-react'
 
 const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
@@ -102,27 +104,49 @@ export default function BookkeepingPage() {
 
 function InboxTab() {
   const [filter, setFilter] = useState('pending')
+  const [expandedId, setExpandedId] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
   const { data: transactions = [], refetch } = useQuery({
     queryKey: ['bk-staged', filter],
     queryFn: () => getStaged(filter !== 'all' ? filter : undefined),
   })
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['bk-accounts'],
+    queryFn: getAccounts,
+  })
 
   const filters = ['pending', 'flagged', 'categorized', 'posted', 'ignored', 'all']
 
+  const invalidate = () => { refetch(); qc.invalidateQueries({ queryKey: ['bk-counts'] }) }
+
   const handleCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
-    await uploadCSV(file); refetch(); qc.invalidateQueries({ queryKey: ['bk-counts'] })
+    await uploadCSV(file); invalidate()
   }
 
-  const handlePost = async (id: string) => { await postStaged(id); refetch(); qc.invalidateQueries({ queryKey: ['bk-counts'] }) }
-  const handleIgnore = async (id: string) => { await ignoreStaged(id); refetch(); qc.invalidateQueries({ queryKey: ['bk-counts'] }) }
-  const handleBatch = async () => { await batchPost(); refetch(); qc.invalidateQueries({ queryKey: ['bk-counts'] }) }
+  const handleCategorize = async (id: string, category: string, isPersonal: boolean) => {
+    await updateStaged(id, { category, is_personal: isPersonal, status: 'categorized' })
+    invalidate()
+  }
+
+  const handlePost = async (id: string) => { await postStaged(id); invalidate() }
+  const handleIgnore = async (id: string) => { await ignoreStaged(id); invalidate() }
+  const handleBatch = async () => { await batchPost(); invalidate() }
+  const handleAICategorize = async () => { await triggerCategorize(); invalidate() }
+
+  const formatDate = (d: string) => {
+    try { return new Date(d).toLocaleDateString('en-AU', { day: '2-digit', month: 'short' }) } catch { return d }
+  }
+
+  // Group accounts by type for the dropdown
+  const accountsByType = accounts.reduce((acc: Record<string, any[]>, a: any) => {
+    (acc[a.type] = acc[a.type] || []).push(a); return acc
+  }, {})
 
   return (
     <SpatialLayer z={18}>
-      <div className="mb-4 flex items-center gap-2">
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
         {filters.map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={cn('rounded-full px-3 py-1 text-xs', filter === f ? 'bg-primary/20 text-primary' : 'text-on-surface-muted/50 hover:text-on-surface-muted')}>
@@ -134,40 +158,114 @@ function InboxTab() {
         <button onClick={() => fileRef.current?.click()} className="flex items-center gap-1 rounded-lg bg-surface-container/60 px-2.5 py-1.5 text-xs text-on-surface-muted hover:text-on-surface">
           <Upload size={12} /> CSV
         </button>
-        <button onClick={() => importXero().then(() => refetch())} className="flex items-center gap-1 rounded-lg bg-surface-container/60 px-2.5 py-1.5 text-xs text-on-surface-muted hover:text-on-surface">
-          <RefreshCw size={12} /> Xero
+        <button onClick={handleAICategorize} className="flex items-center gap-1 rounded-lg bg-surface-container/60 px-2.5 py-1.5 text-xs text-on-surface-muted hover:text-on-surface">
+          <Zap size={12} /> AI Categorize
         </button>
         <button onClick={handleBatch} className="flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-xs text-primary hover:bg-primary/20">
-          <Zap size={12} /> Post All
+          <Check size={12} /> Post All
         </button>
       </div>
 
-      <div className="space-y-px">
-        {transactions.map((tx: any) => (
-          <motion.div key={tx.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={glide}
-            className="flex items-center gap-3 rounded-lg bg-surface-container/30 px-4 py-3 backdrop-blur-sm">
-            <span className="w-20 text-xs text-on-surface-muted/50">{tx.occurred_at}</span>
-            <div className="flex-1 min-w-0">
-              <div className="truncate text-sm text-on-surface">{tx.description}</div>
-              {tx.categorizer_reasoning && <div className="mt-0.5 truncate text-xs text-primary/60">{tx.categorizer_reasoning}</div>}
-            </div>
-            <span className={cn('text-sm font-medium tabular-nums', tx.amount_cents > 0 ? 'text-green-400' : 'text-on-surface')}>
-              {tx.amount_cents > 0 ? '+' : ''}{cents(tx.amount_cents)}
-            </span>
-            {tx.category && <span className="rounded bg-surface-container px-1.5 py-0.5 text-[10px] text-on-surface-muted/60">{tx.category}</span>}
-            <span className={cn('text-[10px] tabular-nums', (tx.confidence || 0) >= 0.9 ? 'text-green-400' : (tx.confidence || 0) >= 0.7 ? 'text-gold' : 'text-error')}>
-              {tx.confidence ? `${(tx.confidence * 100).toFixed(0)}%` : '—'}
-            </span>
-            <div className="flex gap-1">
-              {tx.status === 'categorized' && (
-                <button onClick={() => handlePost(tx.id)} className="rounded bg-green-500/10 px-2 py-0.5 text-[10px] text-green-400 hover:bg-green-500/20">Post</button>
-              )}
-              {['pending', 'flagged', 'categorized'].includes(tx.status) && (
-                <button onClick={() => handleIgnore(tx.id)} className="rounded bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/40 hover:text-on-surface-muted">Skip</button>
-              )}
-            </div>
-          </motion.div>
-        ))}
+      <div className="space-y-1">
+        {transactions.map((tx: any) => {
+          const expanded = expandedId === tx.id
+          const amt = tx.amount_cents
+          return (
+            <motion.div key={tx.id} layout transition={glide}>
+              {/* Main row */}
+              <div
+                onClick={() => setExpandedId(expanded ? null : tx.id)}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-4 py-3 backdrop-blur-sm cursor-pointer transition-colors',
+                  expanded ? 'bg-surface-container/50' : 'bg-surface-container/30 hover:bg-surface-container/40'
+                )}
+              >
+                <span className="w-14 text-[11px] text-on-surface-muted/50 flex-shrink-0">{formatDate(tx.occurred_at)}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="truncate text-sm text-on-surface">{tx.description}</div>
+                </div>
+                <span className={cn('text-sm font-medium tabular-nums flex-shrink-0', amt > 0 ? 'text-green-400' : 'text-on-surface')}>
+                  {amt > 0 ? '+' : ''}{cents(amt)}
+                </span>
+                {tx.category && (
+                  <span className="rounded-md bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/60 flex-shrink-0">
+                    {accounts.find((a: any) => a.code === tx.category)?.name || tx.category}
+                  </span>
+                )}
+                {tx.is_personal && <User size={12} className="text-gold/60 flex-shrink-0" />}
+                <ChevronDown size={14} className={cn('text-on-surface-muted/30 flex-shrink-0 transition-transform', expanded && 'rotate-180')} />
+              </div>
+
+              {/* Expanded: categorize + actions */}
+              <AnimatePresence>
+                {expanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 py-3 bg-surface-container/20 rounded-b-lg space-y-3">
+                      {/* Details */}
+                      <div className="flex gap-6 text-xs text-on-surface-muted/50">
+                        <span>Status: <strong className="text-on-surface-muted/70">{tx.status}</strong></span>
+                        {tx.confidence != null && (
+                          <span>Confidence: <strong className={cn(
+                            tx.confidence >= 0.9 ? 'text-green-400' : tx.confidence >= 0.7 ? 'text-gold' : 'text-error'
+                          )}>{(tx.confidence * 100).toFixed(0)}%</strong></span>
+                        )}
+                        {tx.categorizer_reasoning && <span className="text-primary/50 truncate max-w-[300px]">{tx.categorizer_reasoning}</span>}
+                      </div>
+
+                      {/* Category selector */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <select
+                          value={tx.category || ''}
+                          onChange={e => handleCategorize(tx.id, e.target.value, tx.is_personal || false)}
+                          className="rounded-lg bg-surface-container/60 px-3 py-1.5 text-xs text-on-surface min-w-[200px] outline-none focus:ring-1 focus:ring-primary/30"
+                        >
+                          <option value="">— Select category —</option>
+                          {Object.entries(accountsByType).map(([type, accts]) => (
+                            <optgroup key={type} label={type.toUpperCase()}>
+                              {(accts as any[]).map((a: any) => (
+                                <option key={a.code} value={a.code}>{a.code} — {a.name}</option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
+
+                        <button
+                          onClick={() => handleCategorize(tx.id, '2100', true)}
+                          className={cn(
+                            'flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs transition-colors',
+                            tx.is_personal ? 'bg-gold/15 text-gold' : 'bg-surface-container/60 text-on-surface-muted/50 hover:text-gold'
+                          )}
+                        >
+                          <User size={11} /> Personal
+                        </button>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
+                        {(tx.status === 'categorized' || tx.category) && (
+                          <button onClick={() => handlePost(tx.id)}
+                            className="flex items-center gap-1 rounded-lg bg-green-500/10 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/20">
+                            <Check size={12} /> Post to Ledger
+                          </button>
+                        )}
+                        <button onClick={() => handleIgnore(tx.id)}
+                          className="flex items-center gap-1 rounded-lg bg-surface-container/60 px-3 py-1.5 text-xs text-on-surface-muted/50 hover:text-on-surface-muted">
+                          <X size={12} /> Ignore
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )
+        })}
         {transactions.length === 0 && (
           <div className="py-16 text-center text-sm text-on-surface-muted/40">Nothing matching &ldquo;{filter}&rdquo;</div>
         )}
