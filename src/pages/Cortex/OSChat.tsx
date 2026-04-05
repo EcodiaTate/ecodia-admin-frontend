@@ -19,11 +19,13 @@ import type { AttachedFile } from '@/types/cortex'
 // Lazy-loaded workspace context panels — code-split for performance
 const BookkeepingPanel = lazy(() => import('./panels/BookkeepingPanel'))
 const SocialsPanel = lazy(() => import('./panels/SocialsPanel'))
+const CRMPanel = lazy(() => import('./panels/CRMPanel'))
 const CodingWorkspace = lazy(() => import('./CodingWorkspace'))
 
 const WORKSPACE_PANELS: Record<string, React.LazyExoticComponent<() => JSX.Element>> = {
   bookkeeping: BookkeepingPanel,
   socials: SocialsPanel,
+  crm: CRMPanel,
   coding: CodingWorkspace,
 }
 
