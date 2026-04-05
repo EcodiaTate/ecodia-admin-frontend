@@ -118,22 +118,40 @@ function InboxTab() {
 
   const filters = ['pending', 'flagged', 'categorized', 'posted', 'ignored', 'all']
 
-  const invalidate = () => { refetch(); qc.invalidateQueries({ queryKey: ['bk-counts'] }) }
+  const invalidate = () => { qc.invalidateQueries({ queryKey: ['bk-counts'] }) }
+  const softRefetch = () => { refetch(); invalidate() }
+
+  // Optimistic remove — pull the row out of cache immediately, no reorder jank
+  const removeFromList = (id: string) => {
+    qc.setQueryData(['bk-staged', filter], (old: any) =>
+      Array.isArray(old) ? old.filter((t: any) => t.id !== id) : old
+    )
+    if (expandedId === id) setExpandedId(null)
+    invalidate()
+  }
+
+  // Optimistic update — patch the row in cache
+  const patchInList = (id: string, fields: Record<string, unknown>) => {
+    qc.setQueryData(['bk-staged', filter], (old: any) =>
+      Array.isArray(old) ? old.map((t: any) => t.id === id ? { ...t, ...fields } : t) : old
+    )
+  }
 
   const handleCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
-    await uploadCSV(file); invalidate()
+    await uploadCSV(file); softRefetch()
   }
 
   const handleCategorize = async (id: string, category: string, isPersonal: boolean) => {
+    patchInList(id, { category, is_personal: isPersonal, status: 'categorized' })
     await updateStaged(id, { category, is_personal: isPersonal, status: 'categorized' })
     invalidate()
   }
 
-  const handlePost = async (id: string) => { await postStaged(id); invalidate() }
-  const handleIgnore = async (id: string) => { await ignoreStaged(id); invalidate() }
-  const handleBatch = async () => { await batchPost(); invalidate() }
-  const handleAICategorize = async () => { await triggerCategorize(); invalidate() }
+  const handlePost = async (id: string) => { removeFromList(id); await postStaged(id) }
+  const handleIgnore = async (id: string) => { removeFromList(id); await ignoreStaged(id) }
+  const handleBatch = async () => { await batchPost(); softRefetch() }
+  const handleAICategorize = async () => { await triggerCategorize(); softRefetch() }
 
   const formatDate = (d: string) => {
     try { return new Date(d).toLocaleDateString('en-AU', { day: '2-digit', month: 'short' }) } catch { return d }
