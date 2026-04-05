@@ -282,6 +282,7 @@ export function getDirection(fromKey: string, toKey: string) {
     nx: dx / magnitude,
     ny: dy / magnitude,
     nz: dz / magnitude,
+    distance: magnitude,
   }
 }
 
@@ -289,6 +290,7 @@ export interface DirectionVector {
   nx: number
   ny: number
   nz: number
+  distance: number
 }
 
 /**
