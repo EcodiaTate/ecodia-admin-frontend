@@ -583,8 +583,9 @@ export default function CortexPage() {
       }
 
       addAssistantMessage(res.blocks, res.mentionedNodes)
-    } catch {
-      addAssistantMessage([{ type: 'text', content: 'The Cortex encountered an error.' }])
+    } catch (err: any) {
+      const detail = err?.response?.data?.error || err?.message || 'Unknown error'
+      addAssistantMessage([{ type: 'text', content: `Error: ${detail}` }])
     } finally {
       endInflight()
     }

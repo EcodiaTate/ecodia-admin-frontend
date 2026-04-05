@@ -13,6 +13,7 @@ export async function sendCortexChat(
   ambientEvents?: { kind: string; summary: string; timestamp: Date }[],
 ) {
   // Use /cortex/do for auto-execution: Cortex proposes actions → they run → results feed back
+  // 3 minute timeout — multi-turn can chain several DeepSeek calls + action executions
   const { data } = await api.post<CortexChatResponse>('/cortex/do', {
     messages,
     sessionId,
@@ -24,7 +25,7 @@ export async function sendCortexChat(
       text: a.text,
     })),
     ambientEvents,
-  })
+  }, { timeout: 180_000 })
   return data
 }
 
