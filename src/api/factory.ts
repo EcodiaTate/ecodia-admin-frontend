@@ -40,3 +40,23 @@ export async function createSession(params: {
   const { data } = await api.post<CCSession>('/cc/sessions', params)
   return data
 }
+
+export async function resumeSession(id: string, content: string) {
+  const { data } = await api.post(`/cc/sessions/${id}/resume`, { content })
+  return data
+}
+
+export async function getAnalytics(days?: number) {
+  const { data } = await api.get('/coding/analytics', { params: { days } })
+  return data
+}
+
+export async function getCodingDashboard() {
+  const { data } = await api.get('/coding/dashboard')
+  return data
+}
+
+export async function getCodeRequests(status?: string) {
+  const { data } = await api.get('/coding/requests', { params: { status } })
+  return data
+}

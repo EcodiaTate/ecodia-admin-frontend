@@ -40,6 +40,14 @@ const WORKSPACE_GHOSTS: Record<string, string[]> = {
     'Show disk usage',
     'Pull latest on VPS',
   ],
+  coding: [
+    'Show active sessions',
+    'What code requests are pending?',
+    'Start a session to fix...',
+    'Resume the last session',
+    'Deploy the latest changes',
+    'Show coding dashboard',
+  ],
 }
 
 function useGhostPrompt(workspace: string): string {

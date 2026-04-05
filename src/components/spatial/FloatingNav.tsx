@@ -23,6 +23,7 @@ const SCENE_WORKERS: Record<string, string[]> = {
   crm: [],
   bookkeeping: ['finance'],
   codebase: ['codebase_index'],
+  coding: ['factory'],
   'knowledge-graph': ['kg_consolidation', 'kg_embedding'],
   momentum: [],
   settings: ['google_drive', 'vercel', 'meta'],

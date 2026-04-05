@@ -9,6 +9,7 @@ import {
   Code2,
   Flame,
   BookOpen,
+  Terminal,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -181,6 +182,22 @@ export const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(200, 145, 10, 0.09)', x: '40%', y: '40%', size: '75%' },
         { color: 'rgba(46, 204, 113, 0.07)', x: '70%', y: '65%', size: '55%' },
         { color: 'rgba(245, 200, 66, 0.05)', x: '25%', y: '75%', size: '45%' },
+      ],
+    },
+  },
+
+  // ── Auto-Developer: coding workspace ──
+  // Green pulse with teal depth — code being written
+  coding: {
+    path: '/coding',
+    label: 'Factory',
+    icon: Terminal,
+    position: { x: 2, y: 1, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(46, 204, 113, 0.09)', x: '40%', y: '35%', size: '70%' },
+        { color: 'rgba(20, 184, 166, 0.06)', x: '70%', y: '60%', size: '55%' },
+        { color: 'rgba(27, 122, 61, 0.05)', x: '25%', y: '75%', size: '45%' },
       ],
     },
   },

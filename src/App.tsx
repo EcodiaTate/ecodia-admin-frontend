@@ -17,6 +17,7 @@ const CodebasePage = lazy(() => import('./pages/Codebase'))
 const MomentumPage = lazy(() => import('./pages/Momentum'))
 const LoginPage = lazy(() => import('./pages/Login'))
 const BookkeepingPage = lazy(() => import('./pages/Bookkeeping'))
+const CodingPage = lazy(() => import('./pages/Coding'))
 
 /** Ambient loading state — a soft breathing glow, not a spinner */
 function SceneSuspense({ children }: { children: React.ReactNode }) {
@@ -80,11 +81,12 @@ export default function App() {
           <Route path="/momentum" element={<Scene name="Momentum"><MomentumPage /></Scene>} />
           <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
           <Route path="/bookkeeping" element={<Scene name="Ledger"><BookkeepingPage /></Scene>} />
+          <Route path="/coding" element={<Scene name="Auto-Developer"><CodingPage /></Scene>} />
           {/* Redirects for consolidated pages */}
           <Route path="/finance" element={<Navigate to="/bookkeeping" replace />} />
           <Route path="/kg-explorer" element={<Navigate to="/knowledge-graph" replace />} />
           <Route path="/workspace" element={<Navigate to="/settings" replace />} />
-          <Route path="/factory-dev" element={<Navigate to="/settings" replace />} />
+          <Route path="/factory-dev" element={<Navigate to="/coding" replace />} />
           <Route path="/claude-code" element={<Navigate to="/settings" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

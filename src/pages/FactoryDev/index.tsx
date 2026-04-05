@@ -312,11 +312,15 @@ function LogViewer({ sessionId, isLive }: { sessionId: string; isLive: boolean }
 
 // ─── Message Input ────────────────────────────────────────────────────
 
-function MessageInput({ sessionId, disabled }: { sessionId: string; disabled: boolean }) {
+function MessageInput({ sessionId, disabled, isResume }: { sessionId: string; disabled: boolean; isResume?: boolean }) {
   const [msg, setMsg] = useState('')
-  const mutation = useMutation({
+  const sendMutation = useMutation({
     mutationFn: (content: string) => factoryApi.sendSessionMessage(sessionId, content),
   })
+  const resumeMutation = useMutation({
+    mutationFn: (content: string) => factoryApi.resumeSession(sessionId, content),
+  })
+  const mutation = isResume ? resumeMutation : sendMutation
 
   const send = () => {
     if (!msg.trim()) return
@@ -324,13 +328,22 @@ function MessageInput({ sessionId, disabled }: { sessionId: string; disabled: bo
     setMsg('')
   }
 
+  const placeholder = disabled
+    ? 'Session not messageable'
+    : isResume
+      ? 'Resume session with follow-up message...'
+      : 'Send message to session (follow-up, answer question)...'
+
   return (
     <div className="flex items-center gap-2 p-2 border-t border-gray-200/60 bg-white/30">
+      {isResume && (
+        <span className="text-xs text-amber-600 font-medium px-1.5 py-0.5 bg-amber-50 rounded">Resume</span>
+      )}
       <input
         value={msg}
         onChange={e => setMsg(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-        placeholder={disabled ? 'Session not running' : 'Send message to session (follow-up, answer question)...'}
+        placeholder={placeholder}
         disabled={disabled}
         className="flex-1 px-3 py-1.5 text-sm bg-white/60 border border-gray-200/60 rounded-lg
                    placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-primary/30
@@ -430,7 +443,8 @@ function SessionDetail({ session: apiSession }: { session: CCSession }) {
       }
     : apiSession
   const isLive = session.status === 'running' || session.status === 'initializing' || session.status === 'awaiting_input'
-  const canMessage = session.status === 'running' || session.status === 'awaiting_input'
+  const isResumable = session.status === 'paused' || session.status === 'complete'
+  const canMessage = session.status === 'running' || session.status === 'awaiting_input' || isResumable
   const queryClient = useQueryClient()
 
   const stopMutation = useMutation({
@@ -506,7 +520,7 @@ function SessionDetail({ session: apiSession }: { session: CCSession }) {
       </div>
 
       {/* Message input */}
-      <MessageInput sessionId={session.id} disabled={!canMessage} />
+      <MessageInput sessionId={session.id} disabled={!canMessage} isResume={isResumable} />
     </div>
   )
 }
