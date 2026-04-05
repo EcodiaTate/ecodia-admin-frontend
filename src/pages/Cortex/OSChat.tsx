@@ -1,12 +1,12 @@
 /**
  * OS Chat — Practical operations interface.
- * Separate from organism Cortex. No constellation, no breath, no surfacings.
+ * Split layout: chat stream left, context panel right (per-workspace).
  * Clean workspace-scoped chat with task persistence.
  */
-import { useState, useRef, useEffect, useCallback, useId } from 'react'
+import { useState, useRef, useEffect, useCallback, useId, lazy, Suspense } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUp, Paperclip, FileText, X, Trash2, Loader2, CheckCircle2, AlertCircle, HelpCircle, Image as ImageIcon } from 'lucide-react'
+import { ArrowUp, Paperclip, FileText, X, Trash2, Loader2, CheckCircle2, AlertCircle, HelpCircle, Image as ImageIcon, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -15,6 +15,25 @@ import { runOSTask, getWorkspaces, getTask } from '@/api/os'
 import { uploadCSV } from '@/api/bookkeeping'
 import type { OSBlock, OSChatMessage } from '@/types/os'
 import type { AttachedFile } from '@/types/cortex'
+
+// Lazy-loaded workspace context panels — code-split for performance
+const BookkeepingPanel = lazy(() => import('./panels/BookkeepingPanel'))
+const GmailPanel = lazy(() => import('./panels/GmailPanel'))
+const CodingWorkspace = lazy(() => import('./CodingWorkspace'))
+
+const WORKSPACE_PANELS: Record<string, React.LazyExoticComponent<() => JSX.Element>> = {
+  bookkeeping: BookkeepingPanel,
+  email: GmailPanel,
+  coding: CodingWorkspace,
+}
+
+function PanelFallback() {
+  return (
+    <div className="flex items-center justify-center h-32">
+      <Loader2 className="h-4 w-4 text-on-surface-muted/20 animate-spin" />
+    </div>
+  )
+}
 
 // ─── Ghost prompts per workspace ─────────────────────────────────────
 const WORKSPACE_GHOSTS: Record<string, string[]> = {
@@ -198,6 +217,9 @@ function OSAssistantMessage({ message }: { message: OSChatMessage }) {
 function WorkspaceTabs() {
   const workspace = useOSCortexStore(s => s.workspace)
   const setWorkspace = useOSCortexStore(s => s.setWorkspace)
+  const panelOpen = useOSCortexStore(s => s.panelOpen)
+  const togglePanel = useOSCortexStore(s => s.togglePanel)
+  const hasPanel = !!WORKSPACE_PANELS[workspace]
   const { data: workspaces } = useQuery({
     queryKey: ['os-workspaces'],
     queryFn: getWorkspaces,
@@ -219,9 +241,20 @@ function WorkspaceTabs() {
           {ws.label}
         </button>
       ))}
+      {hasPanel && (
+        <>
+          <div className="flex-1" />
+          <button
+            onClick={togglePanel}
+            className="rounded-lg p-1.5 text-on-surface-muted/30 hover:text-on-surface-muted/60 hover:bg-surface-container transition-all"
+            title={panelOpen ? 'Hide panel' : 'Show panel'}
+          >
+            {panelOpen ? <PanelRightClose size={14} strokeWidth={1.5} /> : <PanelRightOpen size={14} strokeWidth={1.5} />}
+          </button>
+        </>
+      )}
     </div>
   )
-
 }
 
 // ─── Recent Tasks ────────────────────────────────────────────────────
@@ -262,6 +295,9 @@ export default function OSChat() {
   const store = useOSCortexStore
 
   const loadHistory = useOSCortexStore(s => s.loadHistory)
+  const panelOpen = useOSCortexStore(s => s.panelOpen)
+  const ContextPanel = WORKSPACE_PANELS[workspace] || null
+  const showContextPanel = panelOpen && !!ContextPanel
 
   const ghostPrompt = useGhostPrompt(workspace)
   const canSend = (input.trim().length > 0 || attachments.length > 0) && !loading
@@ -335,9 +371,12 @@ export default function OSChat() {
 
       for (const csv of csvFiles) {
         try {
+          // Default to company bank (1000); user can specify "personal" in their message to use 2100
+          const isPersonal = (text || '').toLowerCase().match(/personal|my (bank|account)|private/)
+          const sourceAccount = isPersonal ? '2100' : '1000'
           const file = new File([csv.text!], csv.name, { type: 'text/csv' })
-          const result = await uploadCSV(file, '2100')
-          ingestResults.push(`${csv.name}: ${result.created} imported, ${result.duplicates} duplicates, ${result.total_parsed} parsed`)
+          const result = await uploadCSV(file, sourceAccount)
+          ingestResults.push(`${csv.name}: ${result.created} imported (${sourceAccount === '2100' ? 'personal bank' : 'company bank'}), ${result.duplicates} duplicates, ${result.total_parsed} parsed`)
         } catch (err: any) {
           ingestResults.push(`${csv.name}: import failed — ${err?.response?.data?.error || err?.message || 'unknown error'}`)
         }
@@ -372,11 +411,25 @@ export default function OSChat() {
     } catch (err: any) {
       const isNetworkError = !err?.response && (err?.message === 'Network Error' || err?.code === 'ECONNABORTED' || err?.code === 'ERR_NETWORK')
 
-      if (isNetworkError && sendTaskId) {
+      if (isNetworkError) {
         addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Connection timed out — checking if the task completed...' }])
         try {
           await new Promise(r => setTimeout(r, 3000))
-          const task = await getTask(sendTaskId)
+          // If we had a taskId, check that specific task
+          // Otherwise, check the most recent task for this workspace
+          let task = null
+          if (sendTaskId) {
+            task = await getTask(sendTaskId)
+          } else {
+            // Find the most recent task for this workspace
+            const { getTasks } = await import('@/api/os')
+            const tasks = await getTasks(sendWs)
+            if (tasks?.length) {
+              task = await getTask(tasks[0].id)
+              if (task) setTaskIdFor(sendWs, task.id)
+            }
+          }
+
           if (task?.history?.length) {
             const lastAssistant = [...task.history].reverse().find((t: { role: string }) => t.role === 'assistant')
             if (lastAssistant?.blocks) {
@@ -386,6 +439,8 @@ export default function OSChat() {
             } else {
               addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Task is still running. Send another message to continue.' }])
             }
+          } else {
+            addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Still working — send another message to check progress.' }])
           }
         } catch {
           addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Still working — send another message to check progress.' }])
@@ -435,109 +490,135 @@ export default function OSChat() {
         )}
       </AnimatePresence>
 
-      {/* Header: workspace tabs + tasks */}
+      {/* Header: workspace tabs + panel toggle */}
       <div className="relative z-10 border-b border-black/5 px-6 py-3 space-y-2">
         <WorkspaceTabs />
         <SessionControls />
       </div>
 
-      {/* Chat stream */}
-      <div className="relative z-10 flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto max-w-3xl px-6">
-          {messages.length === 0 && (
-            <div className="flex items-center justify-center pt-[20vh] pb-8">
-              <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted/30">
-                {workspace.charAt(0).toUpperCase() + workspace.slice(1)}
-              </span>
-            </div>
-          )}
+      {/* Split layout: chat column + context panel */}
+      <div className="relative z-10 flex flex-1 min-h-0">
 
-          {messages.length > 0 && (
-            <div className="pb-8 pt-6 space-y-3">
-              <AnimatePresence initial={false}>
-                {messages.map(msg =>
-                  msg.role === 'user'
-                    ? <OSUserMessage key={msg.id} message={msg} />
-                    : <OSAssistantMessage key={msg.id} message={msg} />
+        {/* ── Chat column (chat stream + input) ── */}
+        <div className="flex flex-1 flex-col min-w-0">
+          <div className="flex-1 overflow-y-auto scrollbar-thin">
+            <div className={`mx-auto px-6 transition-all ${showContextPanel ? 'max-w-2xl' : 'max-w-3xl'}`}>
+              {messages.length === 0 && (
+                <div className="flex items-center justify-center pt-[20vh] pb-8">
+                  <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted/30">
+                    {workspace.charAt(0).toUpperCase() + workspace.slice(1)}
+                  </span>
+                </div>
+              )}
+
+              {messages.length > 0 && (
+                <div className="pb-8 pt-6 space-y-3">
+                  <AnimatePresence initial={false}>
+                    {messages.map(msg =>
+                      msg.role === 'user'
+                        ? <OSUserMessage key={msg.id} message={msg} />
+                        : <OSAssistantMessage key={msg.id} message={msg} />
+                    )}
+                  </AnimatePresence>
+
+                  {loading && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 py-2">
+                      <Loader2 className="h-3.5 w-3.5 text-primary/40 animate-spin" strokeWidth={1.75} />
+                      <span className="text-xs text-on-surface-muted/40 font-mono">working...</span>
+                    </motion.div>
+                  )}
+
+                  <div ref={chatEndRef} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Input */}
+          <SpatialLayer z={20}>
+            <div className={`mx-auto px-6 py-4 transition-all ${showContextPanel ? 'max-w-2xl' : 'max-w-3xl'}`}>
+              <AnimatePresence>
+                {attachments.length > 0 && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                    <div className="mb-2 flex flex-wrap gap-2 px-1">
+                      {attachments.map(a => (
+                        <div key={a.id} className="group flex items-center gap-2 rounded-xl border border-black/8 bg-surface-container-low px-3 py-2 flex-shrink-0">
+                          <FileText className="h-4 w-4 text-on-surface-muted/60 flex-shrink-0" strokeWidth={1.5} />
+                          <div className="min-w-0">
+                            <p className="max-w-[120px] truncate text-xs font-medium text-on-surface">{a.name}</p>
+                            <p className="text-[10px] text-on-surface-muted/50">{formatBytes(a.size)}</p>
+                          </div>
+                          <button onClick={() => setAttachments(prev => prev.filter(f => f.id !== a.id))} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface-muted/40 hover:bg-error/10 hover:text-error transition-colors">
+                            <X className="h-3 w-3" strokeWidth={2} />
+                          </button>
+                        </div>
+                      ))}
+                      {attachments.length > 1 && (
+                        <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface-muted/50 hover:text-error transition-colors">
+                          <Trash2 className="h-3 w-3" strokeWidth={1.75} /> Clear all
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
-              {loading && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 py-2">
-                  <Loader2 className="h-3.5 w-3.5 text-primary/40 animate-spin" strokeWidth={1.75} />
-                  <span className="text-xs text-on-surface-muted/40 font-mono">working...</span>
-                </motion.div>
-              )}
-
-              <div ref={chatEndRef} />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Input */}
-      <SpatialLayer z={20} className="relative z-10">
-        <div className="mx-auto max-w-3xl px-6 py-4">
-          <AnimatePresence>
-            {attachments.length > 0 && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                <div className="mb-2 flex flex-wrap gap-2 px-1">
-                  {attachments.map(a => (
-                    <div key={a.id} className="group flex items-center gap-2 rounded-xl border border-black/8 bg-surface-container-low px-3 py-2 flex-shrink-0">
-                      <FileText className="h-4 w-4 text-on-surface-muted/60 flex-shrink-0" strokeWidth={1.5} />
-                      <div className="min-w-0">
-                        <p className="max-w-[120px] truncate text-xs font-medium text-on-surface">{a.name}</p>
-                        <p className="text-[10px] text-on-surface-muted/50">{formatBytes(a.size)}</p>
-                      </div>
-                      <button onClick={() => setAttachments(prev => prev.filter(f => f.id !== a.id))} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface-muted/40 hover:bg-error/10 hover:text-error transition-colors">
-                        <X className="h-3 w-3" strokeWidth={2} />
-                      </button>
-                    </div>
-                  ))}
-                  {attachments.length > 1 && (
-                    <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface-muted/50 hover:text-error transition-colors">
-                      <Trash2 className="h-3 w-3" strokeWidth={1.75} /> Clear all
-                    </button>
-                  )}
+              <div className="glass-elevated rounded-2xl transition-all focus-within:shadow-glass-hover">
+                <div className="flex items-end gap-2 px-4 py-3.5">
+                  <label htmlFor={fileInputId}
+                    className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/40 transition-all hover:bg-surface-container hover:text-on-surface-muted"
+                  >
+                    <Paperclip className="h-4 w-4" strokeWidth={1.75} />
+                  </label>
+                  <input id={fileInputId} ref={fileInputRef} type="file" multiple
+                    accept="image/*,.pdf,.txt,.md,.csv,.json,.ts,.tsx,.js,.jsx,.py,.go,.rs,.sh,.yaml,.yml,.toml,.sql,.html,.css,.xml"
+                    className="sr-only" onChange={e => e.target.files && handleFiles(e.target.files)}
+                  />
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                    placeholder={ghostPrompt}
+                    rows={1}
+                    className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/30 outline-none leading-relaxed"
+                    style={{ maxHeight: 200 }}
+                  />
+                  <motion.button
+                    onClick={handleSend}
+                    disabled={!canSend}
+                    whileTap={canSend ? { scale: 0.92 } : {}}
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all bg-primary/10 text-primary disabled:opacity-0 disabled:scale-90 hover:bg-primary/18 active:bg-primary/22"
+                  >
+                    <ArrowUp className="h-4 w-4" strokeWidth={2} />
+                  </motion.button>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="glass-elevated rounded-2xl transition-all focus-within:shadow-glass-hover">
-            <div className="flex items-end gap-2 px-4 py-3.5">
-              <label htmlFor={fileInputId}
-                className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/40 transition-all hover:bg-surface-container hover:text-on-surface-muted"
-              >
-                <Paperclip className="h-4 w-4" strokeWidth={1.75} />
-              </label>
-              <input id={fileInputId} ref={fileInputRef} type="file" multiple
-                accept="image/*,.pdf,.txt,.md,.csv,.json,.ts,.tsx,.js,.jsx,.py,.go,.rs,.sh,.yaml,.yml,.toml,.sql,.html,.css,.xml"
-                className="sr-only" onChange={e => e.target.files && handleFiles(e.target.files)}
-              />
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder={ghostPrompt}
-                rows={1}
-                className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/30 outline-none leading-relaxed"
-                style={{ maxHeight: 200 }}
-              />
-              <motion.button
-                onClick={handleSend}
-                disabled={!canSend}
-                whileTap={canSend ? { scale: 0.92 } : {}}
-                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all bg-primary/10 text-primary disabled:opacity-0 disabled:scale-90 hover:bg-primary/18 active:bg-primary/22"
-              >
-                <ArrowUp className="h-4 w-4" strokeWidth={2} />
-              </motion.button>
+              </div>
             </div>
-          </div>
+          </SpatialLayer>
         </div>
-      </SpatialLayer>
+
+        {/* ── Context panel (right side, per-workspace) ── */}
+        <AnimatePresence>
+          {showContextPanel && ContextPanel && (
+            <motion.div
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 340, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="border-l border-black/5 overflow-hidden flex-shrink-0"
+            >
+              <div className="w-[340px] h-full">
+                <Suspense fallback={<PanelFallback />}>
+                  <ContextPanel />
+                </Suspense>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
     </div>
   )
 }

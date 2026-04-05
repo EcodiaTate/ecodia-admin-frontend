@@ -398,6 +398,12 @@ function SessionRow({ session, isSelected, onSelect }: {
       <div className="flex items-center gap-2 mb-1">
         <StatusBadge status={session.status} />
         <span className="text-[10px] font-mono text-gray-400">{session.triggered_by}</span>
+        {(session as any).codebase_name && (
+          <span className="text-[10px] text-primary/50">{(session as any).codebase_name}</span>
+        )}
+        {(session as any).client_name && (
+          <span className="text-[10px] text-gray-400">{(session as any).client_name}</span>
+        )}
         <span className="flex-1" />
         <span className="text-[10px] font-mono text-gray-300">{age}</span>
         {isSelected ? <ChevronDown className="w-3 h-3 text-gray-400" /> : <ChevronRight className="w-3 h-3 text-gray-400" />}
@@ -479,7 +485,9 @@ function SessionDetail({ session: apiSession }: { session: CCSession }) {
         <div className="grid grid-cols-3 gap-2 mt-3 text-[10px] font-mono">
           <MetaItem label="trigger" value={session.triggered_by} />
           <MetaItem label="source" value={session.trigger_source ?? '—'} />
-          <MetaItem label="codebase" value={session.codebase_id?.slice(0, 8) ?? '—'} />
+          <MetaItem label="codebase" value={(session as any).codebase_name || session.codebase_id?.slice(0, 8) || '—'} />
+          {(session as any).client_name && <MetaItem label="client" value={(session as any).client_name} />}
+          {(session as any).project_name && <MetaItem label="project" value={(session as any).project_name} />}
           <MetaItem label="working dir" value={session.working_dir ?? '—'} />
           <MetaItem label="deploy" value={session.deploy_status ?? '—'} />
           <MetaItem label="cost" value={session.cc_cost_usd != null ? `$${session.cc_cost_usd.toFixed(4)}` : '—'} />

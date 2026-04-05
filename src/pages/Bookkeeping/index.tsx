@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  getStagedCounts, getStaged, updateStaged, postStaged, ignoreStaged, batchPost,
+  getStagedCounts, getStaged, updateStaged, postStaged, ignoreStaged, discardStaged, batchPost,
   uploadCSV, triggerCategorize,
   getLedgerTransactions, getTrialBalance,
   getBAS, getPnL, getBalanceSheet, getExpenseBreakdown, getGSTSummary,
@@ -172,6 +172,7 @@ function OverviewTab() {
 function InboxTab() {
   const [filter, setFilter] = useState('pending')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [csvSource, setCsvSource] = useState<'1000' | '2100'>('1000')
   const fileRef = useRef<HTMLInputElement>(null)
   const qc = useQueryClient()
   const { data: transactions = [], refetch } = useQuery({
@@ -206,7 +207,7 @@ function InboxTab() {
 
   const handleCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
-    await uploadCSV(file, '2100'); softRefetch()
+    await uploadCSV(file, csvSource); softRefetch()
   }
 
   const handleCategorize = async (id: string, category: string, isPersonal: boolean) => {
@@ -217,7 +218,7 @@ function InboxTab() {
 
   const handleDiscard = async (id: string) => {
     removeFromList(id)
-    await updateStaged(id, { category: 'DISCARD', is_personal: true, status: 'ignored' })
+    await discardStaged(id, true) // learn=true auto-creates a DISCARD rule
   }
   const handlePost = async (id: string) => { removeFromList(id); await postStaged(id) }
   const handleIgnore = async (id: string) => { removeFromList(id); await ignoreStaged(id) }
@@ -244,6 +245,14 @@ function InboxTab() {
         ))}
         <div className="flex-1" />
         <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleCSV} />
+        <select
+          value={csvSource}
+          onChange={e => setCsvSource(e.target.value as '1000' | '2100')}
+          className="rounded-lg bg-surface-container/60 px-2 py-1.5 text-[10px] text-on-surface-muted outline-none"
+        >
+          <option value="1000">Company Bank</option>
+          <option value="2100">Personal Bank</option>
+        </select>
         <button onClick={() => fileRef.current?.click()} className="flex items-center gap-1 rounded-lg bg-surface-container/60 px-2.5 py-1.5 text-xs text-on-surface-muted hover:text-on-surface">
           <Upload size={12} /> CSV
         </button>
@@ -272,13 +281,23 @@ function InboxTab() {
                 <span className="w-14 text-[11px] text-on-surface-muted/50 flex-shrink-0">{formatDate(tx.occurred_at)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="truncate text-sm text-on-surface">{tx.description}</div>
-                  {tx.category && tx.category !== 'DISCARD' && (tx.status === 'posted' || tx.status === 'categorized') && (
-                    <div className="text-[10px] text-on-surface-muted/40 mt-0.5">
-                      DR {tx.is_personal && !tx.amount_cents?.toString().startsWith('-') ? 'Bank' : (tx.is_personal ? 'Director Loan' : (accounts.find((a: any) => a.code === tx.category)?.name || tx.category))}
-                      {' → '}
-                      CR {tx.source_account === '2100' ? 'Director Loan' : 'Bank'}
-                    </div>
-                  )}
+                  {tx.category && tx.category !== 'DISCARD' && (tx.status === 'posted' || tx.status === 'categorized') && (() => {
+                    const isIncome = tx.amount_cents > 0
+                    const bankAcct = tx.source_account || '1000'
+                    const catName = accounts.find((a: any) => a.code === tx.category)?.name || tx.category
+                    const bankName = bankAcct === '2100' ? 'Director Loan' : 'Bank'
+                    let dr = '', cr = ''
+                    if (tx.is_personal && !isIncome) { dr = 'Director Loan'; cr = bankName }
+                    else if (tx.is_personal && isIncome && bankAcct === '2100') { dr = 'Director Loan'; cr = catName }
+                    else if (tx.is_personal && isIncome) { dr = bankName; cr = 'Director Loan' }
+                    else if (isIncome) { dr = bankName; cr = catName }
+                    else { dr = catName; cr = bankName }
+                    return (
+                      <div className="text-[10px] text-on-surface-muted/40 mt-0.5">
+                        DR {dr} → CR {cr}
+                      </div>
+                    )
+                  })()}
                   {tx.category === 'DISCARD' && (
                     <div className="text-[10px] text-on-surface-muted/30 mt-0.5">Discarded — personal, not in books</div>
                   )}
@@ -366,13 +385,22 @@ function InboxTab() {
                         </select>
 
                         <button
-                          onClick={() => handleCategorize(tx.id, '2100', true)}
+                          onClick={() => {
+                            // Toggle personal flag — if category is set, keep it (personal expense on company card)
+                            // If no category, this is a discard
+                            const newPersonal = !tx.is_personal
+                            if (!tx.category && newPersonal) {
+                              handleDiscard(tx.id)
+                            } else {
+                              handleCategorize(tx.id, tx.category || '', newPersonal)
+                            }
+                          }}
                           className={cn(
                             'flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs transition-colors',
                             tx.is_personal ? 'bg-gold/15 text-gold' : 'bg-surface-container/60 text-on-surface-muted/50 hover:text-gold'
                           )}
                         >
-                          <User size={11} /> Personal
+                          <User size={11} /> {tx.is_personal ? 'Personal ✓' : 'Personal'}
                         </button>
                       </div>
 
@@ -395,8 +423,16 @@ function InboxTab() {
                               </>)
                             }
                             if (isPersonal && isIncome) {
+                              if (bankAcct === '2100') {
+                                // Personal bank: DR Director Loan / CR income category
+                                return (<>
+                                  <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">Director Loan (2100)</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                                  <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">{catName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                                </>)
+                              }
+                              // Company bank: DR bank / CR Director Loan
                               return (<>
-                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">Bank (1000)</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">{bankName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
                                 <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">Director Loan (2100)</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
                               </>)
                             }
@@ -416,7 +452,7 @@ function InboxTab() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
-                        {(tx.status === 'categorized' || tx.category) && (
+                        {tx.category && tx.category !== 'DISCARD' && tx.status !== 'posted' && tx.status !== 'ignored' && (
                           <button onClick={() => handlePost(tx.id)}
                             className="flex items-center gap-1 rounded-lg bg-green-500/10 px-3 py-1.5 text-xs text-green-400 hover:bg-green-500/20">
                             <Check size={12} /> Post to Ledger
@@ -581,8 +617,15 @@ function ReportsTab() {
         <div className="space-y-4 rounded-lg bg-surface-container/30 p-5 backdrop-blur-sm">
           <Section label="ASSETS" items={data.assets?.map((a: any) => ({ ...a, amount_cents: a.balance_cents }))} total={data.total_assets_cents} />
           <Section label="LIABILITIES" items={data.liabilities?.map((l: any) => ({ ...l, amount_cents: l.balance_cents }))} total={data.total_liabilities_cents} />
+          {data.equity && data.equity.length > 0 && (
+            <Section label="EQUITY" items={data.equity.map((e: any) => ({ ...e, amount_cents: e.balance_cents }))} total={data.total_equity_cents} color="text-gold" />
+          )}
           <div className="flex justify-between border-t border-white/10 pt-3 text-base font-semibold">
-            <span>Net Position</span><span>{cents(data.net_position_cents)}</span>
+            <span>Net Position</span>
+            <span className={cn(data.balanced ? 'text-green-400' : 'text-error')}>
+              {cents(data.net_position_cents)}
+              {data.balanced && <span className="ml-2 text-xs font-normal text-green-400/50">balanced</span>}
+            </span>
           </div>
         </div>
       )}
@@ -700,6 +743,15 @@ function RulesTab() {
                 value={(form as any)[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} />
             </div>
           ))}
+          <div>
+            <label className="mb-1 block text-[10px] uppercase tracking-wider text-on-surface-muted/40">GST Treatment</label>
+            <select value={form.gst_treatment} onChange={e => setForm({ ...form, gst_treatment: e.target.value })}
+              className="w-full rounded bg-surface-container/60 px-2 py-1.5 text-xs text-on-surface outline-none">
+              <option value="gst_inclusive">GST Inclusive (1/11)</option>
+              <option value="gst_free">GST Free (international)</option>
+              <option value="no_gst">No GST (personal/exempt)</option>
+            </select>
+          </div>
           <button onClick={handleCreate} className="col-span-2 w-fit rounded-lg bg-green-500/10 px-4 py-1.5 text-xs text-green-400 hover:bg-green-500/20">Save</button>
         </div>
       )}

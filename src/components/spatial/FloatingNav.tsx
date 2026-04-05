@@ -23,7 +23,7 @@ const SCENE_WORKERS: Record<string, string[]> = {
   crm: [],
   bookkeeping: ['finance'],
   codebase: ['codebase_index'],
-  coding: ['factory'],
+  // coding merged into cortex tab — factory workers reflected via cortex scene
   'knowledge-graph': ['kg_consolidation', 'kg_embedding'],
   momentum: [],
   settings: ['google_drive', 'vercel', 'meta'],

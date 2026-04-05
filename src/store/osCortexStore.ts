@@ -12,6 +12,7 @@ interface OSCortexStore {
   workspace: string
   workspaces: OSWorkspace[]
   loading: Record<string, boolean>  // per-workspace loading state
+  panelOpen: boolean  // context panel visibility
 
   // Each workspace has its own independent chat
   chats: Record<string, WorkspaceChat>
@@ -25,6 +26,7 @@ interface OSCortexStore {
   setMode: (mode: 'os' | 'organism') => void
   setWorkspace: (workspace: string) => void
   setWorkspaces: (workspaces: OSWorkspace[]) => void
+  togglePanel: () => void
 
   // Workspace-targeted actions — always write to the specified workspace
   // This prevents async responses from landing in the wrong chat
@@ -71,6 +73,7 @@ export const useOSCortexStore = create<OSCortexStore>()(persist((set, get) => ({
   workspace: 'bookkeeping',
   workspaces: [],
   loading: {},
+  panelOpen: true,
   chats: {},
 
   getMessages: () => getChatFor(get(), get().workspace).messages,
@@ -80,6 +83,7 @@ export const useOSCortexStore = create<OSCortexStore>()(persist((set, get) => ({
   setMode: (mode) => set({ mode }),
   setWorkspace: (workspace) => set({ workspace }),
   setWorkspaces: (workspaces) => set({ workspaces }),
+  togglePanel: () => set(s => ({ panelOpen: !s.panelOpen })),
 
   // ── Targeted actions (async-safe) ──
 
@@ -126,6 +130,7 @@ export const useOSCortexStore = create<OSCortexStore>()(persist((set, get) => ({
       workspace: state.workspace,
       chats: state.chats,
       mode: state.mode,
+      panelOpen: state.panelOpen,
     }),
   },
 ))

@@ -12,6 +12,8 @@ export const postStaged = (id: string) =>
 export const batchPost = () => client.post('/bookkeeping/staged/batch-post').then(r => r.data)
 export const ignoreStaged = (id: string) =>
   client.post(`/bookkeeping/staged/${id}/ignore`).then(r => r.data)
+export const discardStaged = (id: string, learn = false) =>
+  client.post(`/bookkeeping/staged/${id}/discard${learn ? '?learn=true' : ''}`).then(r => r.data)
 
 // ── Ingest ──
 export const uploadCSV = async (file: File, sourceAccount = '1000') => {

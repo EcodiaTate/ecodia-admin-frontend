@@ -60,3 +60,28 @@ export async function getCodeRequests(status?: string) {
   const { data } = await api.get('/coding/requests', { params: { status } })
   return data
 }
+
+export async function confirmCodeRequest(id: string, promptOverride?: string) {
+  const { data } = await api.post(`/coding/requests/${id}/confirm`, { promptOverride })
+  return data
+}
+
+export async function rejectCodeRequest(id: string, reason?: string) {
+  const { data } = await api.post(`/coding/requests/${id}/reject`, { reason })
+  return data
+}
+
+export async function getCodingHealth() {
+  const { data } = await api.get('/coding/health')
+  return data
+}
+
+export async function getClientSessions(clientId: string) {
+  const { data } = await api.get(`/crm/clients/${clientId}/sessions`)
+  return data
+}
+
+export async function getClientCodingSummary(clientId: string) {
+  const { data } = await api.get(`/crm/clients/${clientId}/coding-summary`)
+  return data
+}
