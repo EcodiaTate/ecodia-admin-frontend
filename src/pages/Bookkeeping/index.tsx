@@ -268,6 +268,16 @@ function InboxTab() {
                 <span className="w-14 text-[11px] text-on-surface-muted/50 flex-shrink-0">{formatDate(tx.occurred_at)}</span>
                 <div className="flex-1 min-w-0">
                   <div className="truncate text-sm text-on-surface">{tx.description}</div>
+                  {tx.category && tx.category !== 'DISCARD' && (tx.status === 'posted' || tx.status === 'categorized') && (
+                    <div className="text-[10px] text-on-surface-muted/40 mt-0.5">
+                      DR {tx.is_personal && !tx.amount_cents?.toString().startsWith('-') ? 'Bank' : (tx.is_personal ? 'Director Loan' : (accounts.find((a: any) => a.code === tx.category)?.name || tx.category))}
+                      {' → '}
+                      CR {tx.source_account === '2100' ? 'Director Loan' : 'Bank'}
+                    </div>
+                  )}
+                  {tx.category === 'DISCARD' && (
+                    <div className="text-[10px] text-on-surface-muted/30 mt-0.5">Discarded — personal, not in books</div>
+                  )}
                 </div>
                 <span className={cn('text-sm font-medium tabular-nums flex-shrink-0', amt > 0 ? 'text-green-400' : 'text-on-surface')}>
                   {amt > 0 ? '+' : ''}{cents(amt)}
