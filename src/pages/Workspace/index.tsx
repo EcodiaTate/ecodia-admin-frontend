@@ -26,21 +26,11 @@ export default function WorkspacePage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <SpatialLayer z={25} className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
-            Connected Systems
-          </span>
-          <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-            External <em className="not-italic font-normal text-primary">Workspace</em>
-          </h1>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 sm:pt-2">
-          {workers.google_drive && <AmbientPulse label="Drive" lastSyncAt={workers.google_drive.lastSync} status={workers.google_drive.status} />}
-          {workers.vercel && <AmbientPulse label="Vercel" lastSyncAt={workers.vercel.lastSync} status={workers.vercel.status} />}
-          {workers.meta && <AmbientPulse label="Meta" lastSyncAt={workers.meta.lastSync} status={workers.meta.status} />}
-        </div>
-      </SpatialLayer>
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        {workers.google_drive && <AmbientPulse label="Drive" lastSyncAt={workers.google_drive.lastSync} status={workers.google_drive.status} />}
+        {workers.vercel && <AmbientPulse label="Vercel" lastSyncAt={workers.vercel.lastSync} status={workers.vercel.status} />}
+        {workers.meta && <AmbientPulse label="Meta" lastSyncAt={workers.meta.lastSync} status={workers.meta.status} />}
+      </div>
 
       <SpatialLayer z={10} className="mb-8 flex items-center gap-1 rounded-2xl bg-surface-container-low/50 p-1 w-fit">
         {tabs.map(({ key, label, icon: Icon }) => (

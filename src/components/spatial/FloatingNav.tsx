@@ -21,12 +21,11 @@ const SCENE_WORKERS: Record<string, string[]> = {
   gmail: ['gmail'],
   linkedin: ['linkedin'],
   crm: [],
-  finance: ['finance'],
-  workspace: ['google_drive', 'vercel', 'meta'],
+  bookkeeping: ['finance'],
   codebase: ['codebase_index'],
   'knowledge-graph': ['kg_consolidation', 'kg_embedding'],
-  settings: [],
-  'factory-dev': [],
+  momentum: [],
+  settings: ['google_drive', 'vercel', 'meta'],
 }
 
 type GlyphState = 'idle' | 'attention' | 'active' | 'error' | 'completed'
@@ -37,7 +36,7 @@ function useGlyphState(sceneKey: string): { state: GlyphState; detail: string } 
 
   return useMemo(() => {
     // Factory/codebase: check for running CC sessions
-    if (sceneKey === 'codebase' || sceneKey === 'cortex' || sceneKey === 'factory-dev') {
+    if (sceneKey === 'codebase' || sceneKey === 'cortex' || sceneKey === 'settings') {
       const running = Array.from(inlineSessions.values()).filter(
         (s) => s.status === 'running' || s.status === 'initializing',
       )

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getKGStats, getKGNode, getKGNeighborhood, getKGBriefing, getConsolidationStats } from '@/api/knowledgeGraph'
 import { getClients } from '@/api/crm'
@@ -8,11 +8,13 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Network, Sparkles, ArrowRight, BookOpen, Users, Brain, GitMerge } from 'lucide-react'
+import { Search, Network, Sparkles, ArrowRight, BookOpen, Users, Brain, GitMerge, Waypoints } from 'lucide-react'
 import { cn, formatRelative } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
-type Tab = 'explore' | 'archive' | 'synthesis'
+const KGExplorerView = lazy(() => import('../KGExplorer'))
+
+type Tab = 'explore' | 'visualize' | 'archive' | 'synthesis'
 
 const glide = { type: 'spring' as const, stiffness: 90, damping: 20, mass: 1 }
 
@@ -65,6 +67,7 @@ export default function KnowledgeGraphPage() {
 
   const tabs: { key: Tab; label: string; icon: typeof Network }[] = [
     { key: 'explore', label: 'Explore', icon: Network },
+    { key: 'visualize', label: 'Visualize', icon: Waypoints },
     { key: 'archive', label: 'Archive', icon: BookOpen },
     { key: 'synthesis', label: 'Synthesis', icon: GitMerge },
   ]
@@ -172,6 +175,12 @@ export default function KnowledgeGraphPage() {
               handleSearch={handleSearch}
               exploreNode={exploreNode}
             />
+          </motion.div>
+        ) : tab === 'visualize' ? (
+          <motion.div key="visualize" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
+            <Suspense fallback={<LoadingSpinner />}>
+              <KGExplorerView embedded />
+            </Suspense>
           </motion.div>
         ) : tab === 'archive' ? (
           <motion.div key="archive" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>

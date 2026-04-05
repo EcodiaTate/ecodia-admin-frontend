@@ -10,18 +10,23 @@ import {
   getAccounts,
   cents,
 } from '@/api/bookkeeping'
+import { getFinanceSummary } from '@/api/finance'
+import { CategoryChart } from '../Finance/CategoryChart'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
+import { AmbientPulse } from '@/components/spatial/AmbientPulse'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
-import { cn } from '@/lib/utils'
+import { useWorkerStatus } from '@/hooks/useWorkerStatus'
+import { cn, formatCurrency } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Receipt, BookOpen, FileSpreadsheet, Scale, Landmark, ListFilter, Upload, Zap,
-  Check, X, User, ChevronDown,
+  Check, X, User, ChevronDown, TrendingUp, TrendingDown, CircleDollarSign,
 } from 'lucide-react'
+import type { WorkerStatus } from '@/store/workerStore'
 
 const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
 
-type Tab = 'inbox' | 'ledger' | 'reports' | 'director-loan' | 'rules'
+type Tab = 'overview' | 'inbox' | 'ledger' | 'reports' | 'director-loan' | 'rules'
 
 function quarter(): [string, string] {
   const now = new Date()
@@ -31,16 +36,18 @@ function quarter(): [string, string] {
 }
 
 export default function BookkeepingPage() {
-  const [tab, setTab] = useState<Tab>('inbox')
+  const [tab, setTab] = useState<Tab>('overview')
   const { data: counts } = useQuery({ queryKey: ['bk-counts'], queryFn: getStagedCounts })
   const { data: loan } = useQuery({ queryKey: ['bk-loan'], queryFn: getDirectorLoanBalance })
   const { data: gst } = useQuery({
     queryKey: ['bk-gst'],
     queryFn: () => { const [s, e] = quarter(); return getGSTSummary(s, e) },
   })
+  const financeWorker = useWorkerStatus('finance') as WorkerStatus | null
 
   const pending = (counts?.pending || 0) + (counts?.flagged || 0)
   const tabs: { key: Tab; label: string; icon: any }[] = [
+    { key: 'overview', label: 'Overview', icon: CircleDollarSign },
     { key: 'inbox', label: 'Inbox', icon: Receipt },
     { key: 'ledger', label: 'Ledger', icon: BookOpen },
     { key: 'reports', label: 'Reports', icon: FileSpreadsheet },
@@ -53,16 +60,21 @@ export default function BookkeepingPage() {
       <SpatialLayer z={25} className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted/60">
-            Double-Entry Ledger
+            Financial Ledger
           </span>
           <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-            Book<em className="not-italic font-normal text-gold">keeper</em>
+            Financial <em className="not-italic font-normal text-gold">Ecosystem</em>
           </h1>
         </div>
-        <div className="flex gap-4">
-          <WhisperStat label="Pending" value={String(pending)} icon={Receipt} />
-          {loan && <WhisperStat label={loan.direction === 'company_owes_tate' ? 'Co → Tate' : 'Tate → Co'} value={cents(Math.abs(loan.balance_cents))} icon={Scale} />}
-          {gst && <WhisperStat label={gst.direction === 'owe_ato' ? 'Owe ATO' : 'ATO Refund'} value={cents(Math.abs(gst.net))} icon={Landmark} />}
+        <div className="flex items-center gap-4">
+          <div className="flex gap-4">
+            <WhisperStat label="Pending" value={String(pending)} icon={Receipt} />
+            {loan && <WhisperStat label={loan.direction === 'company_owes_tate' ? 'Co → Tate' : 'Tate → Co'} value={cents(Math.abs(loan.balance_cents))} icon={Scale} />}
+            {gst && <WhisperStat label={gst.direction === 'owe_ato' ? 'Owe ATO' : 'ATO Refund'} value={cents(Math.abs(gst.net))} icon={Landmark} />}
+          </div>
+          {financeWorker && (
+            <AmbientPulse label="Xero" lastSyncAt={financeWorker.lastSync} status={financeWorker.status} />
+          )}
         </div>
       </SpatialLayer>
 
@@ -87,6 +99,7 @@ export default function BookkeepingPage() {
 
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={glide}>
+          {tab === 'overview' && <OverviewTab />}
           {tab === 'inbox' && <InboxTab />}
           {tab === 'ledger' && <LedgerTab />}
           {tab === 'reports' && <ReportsTab />}
@@ -95,6 +108,60 @@ export default function BookkeepingPage() {
         </motion.div>
       </AnimatePresence>
     </div>
+  )
+}
+
+// ══════���════════════════════════════════════════════════════════════════
+// OVERVIEW TAB (consolidated from Finance page)
+// ═══════════���═════════════════════════════��═════════════════════════════
+
+function OverviewTab() {
+  const { data: summary } = useQuery({ queryKey: ['financeSummary'], queryFn: getFinanceSummary })
+  const net = summary?.net ?? 0
+
+  return (
+    <SpatialLayer z={18}>
+      {/* Hero net */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={glide}
+        className="mb-12 text-center sm:text-left md:pl-6"
+      >
+        <p className={cn(
+          'font-display text-4xl font-light tabular-nums sm:text-display-lg',
+          net >= 0 ? 'text-secondary' : 'text-error',
+        )}>
+          {formatCurrency(net)}
+        </p>
+        <span className="mt-2 block text-label-sm uppercase tracking-[0.08em] text-on-surface-muted/40">
+          Net · month to date
+        </span>
+      </motion.div>
+
+      {/* Whisper stats */}
+      <div className="mb-14 flex flex-wrap gap-6 sm:gap-10 md:justify-end">
+        <WhisperStat
+          label="Income"
+          value={formatCurrency(summary?.income ?? 0)}
+          icon={TrendingUp}
+          accent="text-secondary"
+          subtext="Month to date"
+        />
+        <WhisperStat
+          label="Expenses"
+          value={formatCurrency(summary?.expenses ?? 0)}
+          icon={TrendingDown}
+          accent="text-tertiary"
+          subtext="Month to date"
+        />
+      </div>
+
+      {/* Chart */}
+      <div className="mx-auto max-w-md md:max-w-lg">
+        <CategoryChart />
+      </div>
+    </SpatialLayer>
   )
 }
 

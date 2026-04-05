@@ -460,7 +460,7 @@ function DetailPanel({
 
 // ── Main Page ────────────────────────────────────────────────────────
 
-export default function KGExplorerPage() {
+export default function KGExplorerPage({ embedded = false }: { embedded?: boolean } = {}) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<KGSearchResult[]>([])
   const [searching, setSearching] = useState(false)
@@ -555,31 +555,33 @@ export default function KGExplorerPage() {
   return (
     <div className={cn(
       'mx-auto',
-      fullscreen ? 'fixed inset-0 z-50 bg-surface p-4' : 'max-w-7xl',
+      fullscreen ? 'fixed inset-0 z-50 bg-surface p-4' : embedded ? 'max-w-7xl' : 'max-w-7xl',
     )}>
-      {/* Header */}
-      <SpatialLayer z={25} className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
-            Visual Explorer
-          </span>
-          <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
-            Knowledge <em className="not-italic font-normal text-gold">Graph</em>
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-4 sm:pt-4">
-          {stats && (
-            <span className="text-label-sm text-on-surface-muted/40">
-              {stats.totalNodes.toLocaleString()} nodes / {stats.totalRelationships.toLocaleString()} edges
+      {/* Header — hidden when embedded as a tab */}
+      {!embedded && (
+        <SpatialLayer z={25} className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
+              Visual Explorer
             </span>
-          )}
-          <div className={cn(
-            'h-2.5 w-2.5 rounded-full',
-            status?.connected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]' : 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.4)]',
-          )} />
-        </div>
-      </SpatialLayer>
+            <h1 className="mt-3 font-display text-2xl font-light text-on-surface sm:text-display-md">
+              Knowledge <em className="not-italic font-normal text-gold">Graph</em>
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-4 sm:pt-4">
+            {stats && (
+              <span className="text-label-sm text-on-surface-muted/40">
+                {stats.totalNodes.toLocaleString()} nodes / {stats.totalRelationships.toLocaleString()} edges
+              </span>
+            )}
+            <div className={cn(
+              'h-2.5 w-2.5 rounded-full',
+              status?.connected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.4)]' : 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.4)]',
+            )} />
+          </div>
+        </SpatialLayer>
+      )}
 
       {/* Search bar */}
       <SpatialLayer z={15} className="mb-6">
