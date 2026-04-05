@@ -12,6 +12,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useOSCortexStore } from '@/store/osCortexStore'
 import { runOSTask, getWorkspaces, getTask } from '@/api/os'
+import { uploadCSV } from '@/api/bookkeeping'
 import type { OSBlock, OSChatMessage } from '@/types/os'
 import type { AttachedFile } from '@/types/cortex'
 
@@ -311,16 +312,46 @@ export default function OSChat() {
     setAttachments([])
     if (inputRef.current) inputRef.current.style.height = 'auto'
 
-    // If we have text file attachments, prepend their content
+    // Intercept CSV files — ingest directly, don't dump into the prompt
+    const csvFiles = currentAttachments.filter(a => a.name?.toLowerCase().endsWith('.csv') && a.text)
+    const nonCsvAttachments = currentAttachments.filter(a => !a.name?.toLowerCase().endsWith('.csv') || !a.text)
+
     let fullContent = text
-    for (const a of currentAttachments) {
+    const ingestResults: string[] = []
+
+    if (csvFiles.length > 0) {
+      addUserMessage(text || `Importing ${csvFiles.map(a => a.name).join(', ')}...`)
+      setLoading(true)
+
+      for (const csv of csvFiles) {
+        try {
+          // Create a File object from the text content for the upload API
+          const file = new File([csv.text!], csv.name, { type: 'text/csv' })
+          const result = await uploadCSV(file)
+          ingestResults.push(`${csv.name}: ${result.created} imported, ${result.duplicates} duplicates, ${result.total_parsed} parsed`)
+        } catch (err: any) {
+          ingestResults.push(`${csv.name}: import failed — ${err?.response?.data?.error || err?.message || 'unknown error'}`)
+        }
+      }
+
+      // Tell the AI what happened so it can act on the imported transactions
+      fullContent = `${text ? text + '\n\n' : ''}[CSV import results]\n${ingestResults.join('\n')}\n\nPlease review and categorize the imported transactions.`
+    }
+
+    // For non-CSV text files, still append (they're small, like notes)
+    for (const a of nonCsvAttachments) {
       if (a.text) {
         fullContent = `${fullContent}\n\n[File: ${a.name}]\n${a.text}`
       }
     }
 
-    addUserMessage(fullContent || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`)
-    setLoading(true)
+    if (!csvFiles.length) {
+      addUserMessage(fullContent || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`)
+      setLoading(true)
+    } else if (ingestResults.length) {
+      // Show import results immediately
+      addAssistantMessage([{ type: 'text', content: ingestResults.join('\n') }])
+    }
 
     try {
       const result = await runOSTask(
