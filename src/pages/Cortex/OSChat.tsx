@@ -327,7 +327,8 @@ export default function OSChat() {
         try {
           // Create a File object from the text content for the upload API
           const file = new File([csv.text!], csv.name, { type: 'text/csv' })
-          const result = await uploadCSV(file)
+          // Default to personal bank (2100) — most CSV imports are from personal Bank Australia
+          const result = await uploadCSV(file, '2100')
           ingestResults.push(`${csv.name}: ${result.created} imported, ${result.duplicates} duplicates, ${result.total_parsed} parsed`)
         } catch (err: any) {
           ingestResults.push(`${csv.name}: import failed — ${err?.response?.data?.error || err?.message || 'unknown error'}`)

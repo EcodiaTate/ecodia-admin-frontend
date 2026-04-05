@@ -139,7 +139,7 @@ function InboxTab() {
 
   const handleCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return
-    await uploadCSV(file); softRefetch()
+    await uploadCSV(file, '2100'); softRefetch()
   }
 
   const handleCategorize = async (id: string, category: string, isPersonal: boolean) => {

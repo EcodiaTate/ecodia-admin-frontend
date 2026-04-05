@@ -14,9 +14,9 @@ export const ignoreStaged = (id: string) =>
   client.post(`/bookkeeping/staged/${id}/ignore`).then(r => r.data)
 
 // ── Ingest ──
-export const uploadCSV = async (file: File) => {
+export const uploadCSV = async (file: File, sourceAccount = '1000') => {
   const text = await file.text()
-  return client.post('/bookkeeping/ingest/csv', text, {
+  return client.post(`/bookkeeping/ingest/csv?source_account=${sourceAccount}`, text, {
     headers: { 'Content-Type': 'text/plain' },
   }).then(r => r.data)
 }
