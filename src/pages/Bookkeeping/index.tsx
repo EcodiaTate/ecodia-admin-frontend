@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getStagedCounts, getStaged, postStaged, ignoreStaged, batchPost,
-  uploadCSV, importXero, triggerCategorize,
+  uploadCSV, importXero,
   getLedgerTransactions, getTrialBalance,
   getBAS, getPnL, getBalanceSheet, getExpenseBreakdown, getGSTSummary,
   getDirectorLoanBalance,
@@ -11,7 +11,7 @@ import {
 } from '@/api/bookkeeping'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
-import { formatCurrency, cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Receipt, BookOpen, FileSpreadsheet, Scale, Landmark, ListFilter, Upload, RefreshCw, Zap,
@@ -30,7 +30,6 @@ function quarter(): [string, string] {
 
 export default function BookkeepingPage() {
   const [tab, setTab] = useState<Tab>('inbox')
-  const qc = useQueryClient()
   const { data: counts } = useQuery({ queryKey: ['bk-counts'], queryFn: getStagedCounts })
   const { data: loan } = useQuery({ queryKey: ['bk-loan'], queryFn: getDirectorLoanBalance })
   const { data: gst } = useQuery({
