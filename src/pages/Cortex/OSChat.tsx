@@ -155,13 +155,22 @@ function OSUserMessage({ message }: { message: OSChatMessage }) {
 }
 
 function OSAssistantMessage({ message }: { message: OSChatMessage }) {
+  // Filter out action_cards that have a corresponding action_result (already executed)
+  const blocks = message.blocks || []
+  const executedActions = new Set(
+    blocks.filter(b => b.type === 'action_result').map(b => (b as { action: string }).action)
+  )
+  const visibleBlocks = blocks.filter(b =>
+    b.type !== 'action_card' || !executedActions.has((b as { action: string }).action)
+  )
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="py-2 space-y-2"
     >
-      {message.blocks?.map((block, i) => (
+      {visibleBlocks.map((block, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
           <OSBlockRenderer block={block} />
         </motion.div>
