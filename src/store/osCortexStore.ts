@@ -1,25 +1,29 @@
 import { create } from 'zustand'
-import type { OSBlock, OSChatMessage, OSWorkspace, OSTaskSummary } from '@/types/os'
+import type { OSBlock, OSChatMessage, OSWorkspace } from '@/types/os'
+
+interface WorkspaceChat {
+  messages: OSChatMessage[]
+  taskId: string | null
+}
 
 interface OSCortexStore {
-  // State
   mode: 'os' | 'organism'
   workspace: string
-  taskId: string | null
-  messages: OSChatMessage[]
   workspaces: OSWorkspace[]
-  recentTasks: OSTaskSummary[]
   loading: boolean
 
-  // Per-workspace message stash (survives workspace switches and navigation)
-  _stash: Record<string, { messages: OSChatMessage[]; taskId: string | null }>
+  // Each workspace has its own independent chat — fully isolated
+  chats: Record<string, WorkspaceChat>
+
+  // Derived accessors (read from current workspace's chat)
+  getMessages: () => OSChatMessage[]
+  getTaskId: () => string | null
 
   // Actions
   setMode: (mode: 'os' | 'organism') => void
   setWorkspace: (workspace: string) => void
   setTaskId: (taskId: string | null) => void
   setWorkspaces: (workspaces: OSWorkspace[]) => void
-  setRecentTasks: (tasks: OSTaskSummary[]) => void
   setLoading: (loading: boolean) => void
   addUserMessage: (content: string) => string
   addAssistantMessage: (blocks: OSBlock[]) => void
@@ -31,50 +35,52 @@ function generateId() {
   return crypto.randomUUID()
 }
 
+function getChat(state: { chats: Record<string, WorkspaceChat>; workspace: string }): WorkspaceChat {
+  return state.chats[state.workspace] || { messages: [], taskId: null }
+}
+
+function updateChat(
+  state: { chats: Record<string, WorkspaceChat>; workspace: string },
+  update: Partial<WorkspaceChat>,
+): { chats: Record<string, WorkspaceChat> } {
+  const current = getChat(state)
+  return {
+    chats: {
+      ...state.chats,
+      [state.workspace]: { ...current, ...update },
+    },
+  }
+}
+
 export const useOSCortexStore = create<OSCortexStore>((set, get) => ({
   mode: 'os',
   workspace: 'bookkeeping',
-  taskId: null,
-  messages: [],
   workspaces: [],
-  recentTasks: [],
   loading: false,
-  _stash: {},
+  chats: {},
+
+  getMessages: () => getChat(get()).messages,
+  getTaskId: () => getChat(get()).taskId,
 
   setMode: (mode) => set({ mode }),
-
-  setWorkspace: (workspace) => {
-    const state = get()
-    // Stash current workspace's messages
-    const newStash = {
-      ...state._stash,
-      [state.workspace]: { messages: state.messages, taskId: state.taskId },
-    }
-    // Restore target workspace's messages (or start fresh)
-    const restored = newStash[workspace]
-    set({
-      workspace,
-      _stash: newStash,
-      messages: restored?.messages || [],
-      taskId: restored?.taskId || null,
-    })
-  },
-
-  setTaskId: (taskId) => set({ taskId }),
+  setWorkspace: (workspace) => set({ workspace }),
+  setTaskId: (taskId) => set(state => updateChat(state, { taskId })),
   setWorkspaces: (workspaces) => set({ workspaces }),
-  setRecentTasks: (tasks) => set({ recentTasks: tasks }),
   setLoading: (loading) => set({ loading }),
 
   addUserMessage: (content) => {
     const id = generateId()
-    set(state => ({
-      messages: [...state.messages, {
-        id,
-        role: 'user' as const,
-        content,
-        timestamp: new Date(),
-      }],
-    }))
+    set(state => {
+      const chat = getChat(state)
+      return updateChat(state, {
+        messages: [...chat.messages, {
+          id,
+          role: 'user' as const,
+          content,
+          timestamp: new Date(),
+        }],
+      })
+    })
     return id
   },
 
@@ -84,17 +90,20 @@ export const useOSCortexStore = create<OSCortexStore>((set, get) => ({
       .map(b => (b as { content: string }).content)
       .join('\n')
 
-    set(state => ({
-      messages: [...state.messages, {
-        id: generateId(),
-        role: 'assistant' as const,
-        content: textContent || '(actions executed)',
-        blocks,
-        timestamp: new Date(),
-      }],
-    }))
+    set(state => {
+      const chat = getChat(state)
+      return updateChat(state, {
+        messages: [...chat.messages, {
+          id: generateId(),
+          role: 'assistant' as const,
+          content: textContent || '(actions executed)',
+          blocks,
+          timestamp: new Date(),
+        }],
+      })
+    })
   },
 
-  loadHistory: (messages) => set({ messages }),
-  clearMessages: () => set({ messages: [], taskId: null }),
+  loadHistory: (messages) => set(state => updateChat(state, { messages })),
+  clearMessages: () => set(state => updateChat(state, { messages: [], taskId: null })),
 }))

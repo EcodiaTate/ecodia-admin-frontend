@@ -228,7 +228,7 @@ function WorkspaceTabs() {
 
 function SessionControls() {
   const clearMessages = useOSCortexStore(s => s.clearMessages)
-  const messages = useOSCortexStore(s => s.messages)
+  const messages = useOSCortexStore(s => s.getMessages())
 
   if (messages.length === 0) return null
 
@@ -256,8 +256,8 @@ export default function OSChat() {
   const fileInputId = useId()
 
   const workspace = useOSCortexStore(s => s.workspace)
-  const taskId = useOSCortexStore(s => s.taskId)
-  const messages = useOSCortexStore(s => s.messages)
+  const messages = useOSCortexStore(s => s.getMessages())
+  const taskId = useOSCortexStore(s => s.getTaskId())
   const loading = useOSCortexStore(s => s.loading)
   const addUserMessage = useOSCortexStore(s => s.addUserMessage)
   const addAssistantMessage = useOSCortexStore(s => s.addAssistantMessage)
