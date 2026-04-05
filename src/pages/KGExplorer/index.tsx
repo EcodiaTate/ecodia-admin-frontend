@@ -390,8 +390,8 @@ function DetailPanel({
 
         {isLoading && <p className="text-xs text-on-surface-muted/40">Loading...</p>}
 
-        {node?.description && (
-          <p className="text-xs text-on-surface-muted/60 mb-4 leading-relaxed">{node.description as string}</p>
+        {node?.description != null && (
+          <p className="text-xs text-on-surface-muted/60 mb-4 leading-relaxed">{String(node.description)}</p>
         )}
 
         {node?.importance != null && (

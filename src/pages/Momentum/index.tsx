@@ -1,14 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMomentum } from '@/api/momentum'
-import type { MomentumSession } from '@/api/momentum'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
 import { WhisperStat } from '@/components/spatial/WhisperStat'
 import { motion } from 'framer-motion'
 import { formatRelative } from '@/lib/utils'
 import {
-  Flame, GitCommit, FileCode, Rocket, CheckCircle2, XCircle,
-  Brain, Eye, Wrench, Sparkles, Clock, Cpu, HardDrive, Database, Heart,
+  Flame, GitCommit, FileCode, Rocket, CheckCircle2,
+  Brain, Eye, Wrench, Sparkles, Clock, Cpu, HardDrive, Heart,
   RefreshCw, Gauge,
 } from 'lucide-react'
 import { ActivityTimeline } from './ActivityTimeline'
