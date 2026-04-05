@@ -268,6 +268,12 @@ function SessionDetailView({ sessionId, onBack }: { sessionId: string; onBack: (
 
   const liveSession = useCortexStore(s => s.inlineSessions.get(sessionId))
 
+  // All hooks MUST be called before any early return (Rules of Hooks)
+  const stopMutation = useMutation({
+    mutationFn: () => factoryApi.stopSession(sessionId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ccSessions'] }),
+  })
+
   if (isLoading || !apiSession) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3">
@@ -292,11 +298,6 @@ function SessionDetailView({ sessionId, onBack }: { sessionId: string; onBack: (
   const isLive = ['running', 'initializing', 'awaiting_input'].includes(session.status)
   const isResumable = session.status === 'paused' || session.status === 'complete'
   const canMessage = isLive || isResumable
-
-  const stopMutation = useMutation({
-    mutationFn: () => factoryApi.stopSession(session.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ccSessions'] }),
-  })
 
   return (
     <motion.div
