@@ -230,7 +230,7 @@ export function FloatingNav() {
   const location = useLocation()
   const activeKey = getSceneKey(location.pathname)
   const [visible, setVisible] = useState(true)
-  const [pinned, setPinned] = useState(true)
+  const [pinned] = useState(true)
   const [hovered, setHovered] = useState(false)
   const { tiltX, tiltY } = useSpatialContext()
   const navRef = useRef<HTMLElement>(null)
