@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import api from '@/api/client'
 import {
   Users, Inbox, CheckCircle2, AlertTriangle, ChevronRight, ChevronLeft, ChevronDown,
-  Search, Clock, Activity, DollarSign, Mail, Code2, FileText, Check, X, Circle,
+  Search, Clock, Activity, DollarSign, Mail, Code2, FileText, Check, Circle,
 } from 'lucide-react'
 
 // ── API helpers ──────────────────────────────────────────────────────
