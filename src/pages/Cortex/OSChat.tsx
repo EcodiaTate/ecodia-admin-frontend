@@ -11,7 +11,7 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useOSCortexStore } from '@/store/osCortexStore'
-import { runOSTask, getWorkspaces, getTasks } from '@/api/os'
+import { runOSTask, getWorkspaces, getTasks, getTask } from '@/api/os'
 import type { OSBlock, OSChatMessage } from '@/types/os'
 import type { AttachedFile } from '@/types/cortex'
 
@@ -212,11 +212,32 @@ function RecentTasks() {
   const workspace = useOSCortexStore(s => s.workspace)
   const taskId = useOSCortexStore(s => s.taskId)
   const clearMessages = useOSCortexStore(s => s.clearMessages)
+  const loadHistory = useOSCortexStore(s => s.loadHistory)
+  const setTaskId = useOSCortexStore(s => s.setTaskId)
   const { data: tasks } = useQuery({
     queryKey: ['os-tasks', workspace],
     queryFn: () => getTasks(workspace),
     staleTime: 10_000,
   })
+
+  const loadTask = useCallback(async (id: string) => {
+    setTaskId(id)
+    try {
+      const task = await getTask(id)
+      if (task?.history) {
+        const msgs: OSChatMessage[] = task.history
+          .filter((t: { role: string; content: string }) => t.role === 'user' || t.role === 'assistant')
+          .map((t: { role: string; content: string; blocks?: OSBlock[]; ts?: string }) => ({
+            id: crypto.randomUUID(),
+            role: t.role as 'user' | 'assistant',
+            content: t.content || '',
+            blocks: t.blocks,
+            timestamp: t.ts ? new Date(t.ts) : new Date(),
+          }))
+        loadHistory(msgs)
+      }
+    } catch { /* task might not exist anymore */ }
+  }, [setTaskId, loadHistory])
 
   const activeTasks = (tasks || []).filter(t => t.status === 'active' || t.status === 'paused').slice(0, 5)
   if (activeTasks.length === 0) return null
@@ -234,7 +255,7 @@ function RecentTasks() {
       {activeTasks.map(t => (
         <button
           key={t.id}
-          onClick={() => useOSCortexStore.getState().setTaskId(t.id)}
+          onClick={() => loadTask(t.id)}
           className={`flex-shrink-0 rounded-lg px-2.5 py-1 text-[10px] transition-all truncate max-w-[160px] ${
             taskId === t.id ? 'bg-surface-container text-on-surface-variant' : 'text-on-surface-muted/40 hover:text-on-surface-muted/60'
           }`}
