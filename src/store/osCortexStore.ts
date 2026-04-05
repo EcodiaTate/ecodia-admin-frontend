@@ -30,7 +30,7 @@ function generateId() {
 
 export const useOSCortexStore = create<OSCortexStore>((set) => ({
   mode: 'os',
-  workspace: 'bookkeeping',
+  workspace: 'bookkeeping',  // default to bookkeeping since that's the priority
   taskId: null,
   messages: [],
   workspaces: [],
