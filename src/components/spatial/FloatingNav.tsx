@@ -230,6 +230,7 @@ export function FloatingNav() {
   const location = useLocation()
   const activeKey = getSceneKey(location.pathname)
   const [visible, setVisible] = useState(true)
+  const [pinned, setPinned] = useState(true)
   const [hovered, setHovered] = useState(false)
   const { tiltX, tiltY } = useSpatialContext()
   const navRef = useRef<HTMLElement>(null)
@@ -248,10 +249,10 @@ export function FloatingNav() {
   }, [handleMouseMove])
 
   useEffect(() => {
-    if (hovered) { setVisible(true); return }
+    if (pinned || hovered) { setVisible(true); return }
     const timer = setTimeout(() => setVisible(false), 4000)
     return () => clearTimeout(timer)
-  }, [hovered, location.pathname])
+  }, [pinned, hovered, location.pathname])
 
   useEffect(() => { setVisible(true) }, [location.pathname])
 
@@ -273,10 +274,10 @@ export function FloatingNav() {
           rotateY: navRotateY,
           rotateX: navRotateX,
           transformPerspective: 800,
-          backgroundColor: 'rgba(255, 255, 255, 0.30)',
-          boxShadow: '0 24px 60px -16px rgba(27, 122, 61, 0.04)',
+          backgroundColor: 'rgba(255, 255, 255, 0.50)',
+          boxShadow: '0 24px 60px -16px rgba(27, 122, 61, 0.06)',
         }}
-        animate={{ opacity: visible || hovered ? 1 : hasElevated ? 0.3 : 0.06 }}
+        animate={{ opacity: visible || hovered || pinned ? 1 : hasElevated ? 0.3 : 0.06 }}
         transition={{ type: 'spring', stiffness: 60, damping: 20 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -285,8 +286,8 @@ export function FloatingNav() {
         <NavTendrils activeKey={activeKey} navRef={navRef} />
 
         <motion.span
-          className="mb-2 font-display text-[8px] font-medium uppercase tracking-[0.3em] text-on-surface-muted/40"
-          animate={{ opacity: visible || hovered ? 0.4 : 0 }}
+          className="mb-2 font-display text-[8px] font-medium uppercase tracking-[0.3em] text-on-surface-muted/70"
+          animate={{ opacity: visible || hovered ? 0.7 : 0 }}
           transition={{ type: 'spring', stiffness: 70, damping: 18 }}
         >
           EOS
@@ -320,7 +321,7 @@ export function FloatingNav() {
               to={scene.path}
               className={cn(
                 'relative flex flex-col items-center gap-0.5 rounded-2xl px-3 py-2',
-                isActive ? 'text-primary' : 'text-on-surface-muted/40',
+                isActive ? 'text-primary' : 'text-on-surface-muted/70',
               )}
             >
               {isActive && (
@@ -388,8 +389,8 @@ function NavGlyph({
           isActive
             ? 'text-primary'
             : hasElevatedState
-              ? 'text-on-surface-muted/60'
-              : 'text-on-surface-muted/40 hover:text-on-surface-variant',
+              ? 'text-on-surface-muted/90'
+              : 'text-on-surface-muted/70 hover:text-on-surface-variant',
         )}
         animate={{
           opacity: !visible && !isActive && !hasElevatedState ? 0.3 : 1,
