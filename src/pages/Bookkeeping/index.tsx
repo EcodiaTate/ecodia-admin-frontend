@@ -211,6 +211,14 @@ function InboxTab() {
                   </span>
                 )}
                 {tx.is_personal && <User size={12} className="text-gold/60 flex-shrink-0" />}
+                {['pending', 'flagged', 'categorized'].includes(tx.status) && (
+                  <button
+                    onClick={e => { e.stopPropagation(); handleIgnore(tx.id) }}
+                    className="rounded-md px-1.5 py-0.5 text-on-surface-muted/25 hover:text-on-surface-muted/60 hover:bg-surface-container transition-colors flex-shrink-0"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
                 <ChevronDown size={14} className={cn('text-on-surface-muted/30 flex-shrink-0 transition-transform', expanded && 'rotate-180')} />
               </div>
 
