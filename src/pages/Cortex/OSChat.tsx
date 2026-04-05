@@ -325,7 +325,8 @@ export default function OSChat() {
 
       addAssistantMessage(result.blocks)
     } catch (err: any) {
-      const detail = err?.response?.data?.error || err?.message || 'Unknown error'
+      const upstream = err?.response?.data?.upstream ? ` | ${JSON.stringify(err.response.data.upstream)}` : ''
+      const detail = (err?.response?.data?.error || err?.message || 'Unknown error') + upstream
       addAssistantMessage([{ type: 'text', content: `Error: ${detail}` }])
     } finally {
       setLoading(false)
