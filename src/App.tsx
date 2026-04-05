@@ -7,19 +7,15 @@ import { motion } from 'framer-motion'
 
 // ─── Code-split every route-level page ──────────────────────────────────
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
-const FinancePage = lazy(() => import('./pages/Finance'))
 const GmailPage = lazy(() => import('./pages/Gmail'))
 const LinkedInPage = lazy(() => import('./pages/LinkedIn'))
 const CRMPage = lazy(() => import('./pages/CRM'))
 const CortexPage = lazy(() => import('./pages/Cortex'))
-const WorkspacePage = lazy(() => import('./pages/Workspace'))
 const SettingsPage = lazy(() => import('./pages/Settings'))
 const KnowledgeGraphPage = lazy(() => import('./pages/KnowledgeGraph'))
-const KGExplorerPage = lazy(() => import('./pages/KGExplorer'))
 const CodebasePage = lazy(() => import('./pages/Codebase'))
 const MomentumPage = lazy(() => import('./pages/Momentum'))
 const LoginPage = lazy(() => import('./pages/Login'))
-const FactoryDevPage = lazy(() => import('./pages/FactoryDev'))
 const BookkeepingPage = lazy(() => import('./pages/Bookkeeping'))
 
 /** Ambient loading state — a soft breathing glow, not a spinner */
@@ -74,20 +70,22 @@ export default function App() {
         >
           <Route index element={<Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={<Scene name="Atmospheric Vitals"><DashboardPage /></Scene>} />
-          <Route path="/finance" element={<Scene name="Financial Ecosystem"><FinancePage /></Scene>} />
           <Route path="/gmail" element={<Scene name="Digital Curator"><GmailPage /></Scene>} />
           <Route path="/linkedin" element={<Scene name="Social Resonance"><LinkedInPage /></Scene>} />
           <Route path="/crm" element={<Scene name="Flow State"><CRMPage /></Scene>} />
           <Route path="/crm/:clientId" element={<Scene name="Flow State"><CRMPage /></Scene>} />
           <Route path="/cortex" element={<Scene name="Cortex"><CortexPage /></Scene>} />
-          <Route path="/workspace" element={<Scene name="Surfaces"><WorkspacePage /></Scene>} />
           <Route path="/codebase" element={<Scene name="Codebase Mind"><CodebasePage /></Scene>} />
           <Route path="/knowledge-graph" element={<Scene name="Knowledge Graph"><KnowledgeGraphPage /></Scene>} />
-          <Route path="/kg-explorer" element={<Scene name="KG Explorer"><KGExplorerPage /></Scene>} />
           <Route path="/momentum" element={<Scene name="Momentum"><MomentumPage /></Scene>} />
           <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
-          <Route path="/factory-dev" element={<Scene name="Factory Dev"><FactoryDevPage /></Scene>} />
-          <Route path="/bookkeeping" element={<Scene name="Bookkeeper"><BookkeepingPage /></Scene>} />
+          <Route path="/bookkeeping" element={<Scene name="Ledger"><BookkeepingPage /></Scene>} />
+          {/* Redirects for consolidated pages */}
+          <Route path="/finance" element={<Navigate to="/bookkeeping" replace />} />
+          <Route path="/kg-explorer" element={<Navigate to="/knowledge-graph" replace />} />
+          <Route path="/workspace" element={<Navigate to="/settings" replace />} />
+          <Route path="/factory-dev" element={<Navigate to="/settings" replace />} />
+          <Route path="/claude-code" element={<Navigate to="/settings" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

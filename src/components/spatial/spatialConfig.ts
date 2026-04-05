@@ -4,13 +4,9 @@ import {
   Mail,
   Linkedin,
   Users,
-  Terminal,
   Brain,
-  Layers,
-  CircleDollarSign,
   Network,
   Code2,
-  Database,
   Flame,
   BookOpen,
   type LucideIcon,
@@ -126,63 +122,17 @@ export const SCENES: Record<string, SceneConfig> = {
       ],
     },
   },
-  // Gold dominant — money flows
-  finance: {
-    path: '/finance',
-    label: 'Finance',
-    icon: CircleDollarSign,
+  // Warm gold with green undertone — ledger precision (consolidated Finance + Bookkeeping)
+  bookkeeping: {
+    path: '/bookkeeping',
+    label: 'Ledger',
+    icon: BookOpen,
     position: { x: 0, y: 1, z: 0 },
     aurora: {
       orbs: [
         { color: 'rgba(200, 145, 10, 0.10)', x: '55%', y: '35%', size: '75%' },
         { color: 'rgba(245, 200, 66, 0.06)', x: '25%', y: '70%', size: '55%' },
         { color: 'rgba(46, 204, 113, 0.04)', x: '80%', y: '80%', size: '45%' },
-      ],
-    },
-  },
-  // Warm gold with green undertone — ledger precision
-  bookkeeping: {
-    path: '/bookkeeping',
-    label: 'Books',
-    icon: BookOpen,
-    position: { x: 1, y: 2, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(200, 145, 10, 0.08)', x: '40%', y: '45%', size: '70%' },
-        { color: 'rgba(46, 204, 113, 0.06)', x: '70%', y: '30%', size: '55%' },
-        { color: 'rgba(245, 200, 66, 0.04)', x: '25%', y: '75%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Surfaces: connected platforms ──
-  // Split green/gold — bridging worlds
-  workspace: {
-    path: '/workspace',
-    label: 'Surfaces',
-    icon: Layers,
-    position: { x: -1, y: -1, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(46, 204, 113, 0.06)', x: '30%', y: '40%', size: '65%' },
-        { color: 'rgba(200, 145, 10, 0.06)', x: '70%', y: '60%', size: '60%' },
-        { color: 'rgba(27, 122, 61, 0.03)', x: '50%', y: '20%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Action: autonomous execution ──
-  // Intense emerald — machine precision
-  'claude-code': {
-    path: '/claude-code',
-    label: 'Factory',
-    icon: Terminal,
-    position: { x: 1, y: 1, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(27, 122, 61, 0.09)', x: '55%', y: '45%', size: '70%' },
-        { color: 'rgba(46, 204, 113, 0.06)', x: '30%', y: '70%', size: '55%' },
-        { color: 'rgba(200, 145, 10, 0.03)', x: '80%', y: '20%', size: '40%' },
       ],
     },
   },
@@ -203,23 +153,7 @@ export const SCENES: Record<string, SceneConfig> = {
     },
   },
 
-  // ── KG Explorer: direct Cypher access ──
-  // Cool teal/green — technical depth, raw graph access
-  'kg-explorer': {
-    path: '/kg-explorer',
-    label: 'Explorer',
-    icon: Database,
-    position: { x: -2, y: 2, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(27, 122, 61, 0.07)', x: '35%', y: '45%', size: '65%' },
-        { color: 'rgba(46, 204, 113, 0.05)', x: '65%', y: '30%', size: '55%' },
-        { color: 'rgba(200, 145, 10, 0.03)', x: '50%', y: '75%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Memory: world model + archive ──
+  // ── Memory: world model + archive (consolidated KG + Explorer) ──
   // Deep dual — the oldest layers of the organism
   'knowledge-graph': {
     path: '/knowledge-graph',
@@ -251,7 +185,7 @@ export const SCENES: Record<string, SceneConfig> = {
     },
   },
 
-  // ── Infrastructure: system internals ──
+  // ── Infrastructure: system internals (consolidated Settings + Workspace + Factory) ──
   // Subtle, muted — infrastructure hum
   settings: {
     path: '/settings',
