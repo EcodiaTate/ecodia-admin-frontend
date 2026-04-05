@@ -11,7 +11,7 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useOSCortexStore } from '@/store/osCortexStore'
-import { runOSTask, getWorkspaces, getTasks, getTask } from '@/api/os'
+import { runOSTask, getWorkspaces, getTask } from '@/api/os'
 import type { OSBlock, OSChatMessage } from '@/types/os'
 import type { AttachedFile } from '@/types/cortex'
 
@@ -208,61 +208,20 @@ function WorkspaceTabs() {
 
 // ─── Recent Tasks ────────────────────────────────────────────────────
 
-function RecentTasks() {
-  const workspace = useOSCortexStore(s => s.workspace)
-  const taskId = useOSCortexStore(s => s.taskId)
+function SessionControls() {
   const clearMessages = useOSCortexStore(s => s.clearMessages)
-  const loadHistory = useOSCortexStore(s => s.loadHistory)
-  const setTaskId = useOSCortexStore(s => s.setTaskId)
-  const { data: tasks } = useQuery({
-    queryKey: ['os-tasks', workspace],
-    queryFn: () => getTasks(workspace),
-    staleTime: 10_000,
-  })
+  const messages = useOSCortexStore(s => s.messages)
 
-  const loadTask = useCallback(async (id: string) => {
-    setTaskId(id)
-    try {
-      const task = await getTask(id)
-      if (task?.history) {
-        const msgs: OSChatMessage[] = task.history
-          .filter((t: { role: string; content: string }) => t.role === 'user' || t.role === 'assistant')
-          .map((t: { role: string; content: string; blocks?: OSBlock[]; ts?: string }) => ({
-            id: crypto.randomUUID(),
-            role: t.role as 'user' | 'assistant',
-            content: t.content || '',
-            blocks: t.blocks,
-            timestamp: t.ts ? new Date(t.ts) : new Date(),
-          }))
-        loadHistory(msgs)
-      }
-    } catch { /* task might not exist anymore */ }
-  }, [setTaskId, loadHistory])
-
-  const activeTasks = (tasks || []).filter(t => t.status === 'active' || t.status === 'paused').slice(0, 5)
-  if (activeTasks.length === 0) return null
+  if (messages.length === 0) return null
 
   return (
-    <div className="flex items-center gap-2 px-1 overflow-x-auto scrollbar-none">
+    <div className="flex items-center px-1">
       <button
         onClick={() => clearMessages()}
-        className={`flex-shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-mono transition-all ${
-          !taskId ? 'bg-surface-container text-on-surface-variant' : 'text-on-surface-muted/40 hover:text-on-surface-muted/60'
-        }`}
+        className="rounded-lg px-2.5 py-1 text-[10px] font-mono text-on-surface-muted/40 hover:text-on-surface-muted/60 hover:bg-surface-container transition-all"
       >
-        + new
+        clear
       </button>
-      {activeTasks.map(t => (
-        <button
-          key={t.id}
-          onClick={() => loadTask(t.id)}
-          className={`flex-shrink-0 rounded-lg px-2.5 py-1 text-[10px] transition-all truncate max-w-[160px] ${
-            taskId === t.id ? 'bg-surface-container text-on-surface-variant' : 'text-on-surface-muted/40 hover:text-on-surface-muted/60'
-          }`}
-        >
-          {t.title || t.id.slice(0, 8)}
-        </button>
-      ))}
     </div>
   )
 }
@@ -287,8 +246,30 @@ export default function OSChat() {
   const setTaskId = useOSCortexStore(s => s.setTaskId)
   const setLoading = useOSCortexStore(s => s.setLoading)
 
+  const loadHistory = useOSCortexStore(s => s.loadHistory)
+
   const ghostPrompt = useGhostPrompt(workspace)
   const canSend = (input.trim().length > 0 || attachments.length > 0) && !loading
+
+  // On workspace change: if we have a taskId but no messages, load from backend
+  useEffect(() => {
+    if (taskId && messages.length === 0) {
+      getTask(taskId).then(task => {
+        if (task?.history) {
+          const msgs: OSChatMessage[] = task.history
+            .filter((t: { role: string }) => t.role === 'user' || t.role === 'assistant')
+            .map((t: { role: string; content: string; blocks?: OSBlock[]; ts?: string }) => ({
+              id: crypto.randomUUID(),
+              role: t.role as 'user' | 'assistant',
+              content: t.content || '',
+              blocks: t.blocks,
+              timestamp: t.ts ? new Date(t.ts) : new Date(),
+            }))
+          if (msgs.length > 0) loadHistory(msgs)
+        }
+      }).catch(() => {})
+    }
+  }, [taskId, workspace]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-scroll
   useEffect(() => {
@@ -417,7 +398,7 @@ export default function OSChat() {
       {/* Header: workspace tabs + tasks */}
       <div className="relative z-10 border-b border-black/5 px-6 py-3 space-y-2">
         <WorkspaceTabs />
-        <RecentTasks />
+        <SessionControls />
       </div>
 
       {/* Chat stream */}
