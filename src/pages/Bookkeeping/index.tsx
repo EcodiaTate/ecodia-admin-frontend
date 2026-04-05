@@ -374,6 +374,12 @@ function InboxTab() {
                                 <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">{bankName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
                               </>)
                             }
+                            if (isPersonal && isIncome) {
+                              return (<>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">Bank (1000)</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">Director Loan (2100)</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                              </>)
+                            }
                             if (isIncome) {
                               return (<>
                                 <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">{bankName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
