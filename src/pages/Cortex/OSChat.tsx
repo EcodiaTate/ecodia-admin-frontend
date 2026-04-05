@@ -258,11 +258,8 @@ export default function OSChat() {
   const workspace = useOSCortexStore(s => s.workspace)
   const messages = useOSCortexStore(s => s.getMessages())
   const taskId = useOSCortexStore(s => s.getTaskId())
-  const loading = useOSCortexStore(s => s.loading)
-  const addUserMessage = useOSCortexStore(s => s.addUserMessage)
-  const addAssistantMessage = useOSCortexStore(s => s.addAssistantMessage)
-  const setTaskId = useOSCortexStore(s => s.setTaskId)
-  const setLoading = useOSCortexStore(s => s.setLoading)
+  const loading = useOSCortexStore(s => s.isLoading())
+  const store = useOSCortexStore
 
   const loadHistory = useOSCortexStore(s => s.loadHistory)
 
@@ -310,10 +307,15 @@ export default function OSChat() {
     await handleFiles(files)
   }, [handleFiles])
 
-  // Send
+  // Send — captures workspace at call time so responses go to the right chat
   const handleSend = useCallback(async () => {
     const text = input.trim()
     if (!text && !attachments.length) return
+
+    // Capture workspace + taskId NOW — user might switch tabs while awaiting
+    const sendWs = workspace
+    const sendTaskId = taskId
+    const { addUserMessageTo, addAssistantMessageTo, setTaskIdFor, setLoadingFor } = store.getState()
 
     const currentAttachments = [...attachments]
     setInput('')
@@ -328,14 +330,12 @@ export default function OSChat() {
     const ingestResults: string[] = []
 
     if (csvFiles.length > 0) {
-      addUserMessage(text || `Importing ${csvFiles.map(a => a.name).join(', ')}...`)
-      setLoading(true)
+      addUserMessageTo(sendWs, text || `Importing ${csvFiles.map(a => a.name).join(', ')}...`)
+      setLoadingFor(sendWs, true)
 
       for (const csv of csvFiles) {
         try {
-          // Create a File object from the text content for the upload API
           const file = new File([csv.text!], csv.name, { type: 'text/csv' })
-          // Default to personal bank (2100) — most CSV imports are from personal Bank Australia
           const result = await uploadCSV(file, '2100')
           ingestResults.push(`${csv.name}: ${result.created} imported, ${result.duplicates} duplicates, ${result.total_parsed} parsed`)
         } catch (err: any) {
@@ -343,71 +343,62 @@ export default function OSChat() {
         }
       }
 
-      // Tell the AI what happened so it can act on the imported transactions
       fullContent = `${text ? text + '\n\n' : ''}[CSV import results]\n${ingestResults.join('\n')}\n\nPlease review and categorize the imported transactions.`
     }
 
-    // For non-CSV text files, still append (they're small, like notes)
     for (const a of nonCsvAttachments) {
-      if (a.text) {
-        fullContent = `${fullContent}\n\n[File: ${a.name}]\n${a.text}`
-      }
+      if (a.text) fullContent = `${fullContent}\n\n[File: ${a.name}]\n${a.text}`
     }
 
     if (!csvFiles.length) {
-      addUserMessage(fullContent || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`)
-      setLoading(true)
+      addUserMessageTo(sendWs, fullContent || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`)
+      setLoadingFor(sendWs, true)
     } else if (ingestResults.length) {
-      // Show import results immediately
-      addAssistantMessage([{ type: 'text', content: ingestResults.join('\n') }])
+      addAssistantMessageTo(sendWs, [{ type: 'text', content: ingestResults.join('\n') }])
     }
 
     try {
       const result = await runOSTask(
-        workspace,
+        sendWs,
         [{ role: 'user', content: fullContent }],
-        taskId || undefined,
+        sendTaskId || undefined,
       )
 
-      // Update task ID if new
-      if (result.taskId && result.taskId !== taskId) {
-        setTaskId(result.taskId)
+      if (result.taskId && result.taskId !== sendTaskId) {
+        setTaskIdFor(sendWs, result.taskId)
       }
 
-      addAssistantMessage(result.blocks)
+      addAssistantMessageTo(sendWs, result.blocks)
     } catch (err: any) {
       const isNetworkError = !err?.response && (err?.message === 'Network Error' || err?.code === 'ECONNABORTED' || err?.code === 'ERR_NETWORK')
 
-      if (isNetworkError && taskId) {
-        // Connection dropped (nginx timeout) but backend may still be working.
-        // Poll the task session to get results.
-        addAssistantMessage([{ type: 'text', content: 'Connection timed out — checking if the task completed...' }])
+      if (isNetworkError && sendTaskId) {
+        addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Connection timed out — checking if the task completed...' }])
         try {
-          // Wait a moment then check
           await new Promise(r => setTimeout(r, 3000))
-          const task = await getTask(taskId)
+          const task = await getTask(sendTaskId)
           if (task?.history?.length) {
             const lastAssistant = [...task.history].reverse().find((t: { role: string }) => t.role === 'assistant')
             if (lastAssistant?.blocks) {
-              addAssistantMessage(lastAssistant.blocks)
+              addAssistantMessageTo(sendWs, lastAssistant.blocks)
             } else if (lastAssistant?.content) {
-              addAssistantMessage([{ type: 'text', content: lastAssistant.content }])
+              addAssistantMessageTo(sendWs, [{ type: 'text', content: lastAssistant.content }])
             } else {
-              addAssistantMessage([{ type: 'text', content: 'Task is still running. Send another message to continue.' }])
+              addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Task is still running. Send another message to continue.' }])
             }
           }
         } catch {
-          addAssistantMessage([{ type: 'text', content: 'Still working — send another message to check progress.' }])
+          addAssistantMessageTo(sendWs, [{ type: 'text', content: 'Still working — send another message to check progress.' }])
         }
       } else {
         const upstream = err?.response?.data?.upstream ? ` | ${JSON.stringify(err.response.data.upstream)}` : ''
         const detail = (err?.response?.data?.error || err?.message || 'Unknown error') + upstream
-        addAssistantMessage([{ type: 'text', content: `Error: ${detail}` }])
+        addAssistantMessageTo(sendWs, [{ type: 'text', content: `Error: ${detail}` }])
       }
     } finally {
-      setLoading(false)
+      setLoadingFor(sendWs, false)
     }
-  }, [input, attachments, workspace, taskId, addUserMessage, addAssistantMessage, setTaskId, setLoading])
+  }, [input, attachments, workspace, taskId, store])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
