@@ -18,12 +18,12 @@ import type { AttachedFile } from '@/types/cortex'
 
 // Lazy-loaded workspace context panels — code-split for performance
 const BookkeepingPanel = lazy(() => import('./panels/BookkeepingPanel'))
-const GmailPanel = lazy(() => import('./panels/GmailPanel'))
+const SocialsPanel = lazy(() => import('./panels/SocialsPanel'))
 const CodingWorkspace = lazy(() => import('./CodingWorkspace'))
 
 const WORKSPACE_PANELS: Record<string, React.LazyExoticComponent<() => JSX.Element>> = {
   bookkeeping: BookkeepingPanel,
-  email: GmailPanel,
+  socials: SocialsPanel,
   coding: CodingWorkspace,
 }
 
@@ -44,10 +44,13 @@ const WORKSPACE_GHOSTS: Record<string, string[]> = {
     'Categorize all pending transactions',
     'What\'s the current trial balance?',
   ],
-  email: [
-    'Triage my inbox',
+  socials: [
+    'Triage all my inboxes',
     'Draft a reply to...',
-    'Archive everything from...',
+    'Clean up old emails',
+    'Check LinkedIn DMs for leads',
+    'What\'s happening on Meta?',
+    'Unsubscribe from newsletters',
   ],
   crm: [
     'Show active leads',
