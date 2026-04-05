@@ -377,16 +377,10 @@ export default function OSChat() {
       <div className="relative z-10 flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-3xl px-6">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center pt-[15vh] pb-8">
-              <span className="text-label-md font-display uppercase tracking-[0.2em] text-on-surface-muted/60">
+            <div className="flex items-center justify-center pt-[20vh] pb-8">
+              <span className="text-label-md font-display uppercase tracking-[0.15em] text-on-surface-muted/30">
                 {workspace.charAt(0).toUpperCase() + workspace.slice(1)}
               </span>
-              <h1 className="mt-3 font-display text-display-lg font-light text-on-surface">
-                OS <em className="not-italic font-normal text-primary/80">Workspace</em>
-              </h1>
-              <p className="mt-4 text-sm text-on-surface-muted/40 max-w-md text-center">
-                Practical operations mode. No organism, no consciousness — just tools and execution.
-              </p>
             </div>
           )}
 

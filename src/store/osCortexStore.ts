@@ -11,6 +11,9 @@ interface OSCortexStore {
   recentTasks: OSTaskSummary[]
   loading: boolean
 
+  // Per-workspace message stash (survives workspace switches and navigation)
+  _stash: Record<string, { messages: OSChatMessage[]; taskId: string | null }>
+
   // Actions
   setMode: (mode: 'os' | 'organism') => void
   setWorkspace: (workspace: string) => void
@@ -28,17 +31,35 @@ function generateId() {
   return crypto.randomUUID()
 }
 
-export const useOSCortexStore = create<OSCortexStore>((set) => ({
+export const useOSCortexStore = create<OSCortexStore>((set, get) => ({
   mode: 'os',
-  workspace: 'bookkeeping',  // default to bookkeeping since that's the priority
+  workspace: 'bookkeeping',
   taskId: null,
   messages: [],
   workspaces: [],
   recentTasks: [],
   loading: false,
+  _stash: {},
 
   setMode: (mode) => set({ mode }),
-  setWorkspace: (workspace) => set({ workspace, taskId: null, messages: [] }),
+
+  setWorkspace: (workspace) => {
+    const state = get()
+    // Stash current workspace's messages
+    const newStash = {
+      ...state._stash,
+      [state.workspace]: { messages: state.messages, taskId: state.taskId },
+    }
+    // Restore target workspace's messages (or start fresh)
+    const restored = newStash[workspace]
+    set({
+      workspace,
+      _stash: newStash,
+      messages: restored?.messages || [],
+      taskId: restored?.taskId || null,
+    })
+  },
+
   setTaskId: (taskId) => set({ taskId }),
   setWorkspaces: (workspaces) => set({ workspaces }),
   setRecentTasks: (tasks) => set({ recentTasks: tasks }),
