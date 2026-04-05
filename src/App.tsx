@@ -20,6 +20,7 @@ const CodebasePage = lazy(() => import('./pages/Codebase'))
 const MomentumPage = lazy(() => import('./pages/Momentum'))
 const LoginPage = lazy(() => import('./pages/Login'))
 const FactoryDevPage = lazy(() => import('./pages/FactoryDev'))
+const BookkeepingPage = lazy(() => import('./pages/Bookkeeping'))
 
 /** Ambient loading state — a soft breathing glow, not a spinner */
 function SceneSuspense({ children }: { children: React.ReactNode }) {
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/momentum" element={<Scene name="Momentum"><MomentumPage /></Scene>} />
           <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
           <Route path="/factory-dev" element={<Scene name="Factory Dev"><FactoryDevPage /></Scene>} />
+          <Route path="/bookkeeping" element={<Scene name="Bookkeeper"><BookkeepingPage /></Scene>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>

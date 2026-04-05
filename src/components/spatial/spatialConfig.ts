@@ -12,6 +12,7 @@ import {
   Code2,
   Database,
   Flame,
+  BookOpen,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -136,6 +137,20 @@ export const SCENES: Record<string, SceneConfig> = {
         { color: 'rgba(200, 145, 10, 0.10)', x: '55%', y: '35%', size: '75%' },
         { color: 'rgba(245, 200, 66, 0.06)', x: '25%', y: '70%', size: '55%' },
         { color: 'rgba(46, 204, 113, 0.04)', x: '80%', y: '80%', size: '45%' },
+      ],
+    },
+  },
+  // Warm gold with green undertone — ledger precision
+  bookkeeping: {
+    path: '/bookkeeping',
+    label: 'Books',
+    icon: BookOpen,
+    position: { x: 1, y: 2, z: 0 },
+    aurora: {
+      orbs: [
+        { color: 'rgba(200, 145, 10, 0.08)', x: '40%', y: '45%', size: '70%' },
+        { color: 'rgba(46, 204, 113, 0.06)', x: '70%', y: '30%', size: '55%' },
+        { color: 'rgba(245, 200, 66, 0.04)', x: '25%', y: '75%', size: '45%' },
       ],
     },
   },
