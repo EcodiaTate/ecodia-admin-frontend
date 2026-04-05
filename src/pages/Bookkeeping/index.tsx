@@ -215,6 +215,10 @@ function InboxTab() {
     invalidate()
   }
 
+  const handleDiscard = async (id: string) => {
+    removeFromList(id)
+    await updateStaged(id, { category: 'DISCARD', is_personal: true, status: 'ignored' })
+  }
   const handlePost = async (id: string) => { removeFromList(id); await postStaged(id) }
   const handleIgnore = async (id: string) => { removeFromList(id); await ignoreStaged(id) }
   const handleBatch = async () => { await batchPost(); softRefetch() }
@@ -284,24 +288,40 @@ function InboxTab() {
                 </span>
                 {tx.category && (
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <span className="rounded-md bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/60">
-                      {accounts.find((a: any) => a.code === tx.category)?.name || tx.category}
-                    </span>
-                    {tx.source_account === '2100' && (
-                      <span className="rounded-md bg-gold/10 px-2 py-0.5 text-[10px] text-gold/70">
-                        Director Loan
+                    {tx.category === 'DISCARD' ? (
+                      <span className="rounded-md bg-on-surface-muted/5 px-2 py-0.5 text-[10px] text-on-surface-muted/30">
+                        personal
                       </span>
-                    )}
+                    ) : (<>
+                      <span className="rounded-md bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/60">
+                        {accounts.find((a: any) => a.code === tx.category)?.name || tx.category}
+                      </span>
+                      {tx.source_account === '2100' && (
+                        <span className="rounded-md bg-gold/10 px-2 py-0.5 text-[10px] text-gold/70">
+                          Director Loan
+                        </span>
+                      )}
+                    </>)}
                   </div>
                 )}
                 {tx.is_personal && <User size={12} className="text-gold/60 flex-shrink-0" />}
                 {['pending', 'flagged', 'categorized'].includes(tx.status) && (
-                  <button
-                    onClick={e => { e.stopPropagation(); handleIgnore(tx.id) }}
-                    className="rounded-md px-1.5 py-0.5 text-on-surface-muted/25 hover:text-on-surface-muted/60 hover:bg-surface-container transition-colors flex-shrink-0"
-                  >
-                    <X size={13} />
-                  </button>
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    <button
+                      onClick={e => { e.stopPropagation(); handleDiscard(tx.id) }}
+                      title="Personal — discard"
+                      className="rounded-md px-1.5 py-0.5 text-on-surface-muted/20 hover:text-gold/60 hover:bg-gold/5 transition-colors"
+                    >
+                      <User size={12} />
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); handleIgnore(tx.id) }}
+                      title="Skip"
+                      className="rounded-md px-1.5 py-0.5 text-on-surface-muted/20 hover:text-on-surface-muted/60 hover:bg-surface-container transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
                 )}
                 <ChevronDown size={14} className={cn('text-on-surface-muted/30 flex-shrink-0 transition-transform', expanded && 'rotate-180')} />
               </div>
@@ -402,9 +422,13 @@ function InboxTab() {
                             <Check size={12} /> Post to Ledger
                           </button>
                         )}
+                        <button onClick={() => handleDiscard(tx.id)}
+                          className="flex items-center gap-1 rounded-lg bg-gold/5 px-3 py-1.5 text-xs text-gold/60 hover:bg-gold/10">
+                          <User size={12} /> Personal
+                        </button>
                         <button onClick={() => handleIgnore(tx.id)}
                           className="flex items-center gap-1 rounded-lg bg-surface-container/60 px-3 py-1.5 text-xs text-on-surface-muted/50 hover:text-on-surface-muted">
-                          <X size={12} /> Ignore
+                          <X size={12} /> Skip
                         </button>
                       </div>
                     </div>

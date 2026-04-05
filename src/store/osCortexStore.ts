@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { OSBlock, OSChatMessage, OSWorkspace } from '@/types/os'
 
 interface WorkspaceChat {
@@ -65,7 +66,7 @@ function updateChatFor(
   }
 }
 
-export const useOSCortexStore = create<OSCortexStore>((set, get) => ({
+export const useOSCortexStore = create<OSCortexStore>()(persist((set, get) => ({
   mode: 'os',
   workspace: 'bookkeeping',
   workspaces: [],
@@ -118,4 +119,13 @@ export const useOSCortexStore = create<OSCortexStore>((set, get) => ({
   setLoading: (loading) => get().setLoadingFor(get().workspace, loading),
   loadHistory: (messages) => get().loadHistoryFor(get().workspace, messages),
   clearMessages: () => get().clearMessagesFor(get().workspace),
-}))
+}),
+  {
+    name: 'os-cortex-chats',
+    partialize: (state) => ({
+      workspace: state.workspace,
+      chats: state.chats,
+      mode: state.mode,
+    }),
+  },
+))
