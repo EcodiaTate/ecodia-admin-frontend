@@ -273,9 +273,16 @@ function InboxTab() {
                   {amt > 0 ? '+' : ''}{cents(amt)}
                 </span>
                 {tx.category && (
-                  <span className="rounded-md bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/60 flex-shrink-0">
-                    {accounts.find((a: any) => a.code === tx.category)?.name || tx.category}
-                  </span>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="rounded-md bg-surface-container px-2 py-0.5 text-[10px] text-on-surface-muted/60">
+                      {accounts.find((a: any) => a.code === tx.category)?.name || tx.category}
+                    </span>
+                    {tx.source_account === '2100' && (
+                      <span className="rounded-md bg-gold/10 px-2 py-0.5 text-[10px] text-gold/70">
+                        Director Loan
+                      </span>
+                    )}
+                  </div>
                 )}
                 {tx.is_personal && <User size={12} className="text-gold/60 flex-shrink-0" />}
                 {['pending', 'flagged', 'categorized'].includes(tx.status) && (
@@ -338,6 +345,38 @@ function InboxTab() {
                           <User size={11} /> Personal
                         </button>
                       </div>
+
+                      {/* Journal preview — shows what double-entry lines will be created */}
+                      {tx.category && (
+                        <div className="rounded-lg bg-surface-container/40 px-3 py-2 space-y-1">
+                          <span className="text-[10px] uppercase tracking-wider text-on-surface-muted/40">Journal preview</span>
+                          {(() => {
+                            const amtAbs = Math.abs(tx.amount_cents)
+                            const bankAcct = tx.source_account || '1000'
+                            const bankName = accounts.find((a: any) => a.code === bankAcct)?.name || bankAcct
+                            const catName = accounts.find((a: any) => a.code === tx.category)?.name || tx.category
+                            const isIncome = tx.amount_cents > 0
+                            const isPersonal = tx.is_personal
+
+                            if (isPersonal && !isIncome) {
+                              return (<>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">Director Loan (2100)</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">{bankName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                              </>)
+                            }
+                            if (isIncome) {
+                              return (<>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">{bankName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                                <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">{catName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                              </>)
+                            }
+                            return (<>
+                              <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">DR</span><span className="flex-1">{catName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                              <div className="flex gap-4 text-xs"><span className="w-8 text-on-surface-muted/40">CR</span><span className="flex-1">{bankName}</span><span className="tabular-nums">{cents(amtAbs)}</span></div>
+                            </>)
+                          })()}
+                        </div>
+                      )}
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
