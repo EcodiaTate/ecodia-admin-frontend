@@ -16,16 +16,7 @@ const glide = { type: 'spring' as const, stiffness: 70, damping: 18, mass: 1.2 }
 
 /** Map scene keys to worker names for state encoding */
 const SCENE_WORKERS: Record<string, string[]> = {
-  dashboard: [],
-  cortex: [],
-  gmail: ['gmail'],
-  linkedin: ['linkedin'],
-  crm: [],
-  bookkeeping: ['finance'],
-  codebase: ['codebase_index'],
-  // coding merged into cortex tab — factory workers reflected via cortex scene
-  'knowledge-graph': ['kg_consolidation', 'kg_embedding'],
-  momentum: [],
+  cortex: ['gmail', 'linkedin', 'finance', 'kg_consolidation', 'kg_embedding'],
   settings: ['google_drive', 'vercel', 'meta'],
 }
 

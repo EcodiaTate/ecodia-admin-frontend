@@ -1,14 +1,6 @@
 import {
-  Orbit,
   Waypoints,
-  Mail,
-  Linkedin,
-  Users,
   Brain,
-  Network,
-  Code2,
-  Flame,
-  BookOpen,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -44,30 +36,19 @@ export interface AuroraConfig {
 // Aurora palette: green + gold — each scene has a distinct atmospheric signature
 // ═══════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════
+// All workspaces now live inside Cortex as tabs.
+// Each scene routes to /cortex?ws=<name> and sets the OS workspace.
+// The aurora + spatial position still give each workspace its own atmosphere.
+// ═══════════════════════════════════════════════════════════════════════
+
 export const SCENES: Record<string, SceneConfig> = {
   // ── Awareness: what's happening ──
-  // Centered warm gold bloom — sun at the heart of the ecosystem
-  dashboard: {
-    path: '/dashboard',
-    label: 'Vitals',
-    icon: Orbit,
-    position: { x: 0, y: 0, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(200, 145, 10, 0.09)', x: '50%', y: '55%', size: '80%' },
-        { color: 'rgba(46, 204, 113, 0.06)', x: '20%', y: '75%', size: '55%' },
-        { color: 'rgba(27, 122, 61, 0.04)', x: '80%', y: '25%', size: '50%' },
-      ],
-    },
-  },
-
-  // ── Intelligence: ask anything ──
-  // Deep green canopy — neural depth
   cortex: {
     path: '/cortex',
     label: 'Cortex',
     icon: Brain,
-    position: { x: 0, y: -1, z: 0 },
+    position: { x: 0, y: 0, z: 0 },
     aurora: {
       orbs: [
         { color: 'rgba(27, 122, 61, 0.10)', x: '45%', y: '35%', size: '75%' },
@@ -77,123 +58,12 @@ export const SCENES: Record<string, SceneConfig> = {
     },
   },
 
-  // ── Channels: communication streams ──
-  // Cool green mist — clarity for reading
-  gmail: {
-    path: '/gmail',
-    label: 'Mail',
-    icon: Mail,
-    position: { x: -1, y: 0, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(46, 204, 113, 0.06)', x: '25%', y: '30%', size: '60%' },
-        { color: 'rgba(27, 122, 61, 0.05)', x: '75%', y: '65%', size: '55%' },
-        { color: 'rgba(200, 145, 10, 0.03)', x: '60%', y: '20%', size: '40%' },
-      ],
-    },
-  },
-  // Warm gold horizon — influence and reach
-  linkedin: {
-    path: '/linkedin',
-    label: 'Social',
-    icon: Linkedin,
-    position: { x: 1, y: 0, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(200, 145, 10, 0.08)', x: '65%', y: '40%', size: '70%' },
-        { color: 'rgba(245, 200, 66, 0.05)', x: '30%', y: '70%', size: '55%' },
-        { color: 'rgba(46, 204, 113, 0.04)', x: '80%', y: '80%', size: '40%' },
-      ],
-    },
-  },
-
-  // ── Relations: people and money ──
-  // Verdant spread — growing relationships
-  crm: {
-    path: '/crm',
-    label: 'Pipeline',
-    icon: Users,
-    position: { x: -1, y: 1, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(46, 204, 113, 0.08)', x: '35%', y: '45%', size: '70%' },
-        { color: 'rgba(27, 122, 61, 0.05)', x: '75%', y: '25%', size: '50%' },
-        { color: 'rgba(200, 145, 10, 0.04)', x: '20%', y: '80%', size: '50%' },
-      ],
-    },
-  },
-  // Warm gold with green undertone — ledger precision (consolidated Finance + Bookkeeping)
-  bookkeeping: {
-    path: '/bookkeeping',
-    label: 'Ledger',
-    icon: BookOpen,
-    position: { x: 0, y: 1, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(200, 145, 10, 0.10)', x: '55%', y: '35%', size: '75%' },
-        { color: 'rgba(245, 200, 66, 0.06)', x: '25%', y: '70%', size: '55%' },
-        { color: 'rgba(46, 204, 113, 0.04)', x: '80%', y: '80%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Intelligence: codebase semantic mind ──
-  // Green with gold sparks — knowledge embedded in code
-  codebase: {
-    path: '/codebase',
-    label: 'Code',
-    icon: Code2,
-    position: { x: 2, y: 0, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(46, 204, 113, 0.07)', x: '45%', y: '35%', size: '65%' },
-        { color: 'rgba(200, 145, 10, 0.05)', x: '75%', y: '65%', size: '55%' },
-        { color: 'rgba(27, 122, 61, 0.04)', x: '20%', y: '70%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Memory: world model + archive (consolidated KG + Explorer) ──
-  // Deep dual — the oldest layers of the organism
-  'knowledge-graph': {
-    path: '/knowledge-graph',
-    label: 'Memory',
-    icon: Network,
-    position: { x: -1, y: 2, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(27, 122, 61, 0.08)', x: '40%', y: '40%', size: '70%' },
-        { color: 'rgba(200, 145, 10, 0.06)', x: '70%', y: '60%', size: '55%' },
-        { color: 'rgba(46, 204, 113, 0.04)', x: '25%', y: '25%', size: '45%' },
-      ],
-    },
-  },
-
-  // ── Momentum: forward motion tracker ──
-  // Warm gold + green — energy and growth
-  momentum: {
-    path: '/momentum',
-    label: 'Momentum',
-    icon: Flame,
-    position: { x: 1, y: -1, z: 0 },
-    aurora: {
-      orbs: [
-        { color: 'rgba(200, 145, 10, 0.09)', x: '40%', y: '40%', size: '75%' },
-        { color: 'rgba(46, 204, 113, 0.07)', x: '70%', y: '65%', size: '55%' },
-        { color: 'rgba(245, 200, 66, 0.05)', x: '25%', y: '75%', size: '45%' },
-      ],
-    },
-  },
-
-  // Coding workspace is now inside Cortex (coding tab) — no standalone scene
-
-  // ── Infrastructure: system internals (consolidated Settings + Workspace + Factory) ──
-  // Subtle, muted — infrastructure hum
+  // ── Infrastructure: system internals ──
   settings: {
     path: '/settings',
     label: 'System',
     icon: Waypoints,
-    position: { x: 0, y: 2, z: -1 },
+    position: { x: 0, y: 1, z: 0 },
     aurora: {
       orbs: [
         { color: 'rgba(27, 122, 61, 0.05)', x: '50%', y: '50%', size: '80%' },
@@ -297,5 +167,5 @@ export const sceneVariants = {
   }),
 }
 
-/** Ordered list of nav links */
-export const NAV_LINKS = Object.values(SCENES).filter(s => s.path !== '/settings').concat(SCENES.settings)
+/** Ordered list of nav links — Cortex first, then Settings */
+export const NAV_LINKS = [SCENES.cortex, SCENES.settings]

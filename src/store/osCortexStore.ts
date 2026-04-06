@@ -70,7 +70,7 @@ function updateChatFor(
 
 export const useOSCortexStore = create<OSCortexStore>()(persist((set, get) => ({
   mode: 'os',
-  workspace: 'bookkeeping',
+  workspace: 'vitals',
   workspaces: [],
   loading: {},
   panelOpen: true,

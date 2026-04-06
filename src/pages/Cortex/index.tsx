@@ -17,6 +17,7 @@
  * Input is NEVER blocked. Multiple requests fly concurrently.
  */
 import { useState, useRef, useEffect, useCallback, useId, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getKGStats } from '@/api/knowledgeGraph'
 import { sendCortexChat, getCortexBriefing } from '@/api/cortex'
@@ -443,6 +444,21 @@ function ModeToggle() {
 // ─── Page Router ────────────────────────────────────────────────────
 export default function CortexPage() {
   const mode = useOSCortexStore(s => s.mode)
+  const setWorkspace = useOSCortexStore(s => s.setWorkspace)
+  const setMode = useOSCortexStore(s => s.setMode)
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Sync ?ws= query param to workspace on mount / param change
+  useEffect(() => {
+    const ws = searchParams.get('ws')
+    if (ws) {
+      setWorkspace(ws)
+      setMode('os')
+      // Clear the param so it doesn't stick on tab switches
+      searchParams.delete('ws')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setWorkspace, setMode, setSearchParams])
 
   return (
     <div className="relative h-full">

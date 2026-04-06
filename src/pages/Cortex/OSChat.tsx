@@ -21,12 +21,20 @@ const BookkeepingPanel = lazy(() => import('./panels/BookkeepingPanel'))
 const SocialsPanel = lazy(() => import('./panels/SocialsPanel'))
 const CRMPanel = lazy(() => import('./panels/CRMPanel'))
 const CodingWorkspace = lazy(() => import('./CodingWorkspace'))
+const VitalsPanel = lazy(() => import('./panels/VitalsPanel'))
+const MemoryPanel = lazy(() => import('./panels/MemoryPanel'))
+const MomentumPanel = lazy(() => import('./panels/MomentumPanel'))
+const AdminPanel = lazy(() => import('./panels/AdminPanel'))
 
 const WORKSPACE_PANELS: Record<string, React.LazyExoticComponent<() => JSX.Element>> = {
   bookkeeping: BookkeepingPanel,
   socials: SocialsPanel,
   crm: CRMPanel,
   coding: CodingWorkspace,
+  vitals: VitalsPanel,
+  memory: MemoryPanel,
+  momentum: MomentumPanel,
+  admin: AdminPanel,
 }
 
 function PanelFallback() {
@@ -63,6 +71,8 @@ const WORKSPACE_GHOSTS: Record<string, string[]> = {
     'Check PM2 process status',
     'Show disk usage',
     'Pull latest on VPS',
+    'Check service connections',
+    'Restart a worker',
   ],
   coding: [
     'Show active sessions',
@@ -71,6 +81,27 @@ const WORKSPACE_GHOSTS: Record<string, string[]> = {
     'Resume the last session',
     'Deploy the latest changes',
     'Show coding dashboard',
+  ],
+  vitals: [
+    'How\'s the system doing?',
+    'Show financial summary',
+    'Any pending actions?',
+    'What\'s the organism status?',
+    'Worker health check',
+  ],
+  memory: [
+    'Search for a node...',
+    'How many entities do we know?',
+    'What was consolidated recently?',
+    'Find connections for...',
+    'Show knowledge distribution',
+  ],
+  momentum: [
+    'How many sessions this week?',
+    'What\'s the success rate?',
+    'Show system health',
+    'Any stuck processes?',
+    'Recent deployments',
   ],
 }
 

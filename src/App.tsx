@@ -6,19 +6,10 @@ import { SceneErrorBoundary } from './components/shared/SceneErrorBoundary'
 import { motion } from 'framer-motion'
 
 // ─── Code-split every route-level page ──────────────────────────────────
-const DashboardPage = lazy(() => import('./pages/Dashboard'))
-const GmailPage = lazy(() => import('./pages/Gmail'))
-const LinkedInPage = lazy(() => import('./pages/LinkedIn'))
-const CRMPage = lazy(() => import('./pages/CRM'))
+// All workspace pages are now consolidated inside Cortex as tabs.
 const CortexPage = lazy(() => import('./pages/Cortex'))
 const SettingsPage = lazy(() => import('./pages/Settings'))
-const KnowledgeGraphPage = lazy(() => import('./pages/KnowledgeGraph'))
-const CodebasePage = lazy(() => import('./pages/Codebase'))
-const MomentumPage = lazy(() => import('./pages/Momentum'))
 const LoginPage = lazy(() => import('./pages/Login'))
-const BookkeepingPage = lazy(() => import('./pages/Bookkeeping'))
-// CodingPage is now embedded inside Cortex — kept for backward compat redirect
-// const CodingPage = lazy(() => import('./pages/Coding'))
 
 /** Ambient loading state — a soft breathing glow, not a spinner */
 function SceneSuspense({ children }: { children: React.ReactNode }) {
@@ -70,27 +61,26 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={<Scene name="Atmospheric Vitals"><DashboardPage /></Scene>} />
-          <Route path="/gmail" element={<Scene name="Digital Curator"><GmailPage /></Scene>} />
-          <Route path="/linkedin" element={<Scene name="Social Resonance"><LinkedInPage /></Scene>} />
-          <Route path="/crm" element={<Scene name="Flow State"><CRMPage /></Scene>} />
-          <Route path="/crm/:clientId" element={<Scene name="Flow State"><CRMPage /></Scene>} />
+          <Route index element={<Navigate to="/cortex" />} />
           <Route path="/cortex" element={<Scene name="Cortex"><CortexPage /></Scene>} />
-          <Route path="/codebase" element={<Scene name="Codebase Mind"><CodebasePage /></Scene>} />
-          <Route path="/knowledge-graph" element={<Scene name="Knowledge Graph"><KnowledgeGraphPage /></Scene>} />
-          <Route path="/momentum" element={<Scene name="Momentum"><MomentumPage /></Scene>} />
           <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
-          <Route path="/bookkeeping" element={<Scene name="Ledger"><BookkeepingPage /></Scene>} />
-          {/* Coding is now inside Cortex coding workspace — redirect old routes */}
-          <Route path="/coding" element={<Navigate to="/cortex" replace />} />
-          <Route path="/factory-dev" element={<Navigate to="/cortex" replace />} />
-          {/* Redirects for consolidated pages */}
-          <Route path="/finance" element={<Navigate to="/bookkeeping" replace />} />
-          <Route path="/kg-explorer" element={<Navigate to="/knowledge-graph" replace />} />
-          <Route path="/workspace" element={<Navigate to="/settings" replace />} />
-          <Route path="/claude-code" element={<Navigate to="/settings" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* All old standalone pages redirect to Cortex with workspace param */}
+          <Route path="/dashboard" element={<Navigate to="/cortex?ws=vitals" replace />} />
+          <Route path="/gmail" element={<Navigate to="/cortex?ws=socials" replace />} />
+          <Route path="/linkedin" element={<Navigate to="/cortex?ws=socials" replace />} />
+          <Route path="/crm" element={<Navigate to="/cortex?ws=crm" replace />} />
+          <Route path="/crm/:clientId" element={<Navigate to="/cortex?ws=crm" replace />} />
+          <Route path="/bookkeeping" element={<Navigate to="/cortex?ws=bookkeeping" replace />} />
+          <Route path="/codebase" element={<Navigate to="/cortex?ws=coding" replace />} />
+          <Route path="/knowledge-graph" element={<Navigate to="/cortex?ws=memory" replace />} />
+          <Route path="/momentum" element={<Navigate to="/cortex?ws=momentum" replace />} />
+          <Route path="/coding" element={<Navigate to="/cortex?ws=coding" replace />} />
+          <Route path="/factory-dev" element={<Navigate to="/cortex?ws=coding" replace />} />
+          <Route path="/finance" element={<Navigate to="/cortex?ws=bookkeeping" replace />} />
+          <Route path="/kg-explorer" element={<Navigate to="/cortex?ws=memory" replace />} />
+          <Route path="/workspace" element={<Navigate to="/cortex?ws=admin" replace />} />
+          <Route path="/claude-code" element={<Navigate to="/cortex?ws=admin" replace />} />
+          <Route path="*" element={<Navigate to="/cortex" replace />} />
         </Route>
       </Routes>
     </BrowserRouter>
