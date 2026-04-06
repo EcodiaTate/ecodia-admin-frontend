@@ -430,6 +430,8 @@ export default function CCStream() {
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const userScrolledUp = useRef(false)
   const messages = useOSSessionStore(s => s.messages)
   const status = useOSSessionStore(s => s.status)
   const streamText = useOSSessionStore(s => s.streamText)
@@ -438,9 +440,37 @@ export default function CCStream() {
   const ghostPrompt = useGhostPrompt()
   const canSend = input.trim().length > 0 && status !== 'streaming'
 
+  // Track whether user has scrolled away from bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = scrollRef.current
+    if (!el) return
+    const onScroll = () => {
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
+      userScrolledUp.current = distFromBottom > 80
+    }
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Auto-scroll only when user is near the bottom (or on new messages/status change)
+  useEffect(() => {
+    if (!userScrolledUp.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
   }, [messages, status, streamText])
+
+  // Always scroll down when the user sends a new message
+  const prevMessageCount = useRef(messages.length)
+  useEffect(() => {
+    if (messages.length > prevMessageCount.current) {
+      const lastMsg = messages[messages.length - 1]
+      if (lastMsg?.role === 'user') {
+        userScrolledUp.current = false
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }
+    }
+    prevMessageCount.current = messages.length
+  }, [messages])
 
   useEffect(() => { inputRef.current?.focus() }, [])
 
@@ -560,7 +590,7 @@ export default function CCStream() {
 
   return (
     <div className="relative flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-3xl px-6">
           {/* Ambient welcome — green + gold presence */}
           {!hasMessages && status !== 'streaming' && (
