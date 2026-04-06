@@ -196,8 +196,16 @@ export default function CCStream() {
     addUserMessage(text)
 
     try {
-      await sendOSMessage(text)
-      // Response arrives via WebSocket — no need to handle here
+      const result = await sendOSMessage(text)
+      // HTTP response is the fallback — if WebSocket didn't finalize, do it now
+      const store = useOSSessionStore.getState()
+      if (store.status === 'streaming') {
+        // WS didn't finalize yet — use HTTP response text
+        if (result.text) {
+          store.appendStreamText(result.text)
+        }
+        store.finalizeResponse()
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
       useOSSessionStore.getState().finalizeResponse()

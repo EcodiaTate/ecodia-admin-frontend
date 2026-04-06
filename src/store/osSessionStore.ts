@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 /**
  * OS Session Store — state for the persistent CC OS session.
@@ -33,7 +34,7 @@ interface OSSessionStore {
   clearMessages: () => void
 }
 
-export const useOSSessionStore = create<OSSessionStore>()((set, get) => ({
+export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => ({
   status: 'idle',
   messages: [],
   streamChunks: [],
@@ -91,4 +92,12 @@ export const useOSSessionStore = create<OSSessionStore>()((set, get) => ({
 
   setSessionId: (id) => set({ sessionId: id }),
   clearMessages: () => set({ messages: [], streamChunks: [], streamText: '', status: 'idle' }),
-}))
+}),
+{
+  name: 'os-session-chat',
+  partialize: (state) => ({
+    messages: state.messages,
+    sessionId: state.sessionId,
+  }),
+},
+))
