@@ -67,13 +67,13 @@ function HaloRing({ state, isActive }: { state: GlyphState; isActive: boolean })
 
   // Stroke properties by state
   const strokeColor = (() => {
-    if (isActive) return 'rgba(0, 104, 122, 0.35)' // primary
+    if (isActive) return 'rgba(13, 124, 90, 0.40)'
     switch (state) {
-      case 'attention': return 'rgba(200, 145, 10, 0.4)'
-      case 'active': return 'rgba(46, 204, 113, 0.5)'
-      case 'error': return 'rgba(220, 38, 38, 0.5)'
-      case 'completed': return 'rgba(46, 204, 113, 0.35)'
-      default: return 'rgba(27, 122, 61, 0.06)'
+      case 'attention': return 'rgba(217, 119, 6, 0.45)'
+      case 'active': return 'rgba(8, 145, 178, 0.55)'
+      case 'error': return 'rgba(225, 29, 72, 0.50)'
+      case 'completed': return 'rgba(20, 184, 130, 0.40)'
+      default: return 'rgba(13, 124, 90, 0.06)'
     }
   })()
 
@@ -203,7 +203,7 @@ function NavTendrils({ activeKey, navRef }: { activeKey: string; navRef: React.R
             key={p.key}
             d={p.d}
             fill="none"
-            stroke="rgba(27, 122, 61, 0.06)"
+            stroke="rgba(13, 124, 90, 0.06)"
             strokeWidth={0.5}
             strokeLinecap="round"
             initial={{ pathLength: 0, opacity: 0 }}
@@ -265,8 +265,12 @@ export function FloatingNav() {
           rotateY: navRotateY,
           rotateX: navRotateX,
           transformPerspective: 800,
-          backgroundColor: 'rgba(255, 255, 255, 0.50)',
-          boxShadow: '0 24px 60px -16px rgba(27, 122, 61, 0.06)',
+          backgroundColor: 'rgba(255, 255, 255, 0.52)',
+          boxShadow: '0 24px 60px -16px rgba(13, 124, 90, 0.06), 0 8px 20px -8px rgba(8, 145, 178, 0.03)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.65)',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.60)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.03)',
+          borderRight: '1px solid rgba(0, 0, 0, 0.03)',
         }}
         animate={{ opacity: visible || hovered || pinned ? 1 : hasElevated ? 0.3 : 0.06 }}
         transition={{ type: 'spring', stiffness: 60, damping: 20 }}
@@ -298,8 +302,8 @@ export function FloatingNav() {
       <nav
         className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-around px-2 py-2 md:hidden"
         style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.50)',
-          boxShadow: '0 -12px 40px -10px rgba(27, 122, 61, 0.04)',
+          backgroundColor: 'rgba(255, 255, 255, 0.52)',
+          boxShadow: '0 -12px 40px -10px rgba(13, 124, 90, 0.05), inset 0 1px 0 rgba(255,255,255,0.4)',
         }}
       >
         {NAV_LINKS.map((scene) => {
@@ -397,7 +401,12 @@ function NavGlyph({
         animate={{ opacity: 0 }}
         whileHover={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 90, damping: 20 }}
-        className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-xl bg-white/60 px-3 py-1.5 text-xs font-medium text-on-surface-variant opacity-0 group-hover:opacity-100"
+        className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-xl px-3 py-1.5 text-xs font-medium text-on-surface-variant opacity-0 group-hover:opacity-100"
+        style={{
+          background: 'rgba(255,255,255,0.65)',
+          boxShadow: '0 8px 20px -6px rgba(13,124,90,0.06), inset 0 1px 0 rgba(255,255,255,0.4)',
+          border: '1px solid rgba(255,255,255,0.50)',
+        }}
       >
         {hoverLabel}
       </motion.span>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import { getOrganismVitals } from '@/api/symbridge'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import type { WorkerStatus } from '@/store/workerStore'
@@ -16,6 +17,37 @@ function useConnectionState(): ConnectionState {
   return state
 }
 
+/** Chromatic dot that pulses based on system state */
+function StatusDot({ state, alive }: { state: ConnectionState; alive: boolean }) {
+  const color = state === 'disconnected'
+    ? '#D97706'
+    : state === 'connecting'
+      ? '#5A6360'
+      : alive ? '#14B882' : '#5A6360'
+
+  const shouldPulse = state === 'disconnected' || (state === 'connected' && alive)
+
+  return (
+    <span className="relative flex h-2 w-2">
+      {shouldPulse && (
+        <motion.span
+          className="absolute inline-flex h-full w-full rounded-full"
+          style={{ backgroundColor: color }}
+          animate={{ scale: [1, 2, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: state === 'disconnected' ? 1.5 : 3, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+      <span
+        className="relative inline-flex h-2 w-2 rounded-full"
+        style={{
+          backgroundColor: color,
+          boxShadow: `0 0 8px ${color}40`,
+        }}
+      />
+    </span>
+  )
+}
+
 export function EcosystemStatusBar() {
   const { data: vitals } = useQuery({
     queryKey: ['organismVitals'],
@@ -27,52 +59,57 @@ export function EcosystemStatusBar() {
   const workers = useWorkerStatus() as Record<string, WorkerStatus>
   const activeCount = Object.values(workers).filter(w => w.status === 'active').length
   const totalCount = Object.keys(workers).length
+  const errorCount = Object.values(workers).filter(w => w.status === 'error').length
   const conn = useConnectionState()
 
   const organismAlive = vitals ? vitals.organism.healthy !== false : false
 
-  // Connection state overrides health label when not connected
   const healthLabel = conn === 'disconnected'
     ? 'Offline'
     : conn === 'connecting'
       ? 'Connecting'
       : !vitals ? 'Connecting' : organismAlive ? 'Optimal' : 'Degraded'
 
-  const dotColor = conn === 'disconnected'
-    ? 'bg-tertiary'
-    : conn === 'connecting'
-      ? 'bg-on-surface-muted/30'
-      : organismAlive ? 'bg-secondary' : 'bg-on-surface-muted/30'
-
   const memoryMb = vitals?.ecodiaos?.memory?.heapUsed
   const latencyMs = vitals?.organism?.lastResponseMs
+  const activeSessions = vitals?.ecodiaos?.activeCCSessions
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 hidden items-center justify-between px-8 py-2.5 md:flex pointer-events-none">
-      <div className="flex items-center gap-2">
-        <span className="relative flex h-1.5 w-1.5">
-          {conn === 'disconnected' && (
-            <span className="absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-60 animate-ping" />
-          )}
-          <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dotColor}`} />
+    <div className="fixed inset-x-0 bottom-0 z-20 hidden items-center justify-between px-8 py-3 md:flex pointer-events-none">
+      {/* Left: Ecosystem health */}
+      <div className="flex items-center gap-3">
+        <StatusDot state={conn} alive={organismAlive} />
+        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-on-surface-muted/35">
+          {healthLabel}
         </span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-on-surface-muted/40">
-          Ecosystem Health: {healthLabel}
-        </span>
+        {errorCount > 0 && (
+          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-rose-DEFAULT/50">
+            {errorCount} error{errorCount > 1 ? 's' : ''}
+          </span>
+        )}
       </div>
 
-      <div className="flex items-center gap-8">
-        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-on-surface-muted/30">
-          Workers {activeCount}/{totalCount}
+      {/* Right: Ambient metrics */}
+      <div className="flex items-center gap-6">
+        <span className="font-mono text-[10px] uppercase tracking-[0.10em] text-on-surface-muted/25">
+          <span style={{ color: activeCount === totalCount ? 'rgba(20,184,130,0.45)' : 'rgba(217,119,6,0.45)' }}>
+            {activeCount}
+          </span>
+          <span className="text-on-surface-muted/15">/{totalCount} workers</span>
         </span>
+        {activeSessions != null && activeSessions > 0 && (
+          <span className="font-mono text-[10px] uppercase tracking-[0.10em]" style={{ color: 'rgba(8,145,178,0.45)' }}>
+            {activeSessions} session{activeSessions > 1 ? 's' : ''}
+          </span>
+        )}
         {latencyMs != null && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-on-surface-muted/30">
-            Latency {latencyMs}ms
+          <span className="font-mono text-[10px] uppercase tracking-[0.10em] text-on-surface-muted/20">
+            {latencyMs}ms
           </span>
         )}
         {memoryMb != null && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-on-surface-muted/30">
-            Heap {memoryMb}MB
+          <span className="font-mono text-[10px] uppercase tracking-[0.10em] text-on-surface-muted/20">
+            {memoryMb}MB
           </span>
         )}
       </div>
