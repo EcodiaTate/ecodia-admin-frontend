@@ -15,6 +15,14 @@ export interface OSSessionMessage {
   timestamp: Date
 }
 
+export interface TokenUsage {
+  input: number
+  output: number
+  total: number
+  threshold: number
+  needsCompaction: boolean
+}
+
 interface OSSessionStore {
   status: 'idle' | 'streaming' | 'complete' | 'error'
   messages: OSSessionMessage[]
@@ -23,6 +31,10 @@ interface OSSessionStore {
   /** Extracted text content from current stream (for live display) */
   streamText: string
   sessionId: string | null
+  /** Token usage tracking for auto-compaction */
+  tokenUsage: TokenUsage | null
+  /** Whether compaction is in progress */
+  compacting: boolean
 
   // Actions
   setStatus: (status: OSSessionStore['status']) => void
@@ -31,6 +43,8 @@ interface OSSessionStore {
   appendStreamText: (text: string) => void
   finalizeResponse: () => void
   setSessionId: (id: string | null) => void
+  setTokenUsage: (usage: TokenUsage | null) => void
+  setCompacting: (v: boolean) => void
   clearMessages: () => void
 }
 
@@ -40,6 +54,8 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   streamChunks: [],
   streamText: '',
   sessionId: null,
+  tokenUsage: null,
+  compacting: false,
 
   setStatus: (status) => set({ status }),
 
@@ -91,7 +107,9 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   },
 
   setSessionId: (id) => set({ sessionId: id }),
-  clearMessages: () => set({ messages: [], streamChunks: [], streamText: '', status: 'idle' }),
+  setTokenUsage: (usage) => set({ tokenUsage: usage }),
+  setCompacting: (v) => set({ compacting: v }),
+  clearMessages: () => set({ messages: [], streamChunks: [], streamText: '', status: 'idle', tokenUsage: null }),
 }),
 {
   name: 'os-session-chat',

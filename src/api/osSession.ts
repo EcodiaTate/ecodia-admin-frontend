@@ -30,3 +30,13 @@ export async function getOSHistory(limit = 100) {
   const { data } = await api.get('/os-session/history', { params: { limit } })
   return data.history as { content: string; created_at: string }[]
 }
+
+export async function compactOS(summary: string) {
+  const { data } = await api.post('/os-session/compact', { summary }, { timeout: 300_000 })
+  return data as { sessionId: string }
+}
+
+export async function getTokenUsage() {
+  const { data } = await api.get('/os-session/tokens')
+  return data as { input: number; output: number; total: number; threshold: number; needsCompaction: boolean }
+}

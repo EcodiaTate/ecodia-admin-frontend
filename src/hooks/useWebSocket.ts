@@ -187,6 +187,29 @@ export function useWebSocket() {
               osStore.finalizeResponse()
               break
             }
+            case 'os-session:tokens': {
+              const osStore = useOSSessionStore.getState()
+              osStore.setTokenUsage(msg)
+              // Auto-compact when threshold exceeded
+              if (msg.needsCompaction && !osStore.compacting && osStore.status !== 'streaming') {
+                osStore.setCompacting(true)
+                // Build a summary from the last N messages for context transfer
+                const recentMessages = osStore.messages.slice(-20)
+                const summary = recentMessages
+                  .map(m => `[${m.role}] ${m.content.slice(0, 500)}`)
+                  .join('\n\n')
+                // Fire compact in background — don't await, don't block
+                import('@/api/osSession').then(({ compactOS }) => {
+                  compactOS(summary).then(() => {
+                    osStore.setCompacting(false)
+                    osStore.setTokenUsage(null)
+                  }).catch(() => {
+                    osStore.setCompacting(false)
+                  })
+                })
+              }
+              break
+            }
 
             // ─── OS Orchestration Progress (legacy) ──────────────
             case 'os:progress':
