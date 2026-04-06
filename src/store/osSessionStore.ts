@@ -48,6 +48,7 @@ interface OSSessionStore {
   addUserMessage: (content: string) => void
   appendStreamChunk: (chunk: string) => void
   appendStreamText: (text: string) => void
+  replaceStreamText: (text: string) => void
   finalizeResponse: () => void
   setSessionId: (id: string | null) => void
   setTokenUsage: (usage: TokenUsage | null) => void
@@ -97,6 +98,10 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
     set(state => ({
       streamText: state.streamText + text,
     }))
+  },
+
+  replaceStreamText: (text) => {
+    set({ streamText: text })
   },
 
   finalizeResponse: () => {

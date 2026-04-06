@@ -187,13 +187,33 @@ export function useWebSocket() {
               })
               break
 
-            // ─── OS Session (CC stream) ─────────────────────────
+            // ─── OS Session (Agent SDK stream) ──────────────────
             case 'os-session:output': {
               const osStore = useOSSessionStore.getState()
               const chunk = msg.data
-              if (chunk?.type === 'stream' && chunk.content) {
+              if (!chunk) break
+
+              // text_delta: real-time streaming from Agent SDK partial messages
+              if (chunk.type === 'text_delta' && chunk.content) {
                 osStore.appendStreamChunk(chunk.content)
-                // Extract text content from stream-json for live display
+                osStore.appendStreamText(chunk.content)
+              }
+              // assistant_text: complete text from an assistant turn
+              // In agentic loops there are multiple turns; each appends.
+              // If we already have delta text, the deltas already covered this text,
+              // so skip to avoid duplication. If no deltas arrived (e.g. recovery),
+              // use this as the authoritative source.
+              else if (chunk.type === 'assistant_text' && chunk.content) {
+                osStore.appendStreamChunk(chunk.content)
+              }
+              // tool_use: agent is using a tool (show indicator)
+              else if (chunk.type === 'tool_use' && chunk.tools) {
+                const toolNames = chunk.tools.map((t: { name: string }) => t.name).join(', ')
+                osStore.appendStreamChunk(`[using: ${toolNames}]`)
+              }
+              // Legacy stream format (backward compat with CLI-spawned sessions)
+              else if (chunk.type === 'stream' && chunk.content) {
+                osStore.appendStreamChunk(chunk.content)
                 try {
                   const parsed = JSON.parse(chunk.content)
                   if (parsed.type === 'assistant' && parsed.message?.content) {
@@ -206,7 +226,7 @@ export function useWebSocket() {
                   if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
                     osStore.appendStreamText(parsed.delta.text)
                   }
-                } catch { /* not JSON or different format */ }
+                } catch { /* not JSON */ }
               }
               break
             }

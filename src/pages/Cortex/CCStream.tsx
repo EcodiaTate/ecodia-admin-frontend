@@ -518,7 +518,11 @@ export default function CCStream() {
       const result = await sendOSMessage(text)
       const store = useOSSessionStore.getState()
       if (store.status === 'streaming') {
-        if (result.text) store.appendStreamText(result.text)
+        // WebSocket didn't deliver os-session:complete — use HTTP response as fallback
+        // Only inject text if WebSocket didn't already stream it via deltas
+        if (result.text && !store.streamText) {
+          store.appendStreamText(result.text)
+        }
         store.finalizeResponse()
       }
     } catch (err: unknown) {
