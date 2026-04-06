@@ -19,15 +19,15 @@ export default {
           muted: '#5A6360',
         },
         primary: {
-          DEFAULT: '#0D7C5A',
-          container: '#14B882',
-          light: '#34D399',
-          dim: '#065F46',
+          DEFAULT: '#1B7A3D',
+          container: '#2ECC71',
+          light: '#5FE89D',
+          dim: '#126B30',
         },
         secondary: {
-          DEFAULT: '#0891B2',
-          container: '#22D3EE',
-          light: '#67E8F9',
+          DEFAULT: '#10B981',
+          container: '#6EE7B7',
+          light: '#A7F3D0',
         },
         tertiary: {
           DEFAULT: '#D97706',
@@ -46,22 +46,13 @@ export default {
           bright: '#F59E0B',
           muted: '#B45309',
           glow: '#FBBF24',
+          ember: '#EA580C',
         },
-        // Chromatic accents for data viz and ambient effects
-        violet: {
-          DEFAULT: '#7C3AED',
-          light: '#A78BFA',
-          glow: '#C4B5FD',
-        },
-        rose: {
-          DEFAULT: '#E11D48',
-          light: '#FB7185',
-          glow: '#FECDD3',
-        },
-        sky: {
-          DEFAULT: '#0284C7',
-          light: '#38BDF8',
-          glow: '#BAE6FD',
+        // Accent for data viz contrast — always secondary to green+gold
+        emerald: {
+          DEFAULT: '#059669',
+          light: '#34D399',
+          glow: '#6EE7B7',
         },
       },
       fontFamily: {
@@ -87,16 +78,15 @@ export default {
         '28': '7rem',
       },
       boxShadow: {
-        glass: '0 20px 50px -12px rgba(13, 124, 90, 0.05), 0 8px 20px -8px rgba(8, 145, 178, 0.03)',
-        'glass-elevated': '0 32px 64px -16px rgba(13, 124, 90, 0.07), 0 12px 28px -8px rgba(8, 145, 178, 0.04)',
-        'glass-hover': '0 28px 60px -14px rgba(13, 124, 90, 0.08), 0 10px 24px -8px rgba(124, 58, 237, 0.03)',
-        'glass-floating': '0 40px 80px -20px rgba(13, 124, 90, 0.09), 0 16px 36px -10px rgba(8, 145, 178, 0.05)',
-        'glow-primary': '0 0 24px rgba(20, 184, 130, 0.18), 0 0 48px rgba(20, 184, 130, 0.06)',
-        'glow-active': '0 0 30px rgba(20, 184, 130, 0.25), 0 0 60px rgba(34, 211, 238, 0.10)',
-        'glow-gold': '0 0 24px rgba(217, 119, 6, 0.18), 0 0 48px rgba(251, 191, 36, 0.06)',
-        'glow-gold-active': '0 0 30px rgba(217, 119, 6, 0.25), 0 0 60px rgba(251, 191, 36, 0.10)',
-        'glow-violet': '0 0 24px rgba(124, 58, 237, 0.15), 0 0 48px rgba(167, 139, 250, 0.06)',
-        'glow-cyan': '0 0 24px rgba(8, 145, 178, 0.18), 0 0 48px rgba(34, 211, 238, 0.06)',
+        glass: '0 20px 50px -12px rgba(27, 122, 61, 0.05), 0 8px 20px -8px rgba(217, 119, 6, 0.02)',
+        'glass-elevated': '0 32px 64px -16px rgba(27, 122, 61, 0.07), 0 12px 28px -8px rgba(217, 119, 6, 0.03)',
+        'glass-hover': '0 28px 60px -14px rgba(27, 122, 61, 0.09), 0 10px 24px -8px rgba(251, 191, 36, 0.04)',
+        'glass-floating': '0 40px 80px -20px rgba(27, 122, 61, 0.10), 0 16px 36px -10px rgba(217, 119, 6, 0.04)',
+        'glow-primary': '0 0 24px rgba(46, 204, 113, 0.20), 0 0 48px rgba(46, 204, 113, 0.06)',
+        'glow-active': '0 0 30px rgba(46, 204, 113, 0.28), 0 0 60px rgba(251, 191, 36, 0.08)',
+        'glow-gold': '0 0 24px rgba(217, 119, 6, 0.20), 0 0 48px rgba(251, 191, 36, 0.08)',
+        'glow-gold-active': '0 0 30px rgba(245, 158, 11, 0.28), 0 0 60px rgba(251, 191, 36, 0.12)',
+        'glow-emerald': '0 0 24px rgba(5, 150, 105, 0.18), 0 0 48px rgba(52, 211, 153, 0.06)',
       },
       /* backdropBlur removed — no blur effects in the app */
       keyframes: {

@@ -51,10 +51,10 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 0, y: 0, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(13, 124, 90, 0.12)', x: '40%', y: '30%', size: '80%' },
-        { color: 'rgba(8, 145, 178, 0.09)', x: '72%', y: '55%', size: '60%' },
-        { color: 'rgba(124, 58, 237, 0.05)', x: '25%', y: '75%', size: '50%' },
-        { color: 'rgba(217, 119, 6, 0.04)', x: '85%', y: '20%', size: '40%' },
+        { color: 'rgba(27, 122, 61, 0.14)', x: '40%', y: '30%', size: '80%' },
+        { color: 'rgba(46, 204, 113, 0.10)', x: '72%', y: '55%', size: '60%' },
+        { color: 'rgba(217, 119, 6, 0.06)', x: '25%', y: '75%', size: '50%' },
+        { color: 'rgba(251, 191, 36, 0.04)', x: '85%', y: '20%', size: '40%' },
       ],
     },
   },
@@ -67,10 +67,10 @@ export const SCENES: Record<string, SceneConfig> = {
     position: { x: 0, y: 1, z: 0 },
     aurora: {
       orbs: [
-        { color: 'rgba(8, 145, 178, 0.08)', x: '50%', y: '45%', size: '75%' },
-        { color: 'rgba(13, 124, 90, 0.06)', x: '30%', y: '30%', size: '55%' },
-        { color: 'rgba(124, 58, 237, 0.04)', x: '70%', y: '70%', size: '45%' },
-        { color: 'rgba(217, 119, 6, 0.03)', x: '20%', y: '60%', size: '35%' },
+        { color: 'rgba(27, 122, 61, 0.08)', x: '50%', y: '45%', size: '75%' },
+        { color: 'rgba(217, 119, 6, 0.06)', x: '30%', y: '30%', size: '55%' },
+        { color: 'rgba(46, 204, 113, 0.05)', x: '70%', y: '70%', size: '50%' },
+        { color: 'rgba(251, 191, 36, 0.03)', x: '20%', y: '60%', size: '35%' },
       ],
     },
   },

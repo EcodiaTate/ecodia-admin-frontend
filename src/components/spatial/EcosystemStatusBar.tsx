@@ -23,7 +23,7 @@ function StatusDot({ state, alive }: { state: ConnectionState; alive: boolean })
     ? '#D97706'
     : state === 'connecting'
       ? '#5A6360'
-      : alive ? '#14B882' : '#5A6360'
+      : alive ? '#2ECC71' : '#5A6360'
 
   const shouldPulse = state === 'disconnected' || (state === 'connected' && alive)
 
@@ -83,7 +83,7 @@ export function EcosystemStatusBar() {
           {healthLabel}
         </span>
         {errorCount > 0 && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-rose-DEFAULT/50">
+          <span className="font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: 'rgba(220,38,38,0.50)' }}>
             {errorCount} error{errorCount > 1 ? 's' : ''}
           </span>
         )}
@@ -92,13 +92,13 @@ export function EcosystemStatusBar() {
       {/* Right: Ambient metrics */}
       <div className="flex items-center gap-6">
         <span className="font-mono text-[10px] uppercase tracking-[0.10em] text-on-surface-muted/25">
-          <span style={{ color: activeCount === totalCount ? 'rgba(20,184,130,0.45)' : 'rgba(217,119,6,0.45)' }}>
+          <span style={{ color: activeCount === totalCount ? 'rgba(46,204,113,0.50)' : 'rgba(217,119,6,0.50)' }}>
             {activeCount}
           </span>
           <span className="text-on-surface-muted/15">/{totalCount} workers</span>
         </span>
         {activeSessions != null && activeSessions > 0 && (
-          <span className="font-mono text-[10px] uppercase tracking-[0.10em]" style={{ color: 'rgba(8,145,178,0.45)' }}>
+          <span className="font-mono text-[10px] uppercase tracking-[0.10em]" style={{ color: 'rgba(27,122,61,0.50)' }}>
             {activeSessions} session{activeSessions > 1 ? 's' : ''}
           </span>
         )}
