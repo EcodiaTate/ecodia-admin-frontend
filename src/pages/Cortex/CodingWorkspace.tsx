@@ -105,6 +105,13 @@ function safeStr(val: unknown): string {
   try { return JSON.stringify(val) } catch { return '[object]' }
 }
 
+/** Safely coerce a value to a number (Postgres numeric comes as string) */
+function safeNum(val: unknown): number | null {
+  if (val === null || val === undefined) return null
+  const n = Number(val)
+  return Number.isFinite(n) ? n : null
+}
+
 // ─── Log line parser ─────────────────────────────────────────────────
 
 interface ParsedLogLine {
@@ -355,11 +362,11 @@ function SessionDetailView({ sessionId, onBack }: { sessionId: string; onBack: (
             <MetaChip icon={<Cpu className="w-3 h-3" />} label={safeStr((session as any).client_name)} />
           )}
           <MetaChip icon={<Zap className="w-3 h-3" />} label={safeStr(session.triggered_by)} />
-          {session.confidence_score != null && (
-            <MetaChip icon={<Activity className="w-3 h-3" />} label={`${(session.confidence_score * 100).toFixed(0)}%`} />
+          {safeNum(session.confidence_score) != null && (
+            <MetaChip icon={<Activity className="w-3 h-3" />} label={`${(safeNum(session.confidence_score)! * 100).toFixed(0)}%`} />
           )}
-          {session.cc_cost_usd != null && session.cc_cost_usd > 0 && (
-            <MetaChip label={`$${session.cc_cost_usd.toFixed(4)}`} />
+          {(safeNum(session.cc_cost_usd) ?? 0) > 0 && (
+            <MetaChip label={`$${safeNum(session.cc_cost_usd)!.toFixed(4)}`} />
           )}
           {session.started_at && (
             <MetaChip icon={<Clock className="w-3 h-3" />} label={timeAgo(session.started_at)} />
@@ -600,9 +607,9 @@ function OverviewView({ onSelectSession }: { onSelectSession: (id: string) => vo
                       {r.client_name && (
                         <span className="text-label-sm text-on-surface-muted/40">{safeStr(r.client_name)}</span>
                       )}
-                      {r.confidence != null && (
+                      {safeNum(r.confidence) != null && (
                         <span className="text-label-sm font-mono text-on-surface-muted/30">
-                          {(r.confidence * 100).toFixed(0)}%
+                          {(safeNum(r.confidence)! * 100).toFixed(0)}%
                         </span>
                       )}
                     </div>
