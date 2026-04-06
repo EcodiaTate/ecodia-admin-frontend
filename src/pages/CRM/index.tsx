@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getClient, getPipeline, getClientIntelligence, getClientTimeline, completeTask } from '@/api/crm'
+import { getClient, getPipeline, getClientIntelligence, getClientTimeline, completeTask, updateClientStatus } from '@/api/crm'
 import { ProjectDetail } from './ProjectDetail'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import type { Client, PipelineStage, CRMActivity } from '@/types/crm'
@@ -14,7 +14,6 @@ import {
   Heart, Inbox,
 } from 'lucide-react'
 import { formatRelative, formatCurrency } from '@/lib/utils'
-import api from '@/api/client'
 import toast from 'react-hot-toast'
 
 // ─── Stage config ────────────────────────────────────────────────────
@@ -76,7 +75,7 @@ export default function CRMPage() {
     return (Object.entries(pipeline) as [PipelineStage, Client[]][])
       .filter(([stage]) => stage !== 'archived')
       .flatMap(([, clients]) => clients)
-      .sort((a, b) => (STAGE_MOMENTUM[b.stage] ?? 0) - (STAGE_MOMENTUM[a.stage] ?? 0))
+      .sort((a, b) => (STAGE_MOMENTUM[b.status] ?? 0) - (STAGE_MOMENTUM[a.status] ?? 0))
   }, [pipeline])
 
   const filtered = useMemo(() => {
@@ -99,8 +98,8 @@ export default function CRMPage() {
     navigate('/crm', { replace: true })
   }
 
-  const liveCount = allClients.filter(c => c.stage === 'live' || c.stage === 'ongoing').length
-  const inMotionCount = allClients.filter(c => ['development', 'contract', 'proposal'].includes(c.stage)).length
+  const liveCount = allClients.filter(c => c.status === 'live' || c.status === 'ongoing').length
+  const inMotionCount = allClients.filter(c => ['development', 'contract', 'proposal'].includes(c.status)).length
   const totalRevenue = allClients.reduce((s, c) => s + ((c as any).pipeline_value || 0), 0)
 
   return (
@@ -190,7 +189,7 @@ function RelationalField({ clients, onSelect }: { clients: Client[]; onSelect: (
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {clients.map((client, i) => {
-        const momentum = STAGE_MOMENTUM[client.stage] ?? 0
+        const momentum = STAGE_MOMENTUM[client.status] ?? 0
         const opacity = 0.3 + momentum * 0.7
         const c = client as any
 
@@ -215,8 +214,8 @@ function RelationalField({ clients, onSelect }: { clients: Client[]; onSelect: (
                   <p className="mt-0.5 text-xs text-on-surface-muted truncate">{client.company}</p>
                 )}
               </div>
-              <span className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${STAGE_COLOR[client.stage]}`}>
-                {client.stage}
+              <span className={`shrink-0 font-mono text-[10px] uppercase tracking-wider ${STAGE_COLOR[client.status]}`}>
+                {client.status}
               </span>
             </div>
 
@@ -248,12 +247,12 @@ function RelationalField({ clients, onSelect }: { clients: Client[]; onSelect: (
 // ─── Client Detail Header ────────────────────────────────────────────
 
 function ClientDetail({ client }: { client: Client }) {
-  const momentum = STAGE_MOMENTUM[client.stage] ?? 0
+  const momentum = STAGE_MOMENTUM[client.status] ?? 0
   const queryClient = useQueryClient()
 
   const stageMutation = useMutation({
     mutationFn: async ({ stage, note }: { stage: string; note?: string }) => {
-      await api.patch(`/crm/clients/${client.id}/stage`, { stage, note })
+      await updateClientStatus(client.id, stage, note)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['client', client.id] })
@@ -276,10 +275,10 @@ function ClientDetail({ client }: { client: Client }) {
         <div className="flex flex-col items-end gap-2">
           {/* Stage selector */}
           <select
-            value={client.stage}
+            value={client.status}
             onChange={e => stageMutation.mutate({ stage: e.target.value })}
             disabled={stageMutation.isPending}
-            className={`font-mono text-sm uppercase tracking-wider bg-transparent border-none outline-none cursor-pointer ${STAGE_COLOR[client.stage]} disabled:opacity-50`}
+            className={`font-mono text-sm uppercase tracking-wider bg-transparent border-none outline-none cursor-pointer ${STAGE_COLOR[client.status]} disabled:opacity-50`}
           >
             {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
             <option value="archived">archived</option>

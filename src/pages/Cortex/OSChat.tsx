@@ -6,7 +6,7 @@
 import { useState, useRef, useEffect, useCallback, useId, lazy, Suspense } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowUp, Paperclip, FileText, X, Trash2, Loader2, CheckCircle2, AlertCircle, HelpCircle, Image as ImageIcon, PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { ArrowUp, Paperclip, FileText, X, Trash2, Loader2, CheckCircle2, AlertCircle, HelpCircle, Image as ImageIcon, PanelRightClose, PanelRightOpen, Brain, ArrowRightLeft, GitBranch, ChevronDown } from 'lucide-react'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -42,6 +42,80 @@ function PanelFallback() {
     <div className="flex items-center justify-center h-32">
       <Loader2 className="h-4 w-4 text-on-surface-muted/20 animate-spin" />
     </div>
+  )
+}
+
+// ─── Orchestration progress hook (WebSocket-driven) ─────────────────
+interface OrchestrationProgress {
+  event: string
+  round?: number
+  content?: string
+  workspace?: string
+  prompt?: string
+  action?: string
+  count?: number
+  workspaces?: string[]
+  successes?: number
+  success?: boolean
+  rounds?: number
+  summary?: string
+  status?: string
+  error?: string
+}
+
+function useOrchestrationProgress() {
+  const [progress, setProgress] = useState<OrchestrationProgress | null>(null)
+
+  useEffect(() => {
+    function handleProgress(e: CustomEvent) {
+      const data = e.detail as OrchestrationProgress
+      setProgress(data)
+      // Auto-clear after orchestration ends
+      if (data.event === 'orchestration_complete' || data.event === 'done') {
+        setTimeout(() => setProgress(null), 2000)
+      }
+    }
+    window.addEventListener('ecodia:os-progress', handleProgress as EventListener)
+    return () => window.removeEventListener('ecodia:os-progress', handleProgress as EventListener)
+  }, [])
+
+  return progress
+}
+
+function OrchestrationIndicator({ progress }: { progress: OrchestrationProgress }) {
+  const getMessage = () => {
+    switch (progress.event) {
+      case 'orchestration_start': return 'planning...'
+      case 'round_start': return `reasoning step ${progress.round}`
+      case 'think': return 'thinking...'
+      case 'delegation_start': return `asking ${progress.workspace}...`
+      case 'parallel_start': return `querying ${progress.workspaces?.join(', ')}...`
+      case 'parallel_complete': return `${progress.successes}/${progress.count} departments responded`
+      case 'delegation_complete': return `${progress.workspace} ${progress.success ? 'responded' : 'failed'}`
+      case 'action_start': return `running ${progress.action}...`
+      case 'question': return 'needs your input'
+      case 'done': return progress.summary || 'complete'
+      case 'orchestration_complete': return `done in ${progress.rounds} steps`
+      default: return 'working...'
+    }
+  }
+
+  const isActive = !['done', 'orchestration_complete', 'question'].includes(progress.event)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      className="flex items-center gap-2 py-1"
+    >
+      {isActive ? (
+        <Loader2 className="h-3 w-3 text-primary/40 animate-spin" strokeWidth={2} />
+      ) : (
+        <CheckCircle2 className="h-3 w-3 text-secondary/50" strokeWidth={2} />
+      )}
+      <span className="text-[11px] text-on-surface-muted/50 font-mono">{getMessage()}</span>
+    </motion.div>
   )
 }
 
@@ -81,6 +155,14 @@ const WORKSPACE_GHOSTS: Record<string, string[]> = {
     'Resume the last session',
     'Deploy the latest changes',
     'Show coding dashboard',
+  ],
+  command: [
+    'How\'s the business doing?',
+    'Check all inboxes and CRM, summarise what needs attention',
+    'Fix bookkeeping then check if any clients need follow-up',
+    'Get me a full status across all departments',
+    'Draft replies to urgent emails and check pending code requests',
+    'What\'s happening? Give me the big picture.',
   ],
   vitals: [
     'How\'s the system doing?',
@@ -143,6 +225,85 @@ async function readFileAsAttachment(file: File): Promise<AttachedFile> {
 
 // ─── Block Renderers ─────────────────────────────────────────────────
 
+// ─── Think Block (collapsible reasoning) ─────────────────────────────
+function ThinkBlock({ content }: { content: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const preview = content.length > 120 ? content.slice(0, 120) + '...' : content
+
+  return (
+    <motion.div
+      className="rounded-xl border border-primary/8 bg-primary/[0.02] overflow-hidden"
+      layout
+    >
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-start gap-2 px-3 py-2 w-full text-left group"
+      >
+        <Brain className="h-3.5 w-3.5 text-primary/40 mt-0.5 flex-shrink-0" strokeWidth={1.75} />
+        <span className="text-xs text-on-surface-muted/60 leading-relaxed flex-1">
+          {expanded ? content : preview}
+        </span>
+        <motion.div
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+        >
+          <ChevronDown className="h-3 w-3 text-on-surface-muted/30 flex-shrink-0 mt-0.5" strokeWidth={2} />
+        </motion.div>
+      </button>
+    </motion.div>
+  )
+}
+
+// ─── Delegate Block (in-flight delegation) ───────────────────────────
+function DelegateBlock({ workspace, prompt }: { workspace: string; prompt: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-primary/10 bg-primary/[0.03] px-3 py-2">
+      <ArrowRightLeft className="h-3.5 w-3.5 text-primary/50 animate-pulse" strokeWidth={1.75} />
+      <span className="text-xs font-mono text-primary/60">{workspace}</span>
+      <span className="text-xs text-on-surface-muted/40 truncate flex-1">{prompt?.slice(0, 100)}</span>
+    </div>
+  )
+}
+
+// ─── Delegate Result Block ───────────────────────────────────────────
+function DelegateResultBlock({ block }: { block: { workspace: string; success: boolean; result?: string; error?: string; rounds?: number; prompt?: string } }) {
+  const [expanded, setExpanded] = useState(false)
+  const resultText = block.result || block.error || '(no output)'
+  const isLong = resultText.length > 200
+
+  return (
+    <div className={`rounded-xl border overflow-hidden ${
+      block.success ? 'border-secondary/12 bg-secondary/[0.02]' : 'border-error/12 bg-error/[0.02]'
+    }`}>
+      <button
+        onClick={() => isLong && setExpanded(!expanded)}
+        className="flex items-start gap-2 px-3 py-2 w-full text-left"
+      >
+        <GitBranch className={`h-3.5 w-3.5 mt-0.5 flex-shrink-0 ${block.success ? 'text-secondary/50' : 'text-error/50'}`} strokeWidth={1.75} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono text-on-surface-variant/70">{block.workspace}</span>
+            {block.rounds && block.rounds > 1 && (
+              <span className="text-[10px] text-on-surface-muted/40">{block.rounds} rounds</span>
+            )}
+          </div>
+          <p className="text-xs text-on-surface-variant/50 mt-0.5 leading-relaxed">
+            {expanded || !isLong ? resultText : resultText.slice(0, 200) + '...'}
+          </p>
+        </div>
+        {isLong && (
+          <motion.div
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          >
+            <ChevronDown className="h-3 w-3 text-on-surface-muted/30 flex-shrink-0 mt-1" strokeWidth={2} />
+          </motion.div>
+        )}
+      </button>
+    </div>
+  )
+}
+
 function OSBlockRenderer({ block }: { block: OSBlock }) {
   switch (block.type) {
     case 'text':
@@ -151,6 +312,15 @@ function OSBlockRenderer({ block }: { block: OSBlock }) {
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.content}</ReactMarkdown>
         </div>
       )
+
+    case 'think':
+      return <ThinkBlock content={block.content} />
+
+    case 'delegate':
+      return <DelegateBlock workspace={(block as { workspace: string }).workspace} prompt={(block as { prompt: string }).prompt} />
+
+    case 'delegate_result':
+      return <DelegateResultBlock block={block as { workspace: string; success: boolean; result?: string; error?: string; rounds?: number; prompt?: string }} />
 
     case 'action_card':
       return (
@@ -335,6 +505,7 @@ export default function OSChat() {
   const ContextPanel = WORKSPACE_PANELS[workspace] || null
   const showContextPanel = panelOpen && !!ContextPanel
 
+  const orchestrationProgress = useOrchestrationProgress()
   const ghostPrompt = useGhostPrompt(workspace)
   const canSend = (input.trim().length > 0 || attachments.length > 0) && !loading
 
@@ -558,10 +729,16 @@ export default function OSChat() {
                   </AnimatePresence>
 
                   {loading && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 py-2">
-                      <Loader2 className="h-3.5 w-3.5 text-primary/40 animate-spin" strokeWidth={1.75} />
-                      <span className="text-xs text-on-surface-muted/40 font-mono">working...</span>
-                    </motion.div>
+                    <AnimatePresence mode="wait">
+                      {workspace === 'command' && orchestrationProgress ? (
+                        <OrchestrationIndicator key="orch" progress={orchestrationProgress} />
+                      ) : (
+                        <motion.div key="basic" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 py-2">
+                          <Loader2 className="h-3.5 w-3.5 text-primary/40 animate-spin" strokeWidth={1.75} />
+                          <span className="text-xs text-on-surface-muted/40 font-mono">working...</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   )}
 
                   <div ref={chatEndRef} />

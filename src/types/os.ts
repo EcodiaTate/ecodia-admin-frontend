@@ -50,6 +50,27 @@ export interface OSUpdateContextBlock {
   value: string
 }
 
+export interface OSThinkBlock {
+  type: 'think'
+  content: string
+}
+
+export interface OSDelegateBlock {
+  type: 'delegate'
+  workspace: string
+  prompt: string
+}
+
+export interface OSDelegateResultBlock {
+  type: 'delegate_result'
+  workspace: string
+  prompt?: string
+  success: boolean
+  result?: string
+  error?: string
+  rounds?: number
+}
+
 export type OSBlock =
   | OSTextBlock
   | OSActionCardBlock
@@ -59,6 +80,9 @@ export type OSBlock =
   | OSNeedDocBlock
   | OSUpdateDocBlock
   | OSUpdateContextBlock
+  | OSThinkBlock
+  | OSDelegateBlock
+  | OSDelegateResultBlock
 
 export interface OSWorkspace {
   name: string
@@ -122,3 +146,19 @@ export interface OSChatMessage {
   blocks?: OSBlock[]
   timestamp: Date
 }
+
+// ── Orchestration progress events (streamed via WebSocket) ──
+
+export type OSProgressEvent =
+  | { event: 'orchestration_start'; workspace: string }
+  | { event: 'round_start'; round: number }
+  | { event: 'think'; content: string }
+  | { event: 'text'; content: string }
+  | { event: 'delegation_start'; workspace: string; prompt: string }
+  | { event: 'delegation_complete'; workspace: string; success: boolean; rounds?: number; error?: string }
+  | { event: 'parallel_start'; count: number; workspaces: string[] }
+  | { event: 'parallel_complete'; count: number; successes: number }
+  | { event: 'action_start'; action: string }
+  | { event: 'question'; content: string }
+  | { event: 'done'; summary: string }
+  | { event: 'orchestration_complete'; rounds: number; status: string }

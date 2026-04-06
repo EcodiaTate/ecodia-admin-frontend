@@ -17,13 +17,13 @@
  * Input is NEVER blocked. Multiple requests fly concurrently.
  */
 import { useState, useRef, useEffect, useCallback, useId, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getKGStats } from '@/api/knowledgeGraph'
 import { sendCortexChat, getCortexBriefing } from '@/api/cortex'
 import { getSession } from '@/api/claudeCode'
 import { useCortexStore } from '@/store/cortexStore'
-import { useOSCortexStore } from '@/store/osCortexStore'
+// useOSCortexStore still used by legacy OrganismCortex below — kept for reference
+// import { useOSCortexStore } from '@/store/osCortexStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowUp, Brain, Network, Paperclip,
@@ -35,7 +35,7 @@ import { BlockRenderer } from './blocks/BlockRenderer'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import OSChat from './OSChat'
+// import OSChat from './OSChat'  // Replaced by CCStream
 import type { ChatMessage, AttachedFile, CCSessionBlock, AmbientEvent } from '@/types/cortex'
 
 // ─── Ghost prompts — contextual, rotating ────────────────────────────
@@ -414,62 +414,23 @@ async function reactToCortex(summary: string, detail?: string) {
 
 export { reactToCortex }
 
-// ─── Mode Toggle ────────────────────────────────────────────────────
-function ModeToggle() {
-  const mode = useOSCortexStore(s => s.mode)
-  const setMode = useOSCortexStore(s => s.setMode)
-
-  return (
-    <div className="absolute top-4 right-6 z-30 flex items-center gap-0.5 rounded-full bg-surface-container/80 backdrop-blur-sm p-0.5">
-      <button
-        onClick={() => setMode('os')}
-        className={`rounded-full px-3 py-1 text-[11px] font-medium transition-all ${
-          mode === 'os' ? 'bg-primary/12 text-primary shadow-sm' : 'text-on-surface-muted/50 hover:text-on-surface-muted/70'
-        }`}
-      >
-        OS
-      </button>
-      <button
-        onClick={() => setMode('organism')}
-        className={`rounded-full px-3 py-1 text-[11px] font-medium transition-all ${
-          mode === 'organism' ? 'bg-primary/12 text-primary shadow-sm' : 'text-on-surface-muted/50 hover:text-on-surface-muted/70'
-        }`}
-      >
-        Organism
-      </button>
-    </div>
-  )
-}
-
 // ─── Page Router ────────────────────────────────────────────────────
+// Unified CC stream — replaces both Organism and OS modes.
+// The old modes are preserved in OrganismCortex and OSChat components
+// but the default interface is now the persistent CC session.
+
+import CCStream from './CCStream'
+
 export default function CortexPage() {
-  const mode = useOSCortexStore(s => s.mode)
-  const setWorkspace = useOSCortexStore(s => s.setWorkspace)
-  const setMode = useOSCortexStore(s => s.setMode)
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  // Sync ?ws= query param to workspace on mount / param change
-  useEffect(() => {
-    const ws = searchParams.get('ws')
-    if (ws) {
-      setWorkspace(ws)
-      setMode('os')
-      // Clear the param so it doesn't stick on tab switches
-      searchParams.delete('ws')
-      setSearchParams(searchParams, { replace: true })
-    }
-  }, [searchParams, setWorkspace, setMode, setSearchParams])
-
   return (
     <div className="relative h-full">
-      <ModeToggle />
-      {mode === 'os' ? <OSChat /> : <OrganismCortex />}
+      <CCStream />
     </div>
   )
 }
 
-// ─── Organism Cortex (original) ─────────────────────────────────────
-function OrganismCortex() {
+// ─── Organism Cortex (legacy — preserved for reference, not mounted) ─
+export function OrganismCortex() {
   const [input, setInput] = useState('')
   const [attachments, setAttachments] = useState<AttachedFile[]>([])
   const [isDragging, setIsDragging] = useState(false)

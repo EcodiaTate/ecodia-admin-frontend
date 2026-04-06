@@ -62,9 +62,9 @@ function PipelineMini({ onSelectClient }: { onSelectClient: (id: string) => void
     <div>
       {/* Stage bars */}
       <div className="flex gap-1 mb-2">
-        {stages.filter((s: any) => s.stage !== 'archived').map((s: any) => (
-          <div key={s.stage} className="flex-1 text-center">
-            <div className="text-[9px] text-on-surface-muted/30 uppercase tracking-wider mb-0.5">{s.stage}</div>
+        {stages.filter((s: any) => s.status !== 'archived').map((s: any) => (
+          <div key={s.status} className="flex-1 text-center">
+            <div className="text-[9px] text-on-surface-muted/30 uppercase tracking-wider mb-0.5">{s.status}</div>
             <div className="text-sm font-light text-on-surface/70">{s.count}</div>
             {s.total_value > 0 && (
               <div className="text-[9px] text-green-500/60">${(s.total_value / 1000).toFixed(0)}k</div>
@@ -168,7 +168,7 @@ function ClientIntelView({ clientId, onBack }: { clientId: string; onBack: () =>
           <h3 className="text-sm font-medium text-on-surface/80 truncate">{c.name}</h3>
           <div className="flex items-center gap-2 text-[10px] text-on-surface-muted/40">
             {c.company && <span>{c.company}</span>}
-            <span className="px-1.5 py-0.5 rounded bg-primary/5 text-primary/50">{c.stage}</span>
+            <span className="px-1.5 py-0.5 rounded bg-primary/5 text-primary/50">{c.status}</span>
             {c.health_score != null && (
               <span className={c.health_score >= 0.6 ? 'text-green-500/60' : c.health_score >= 0.4 ? 'text-amber-500/60' : 'text-red-400/60'}>
                 {(c.health_score * 100).toFixed(0)}% health
@@ -321,7 +321,7 @@ function QuickSearch({ onSelect }: { onSelect: (id: string) => void }) {
                 className="w-full text-left px-3 py-2 hover:bg-white/[0.06] flex items-center gap-2 text-xs">
                 <span className="text-on-surface/70 flex-1">{c.name}</span>
                 {c.company && <span className="text-on-surface-muted/30">{c.company}</span>}
-                <span className="px-1 py-0.5 rounded bg-primary/5 text-primary/40 text-[9px]">{c.stage}</span>
+                <span className="px-1 py-0.5 rounded bg-primary/5 text-primary/40 text-[9px]">{c.status}</span>
               </button>
             ))}
           </motion.div>

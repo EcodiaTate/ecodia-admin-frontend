@@ -71,3 +71,8 @@ export async function getRevenue(clientId?: string) {
   return data
 }
 
+export async function updateClientStatus(clientId: string, status: string, note?: string) {
+  const { data } = await api.patch(`/crm/clients/${clientId}/status`, { status, note })
+  return data
+}
+

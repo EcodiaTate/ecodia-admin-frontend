@@ -8,7 +8,7 @@ export interface Client {
   email: string | null
   phone: string | null
   linkedin_url: string | null
-  stage: PipelineStage
+  status: PipelineStage
   priority: 'low' | 'medium' | 'high'
   notes: { content: string; createdAt: string; source: string }[]
   tags: string[]

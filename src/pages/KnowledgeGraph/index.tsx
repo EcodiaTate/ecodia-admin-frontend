@@ -298,7 +298,7 @@ function ExploreTab({ searchQuery, setSearchQuery, selectedNode, neighbors, stat
 
 function ArchiveTab({ stats }: { stats: Awaited<ReturnType<typeof getKGStats>> | undefined }) {
   const { data: clientData, isLoading } = useQuery({ queryKey: ['archivedClients'], queryFn: () => getClients({ limit: 50 }) })
-  const archivedClients = (clientData?.clients ?? []).filter(c => c.stage === 'archived')
+  const archivedClients = (clientData?.clients ?? []).filter(c => c.status === 'archived')
 
   return (
     <>

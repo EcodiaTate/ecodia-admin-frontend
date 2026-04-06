@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useNotificationStore } from '@/store/notificationStore'
 import { useCortexStore } from '@/store/cortexStore'
 import { useWorkerStore } from '@/store/workerStore'
+import { useOSSessionStore } from '@/store/osSessionStore'
 import type { CCSession } from '@/types/claudeCode'
 import api from '@/api/client'
 
@@ -150,6 +151,46 @@ export function useWebSocket() {
                 kind: 'action_expired',
                 summary: `Action expired: ${msg.payload?.title ?? 'item removed from queue'}`,
               })
+              break
+
+            // ─── OS Session (CC stream) ─────────────────────────
+            case 'os-session:output': {
+              const osStore = useOSSessionStore.getState()
+              const chunk = msg.data
+              if (chunk?.type === 'stream' && chunk.content) {
+                osStore.appendStreamChunk(chunk.content)
+                // Extract text content from stream-json for live display
+                try {
+                  const parsed = JSON.parse(chunk.content)
+                  if (parsed.type === 'assistant' && parsed.message?.content) {
+                    for (const block of parsed.message.content) {
+                      if (block.type === 'text' && block.text) {
+                        osStore.appendStreamText(block.text)
+                      }
+                    }
+                  }
+                  if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                    osStore.appendStreamText(parsed.delta.text)
+                  }
+                } catch { /* not JSON or different format */ }
+              }
+              break
+            }
+            case 'os-session:status': {
+              const osStore = useOSSessionStore.getState()
+              osStore.setStatus(msg.status || 'idle')
+              if (msg.sessionId) osStore.setSessionId(msg.sessionId)
+              break
+            }
+            case 'os-session:complete': {
+              const osStore = useOSSessionStore.getState()
+              osStore.finalizeResponse()
+              break
+            }
+
+            // ─── OS Orchestration Progress (legacy) ──────────────
+            case 'os:progress':
+              window.dispatchEvent(new CustomEvent('ecodia:os-progress', { detail: msg }))
               break
 
             // ─── Metabolic Pressure ───────────────────────────────
