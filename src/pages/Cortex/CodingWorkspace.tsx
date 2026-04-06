@@ -312,7 +312,7 @@ function SessionDetailView({ sessionId, onBack }: { sessionId: string; onBack: (
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
       transition={SPRING_ENTRANCE}
-      className="flex flex-col flex-1 min-h-0"
+      className="flex flex-col h-full"
     >
       {/* Back + header — sticky, always visible */}
       <div className="flex items-center gap-3 mb-4 flex-shrink-0">
@@ -476,7 +476,7 @@ function OverviewView({ onSelectSession }: { onSelectSession: (id: string) => vo
   ]
 
   return (
-    <div className="h-full space-y-6 overflow-y-auto scrollbar-thin pr-1">
+    <div className="space-y-6 pr-1">
       {/* Stats row — WhisperStat-style ambient numbers */}
       <div className="grid grid-cols-4 gap-3">
         {stats.map((s, i) => (
@@ -711,27 +711,19 @@ export default function CodingWorkspace() {
   }, [queryClient])
 
   return (
-    <div className="flex flex-col h-full px-4 py-4">
-      <AnimatePresence mode="wait">
-        {selectedSessionId ? (
+    <div className="relative h-full overflow-hidden px-4 py-4">
+      {selectedSessionId ? (
+        <div className="absolute inset-0 px-4 py-4 flex flex-col">
           <SessionDetailView
-            key={selectedSessionId}
             sessionId={selectedSessionId}
             onBack={() => setSelectedSessionId(null)}
           />
-        ) : (
-          <motion.div
-            key="overview"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, x: -15 }}
-            transition={SPRING_ENTRANCE}
-            className="flex-1 min-h-0"
-          >
-            <OverviewView onSelectSession={setSelectedSessionId} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      ) : (
+        <div className="h-full overflow-y-auto scrollbar-thin">
+          <OverviewView onSelectSession={setSelectedSessionId} />
+        </div>
+      )}
     </div>
   )
 }
