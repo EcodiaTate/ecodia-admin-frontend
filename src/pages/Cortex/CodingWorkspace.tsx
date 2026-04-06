@@ -476,7 +476,7 @@ function OverviewView({ onSelectSession }: { onSelectSession: (id: string) => vo
   ]
 
   return (
-    <div className="space-y-6 overflow-y-auto scrollbar-thin pr-1">
+    <div className="h-full space-y-6 overflow-y-auto scrollbar-thin pr-1">
       {/* Stats row — WhisperStat-style ambient numbers */}
       <div className="grid grid-cols-4 gap-3">
         {stats.map((s, i) => (
