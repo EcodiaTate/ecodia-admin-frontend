@@ -305,10 +305,10 @@ function SessionDetailView({ sessionId, onBack }: { sessionId: string; onBack: (
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 40, opacity: 0 }}
       transition={SPRING_ENTRANCE}
-      className="flex flex-col h-full"
+      className="flex flex-col flex-1 min-h-0"
     >
-      {/* Back + header */}
-      <div className="flex items-center gap-3 mb-4">
+      {/* Back + header — sticky, always visible */}
+      <div className="flex items-center gap-3 mb-4 flex-shrink-0">
         <motion.button
           onClick={onBack}
           whileHover={{ x: -2 }}
@@ -338,74 +338,67 @@ function SessionDetailView({ sessionId, onBack }: { sessionId: string; onBack: (
         )}
       </div>
 
-      {/* Prompt */}
-      <p className="text-sm text-on-surface/80 leading-relaxed mb-3 font-medium">
-        {safeStr(session.initial_prompt)}
-      </p>
-      <PipelineBar stage={session.pipeline_stage} />
+      {/* Info section — flex-shrink-0 so it never gets pushed away */}
+      <div className="flex-shrink-0">
+        {/* Prompt */}
+        <p className="text-sm text-on-surface/80 leading-relaxed mb-3 font-medium">
+          {safeStr(session.initial_prompt)}
+        </p>
+        <PipelineBar stage={session.pipeline_stage} />
 
-      {/* Metadata — floating glass chips */}
-      <div className="flex flex-wrap gap-2 mt-3">
-        {(session as any).codebase_name && (
-          <MetaChip icon={<Code2 className="w-3 h-3" />} label={safeStr((session as any).codebase_name)} accent />
-        )}
-        {(session as any).client_name && (
-          <MetaChip icon={<Cpu className="w-3 h-3" />} label={safeStr((session as any).client_name)} />
-        )}
-        <MetaChip icon={<Zap className="w-3 h-3" />} label={safeStr(session.triggered_by)} />
-        {session.confidence_score != null && (
-          <MetaChip icon={<Activity className="w-3 h-3" />} label={`${(session.confidence_score * 100).toFixed(0)}%`} />
-        )}
-        {session.cc_cost_usd != null && session.cc_cost_usd > 0 && (
-          <MetaChip label={`$${session.cc_cost_usd.toFixed(4)}`} />
-        )}
-        {session.started_at && (
-          <MetaChip icon={<Clock className="w-3 h-3" />} label={timeAgo(session.started_at)} />
-        )}
-      </div>
+        {/* Metadata — floating glass chips */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          {(session as any).codebase_name && (
+            <MetaChip icon={<Code2 className="w-3 h-3" />} label={safeStr((session as any).codebase_name)} accent />
+          )}
+          {(session as any).client_name && (
+            <MetaChip icon={<Cpu className="w-3 h-3" />} label={safeStr((session as any).client_name)} />
+          )}
+          <MetaChip icon={<Zap className="w-3 h-3" />} label={safeStr(session.triggered_by)} />
+          {session.confidence_score != null && (
+            <MetaChip icon={<Activity className="w-3 h-3" />} label={`${(session.confidence_score * 100).toFixed(0)}%`} />
+          )}
+          {session.cc_cost_usd != null && session.cc_cost_usd > 0 && (
+            <MetaChip label={`$${session.cc_cost_usd.toFixed(4)}`} />
+          )}
+          {session.started_at && (
+            <MetaChip icon={<Clock className="w-3 h-3" />} label={timeAgo(session.started_at)} />
+          )}
+        </div>
 
-      {/* Error */}
-      <AnimatePresence>
+        {/* Error */}
         {session.error_message && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-3 overflow-hidden"
-          >
+          <div className="mt-3">
             <div className="flex items-start gap-2 p-3 rounded-2xl bg-error/6 text-xs text-error/80">
               <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
               <span>{safeStr(session.error_message).slice(0, 300)}</span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Files changed */}
-      {session.files_changed && session.files_changed.length > 0 && (
-        <motion.details
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.15, ...SPRING_GLIDE }}
-          className="mt-3 group"
-        >
-          <summary className="flex items-center gap-2 text-label-sm font-mono text-on-surface-muted/50 cursor-pointer hover:text-on-surface-muted/70 transition-colors">
-            <GitBranch className="w-3 h-3" />
-            {session.files_changed.length} files changed
-          </summary>
-          <div className="mt-2 p-3 rounded-xl bg-surface-container-low/60 text-label-sm font-mono text-on-surface-muted/60 max-h-24 overflow-auto space-y-0.5">
-            {session.files_changed.map((f, i) => <div key={i}>{safeStr(f)}</div>)}
           </div>
-        </motion.details>
-      )}
+        )}
 
-      {/* Logs */}
+        {/* Files changed */}
+        {session.files_changed && session.files_changed.length > 0 && (
+          <details className="mt-3 group">
+            <summary className="flex items-center gap-2 text-label-sm font-mono text-on-surface-muted/50 cursor-pointer hover:text-on-surface-muted/70 transition-colors">
+              <GitBranch className="w-3 h-3" />
+              {session.files_changed.length} files changed
+            </summary>
+            <div className="mt-2 p-3 rounded-xl bg-surface-container-low/60 text-label-sm font-mono text-on-surface-muted/60 max-h-24 overflow-auto space-y-0.5">
+              {session.files_changed.map((f, i) => <div key={i}>{safeStr(f)}</div>)}
+            </div>
+          </details>
+        )}
+      </div>
+
+      {/* Logs — fills remaining space, scrolls internally */}
       <div className="flex-1 min-h-0 mt-4">
         <CompactLogViewer sessionId={session.id} isLive={isLive} />
       </div>
 
-      {/* Input */}
-      <SessionInput sessionId={session.id} canMessage={canMessage} isResume={isResumable} />
+      {/* Input — pinned to bottom */}
+      <div className="flex-shrink-0">
+        <SessionInput sessionId={session.id} canMessage={canMessage} isResume={isResumable} />
+      </div>
     </motion.div>
   )
 }

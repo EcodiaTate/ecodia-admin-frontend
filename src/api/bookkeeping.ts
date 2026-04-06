@@ -16,9 +16,10 @@ export const discardStaged = (id: string, learn = false) =>
   client.post(`/bookkeeping/staged/${id}/discard${learn ? '?learn=true' : ''}`).then(r => r.data)
 
 // ── Ingest ──
-export const uploadCSV = async (file: File, sourceAccount = '1000') => {
+export const uploadCSV = async (file: File, sourceAccount?: string) => {
   const text = await file.text()
-  return client.post(`/bookkeeping/ingest/csv?source_account=${sourceAccount}`, text, {
+  const qs = sourceAccount ? `?source_account=${sourceAccount}` : ''  // omit = auto-detect from CSV
+  return client.post(`/bookkeeping/ingest/csv${qs}`, text, {
     headers: { 'Content-Type': 'text/plain' },
   }).then(r => r.data)
 }
