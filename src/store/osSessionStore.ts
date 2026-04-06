@@ -4,6 +4,9 @@ import { persist } from 'zustand/middleware'
 /**
  * OS Session Store — state for the persistent CC OS session.
  * Manages the conversation stream, streaming state, and raw NDJSON chunks.
+ *
+ * Persistence: messages, sessionId, streamChunks, streamText, lastUserMessageAt
+ * all survive tab close so we can recover mid-turn responses.
  */
 
 export interface OSSessionMessage {
@@ -35,6 +38,10 @@ interface OSSessionStore {
   tokenUsage: TokenUsage | null
   /** Whether compaction is in progress */
   compacting: boolean
+  /** ISO timestamp of last user message — used for recovery after tab close */
+  lastUserMessageAt: string | null
+  /** Whether recovery has been attempted this session */
+  recoveryAttempted: boolean
 
   // Actions
   setStatus: (status: OSSessionStore['status']) => void
@@ -46,6 +53,9 @@ interface OSSessionStore {
   setTokenUsage: (usage: TokenUsage | null) => void
   setCompacting: (v: boolean) => void
   clearMessages: () => void
+  /** Inject a recovered assistant message (from backend recovery) */
+  injectRecoveredResponse: (text: string, chunks?: string[]) => void
+  setRecoveryAttempted: () => void
 }
 
 export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => ({
@@ -56,6 +66,8 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   sessionId: null,
   tokenUsage: null,
   compacting: false,
+  lastUserMessageAt: null,
+  recoveryAttempted: false,
 
   setStatus: (status) => set({ status }),
 
@@ -70,6 +82,8 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       status: 'streaming' as const,
       streamChunks: [],
       streamText: '',
+      lastUserMessageAt: new Date().toISOString(),
+      recoveryAttempted: false,
     }))
   },
 
@@ -89,7 +103,7 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
     const { streamChunks, streamText } = get()
     // Only add a message if we have content
     if (streamChunks.length === 0 && !streamText) {
-      set({ status: 'complete', streamChunks: [], streamText: '' })
+      set({ status: 'complete', streamChunks: [], streamText: '', lastUserMessageAt: null })
       return
     }
     set(state => ({
@@ -103,19 +117,46 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       status: 'complete',
       streamChunks: [],
       streamText: '',
+      lastUserMessageAt: null,
     }))
   },
 
   setSessionId: (id) => set({ sessionId: id }),
   setTokenUsage: (usage) => set({ tokenUsage: usage }),
   setCompacting: (v) => set({ compacting: v }),
-  clearMessages: () => set({ messages: [], streamChunks: [], streamText: '', status: 'idle', tokenUsage: null }),
+  clearMessages: () => set({
+    messages: [], streamChunks: [], streamText: '', status: 'idle',
+    tokenUsage: null, lastUserMessageAt: null, recoveryAttempted: false,
+  }),
+
+  /** Inject a response recovered from the backend after tab close */
+  injectRecoveredResponse: (text, chunks) => {
+    if (!text && (!chunks || chunks.length === 0)) return
+    set(state => ({
+      messages: [...state.messages, {
+        id: crypto.randomUUID(),
+        role: 'assistant' as const,
+        content: text || '(recovered response)',
+        chunks,
+        timestamp: new Date(),
+      }],
+      status: 'complete',
+      streamChunks: [],
+      streamText: '',
+      lastUserMessageAt: null,
+    }))
+  },
+
+  setRecoveryAttempted: () => set({ recoveryAttempted: true }),
 }),
 {
   name: 'os-session-chat',
   partialize: (state) => ({
     messages: state.messages,
     sessionId: state.sessionId,
+    streamChunks: state.streamChunks,
+    streamText: state.streamText,
+    lastUserMessageAt: state.lastUserMessageAt,
   }),
 },
 ))

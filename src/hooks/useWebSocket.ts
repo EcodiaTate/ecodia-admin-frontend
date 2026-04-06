@@ -28,6 +28,7 @@ export function useWebSocket() {
 
     let attempt = 0
     let mounted = true
+    let hasConnectedBefore = false
 
     async function connect() {
       if (!mounted) return
@@ -39,9 +40,42 @@ export function useWebSocket() {
         const ws = new WebSocket(`${wsBase}/ws?ticket=${data.ticket}`)
 
         ws.onopen = () => {
+          const isReconnect = hasConnectedBefore
           attempt = 0
+          hasConnectedBefore = true
           wsRef.current = ws
           setConnectionState('connected')
+
+          // On WS reconnect, check if we missed an OS session response
+          if (isReconnect) {
+            const osStore = useOSSessionStore.getState()
+            if (osStore.lastUserMessageAt || osStore.status === 'streaming') {
+              // We were streaming when we lost connection — check backend
+              import('@/api/osSession').then(({ getOSStatus, recoverResponse }) => {
+                getOSStatus().then(backendStatus => {
+                  if (backendStatus.active) {
+                    // Still going — WS will pick up from here
+                    osStore.setStatus('streaming')
+                  } else {
+                    // Completed while we were disconnected — recover
+                    const since = osStore.lastUserMessageAt || undefined
+                    recoverResponse(since || undefined).then(recovery => {
+                      if (recovery.found && recovery.text) {
+                        useOSSessionStore.setState({ streamChunks: [], streamText: '' })
+                        osStore.injectRecoveredResponse(recovery.text, recovery.chunks)
+                      } else if (osStore.streamChunks.length > 0 || osStore.streamText) {
+                        osStore.finalizeResponse()
+                      }
+                    }).catch(() => {
+                      if (osStore.streamChunks.length > 0 || osStore.streamText) {
+                        osStore.finalizeResponse()
+                      }
+                    })
+                  }
+                }).catch(() => {})
+              })
+            }
+          }
         }
 
         ws.onmessage = (event) => {

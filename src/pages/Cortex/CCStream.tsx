@@ -22,7 +22,7 @@ import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
-import { sendOSMessage, restartOS, getTokenUsage } from '@/api/osSession'
+import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
@@ -443,6 +443,70 @@ export default function CCStream() {
   }, [messages, status, streamText])
 
   useEffect(() => { inputRef.current?.focus() }, [])
+
+  // ─── Recovery: reconnect after tab close mid-turn ─────────────────
+  // On mount, check if we had an in-flight request (lastUserMessageAt set).
+  // If the last message is from the user with no assistant response, recover.
+  useEffect(() => {
+    const store = useOSSessionStore.getState()
+    if (store.recoveryAttempted) return
+    const { lastUserMessageAt, messages: msgs, streamText: existingStream, streamChunks: existingChunks } = store
+
+    // Case 1: We have persisted streamChunks from a tab close mid-stream.
+    // The WS is gone but we have partial data. Check backend status.
+    // Case 2: Last message is user with no response — backend may have completed.
+    const lastMsg = msgs[msgs.length - 1]
+    const needsRecovery = lastUserMessageAt || (existingChunks.length > 0 && existingStream)
+      || (lastMsg?.role === 'user' && msgs.filter(m => m.role === 'assistant').length < msgs.filter(m => m.role === 'user').length)
+
+    if (!needsRecovery) return
+
+    store.setRecoveryAttempted()
+
+    // If we have partial stream data, show it immediately while we check backend
+    if (existingStream && store.status !== 'streaming') {
+      store.setStatus('streaming')
+    }
+
+    // Check backend status and recover
+    ;(async () => {
+      try {
+        const backendStatus = await getOSStatus()
+
+        if (backendStatus.active) {
+          // Backend is still working — set streaming status, WS will pick up from here
+          store.setStatus('streaming')
+          return
+        }
+
+        // Backend finished (or idle). Try to recover the missed response.
+        const sinceTs = lastUserMessageAt || lastMsg?.timestamp?.toISOString?.() || undefined
+        const recovery = await recoverResponse(sinceTs ? String(sinceTs) : undefined)
+
+        if (recovery.found && recovery.text) {
+          // Clear any partial stream state first
+          if (store.streamChunks.length > 0 || store.streamText) {
+            // We have partial data — the recovered response is the complete version
+            useOSSessionStore.setState({ streamChunks: [], streamText: '' })
+          }
+          store.injectRecoveredResponse(recovery.text, recovery.chunks)
+        } else if (existingChunks.length > 0 || existingStream) {
+          // No backend recovery but we have partial stream data — finalize what we have
+          store.finalizeResponse()
+        } else {
+          // Nothing to recover — reset to idle
+          store.setStatus('idle')
+        }
+      } catch {
+        // Recovery failed — finalize any partial data we have
+        if (existingChunks.length > 0 || existingStream) {
+          store.finalizeResponse()
+        } else {
+          store.setStatus('idle')
+        }
+      }
+    })()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSend = useCallback(async () => {
     const text = input.trim()

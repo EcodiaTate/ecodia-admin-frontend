@@ -40,3 +40,16 @@ export async function getTokenUsage() {
   const { data } = await api.get('/os-session/tokens')
   return data as { input: number; output: number; total: number; threshold: number; needsCompaction: boolean }
 }
+
+/** Recover missed assistant response after tab close / disconnect */
+export async function recoverResponse(since?: string) {
+  const { data } = await api.get('/os-session/recover', { params: since ? { since } : {} })
+  return data as {
+    found: boolean
+    text: string
+    chunks: string[]
+    status: string
+    streaming: boolean
+    sessionId?: string
+  }
+}
