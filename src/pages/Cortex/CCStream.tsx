@@ -588,9 +588,13 @@ export default function CCStream() {
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value)
+    // Resize textarea without layout thrash: use requestAnimationFrame
+    // to batch the height reset and measurement into one frame
     const el = e.target
-    el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+    requestAnimationFrame(() => {
+      el.style.height = 'auto'
+      el.style.height = Math.min(el.scrollHeight, 200) + 'px'
+    })
   }, [])
 
   const handleRestart = useCallback(async () => {
