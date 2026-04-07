@@ -59,6 +59,13 @@ interface OSSessionStore {
   setRecoveryAttempted: () => void
 }
 
+/** Max messages to keep in memory/localStorage. Older messages are trimmed on add. */
+const MAX_MESSAGES = 100
+
+function trimMessages(msgs: OSSessionMessage[]): OSSessionMessage[] {
+  return msgs.length > MAX_MESSAGES ? msgs.slice(-MAX_MESSAGES) : msgs
+}
+
 export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => ({
   status: 'idle',
   messages: [],
@@ -74,12 +81,12 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
 
   addUserMessage: (content) => {
     set(state => ({
-      messages: [...state.messages, {
+      messages: trimMessages([...state.messages, {
         id: crypto.randomUUID(),
         role: 'user' as const,
         content,
         timestamp: new Date(),
-      }],
+      }]),
       status: 'streaming' as const,
       streamChunks: [],
       streamText: '',
@@ -112,13 +119,13 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       return
     }
     set(state => ({
-      messages: [...state.messages, {
+      messages: trimMessages([...state.messages, {
         id: crypto.randomUUID(),
         role: 'assistant' as const,
         content: streamText || '(processing...)',
         chunks: streamChunks,
         timestamp: new Date(),
-      }],
+      }]),
       status: 'complete',
       streamChunks: [],
       streamText: '',
@@ -138,13 +145,13 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   injectRecoveredResponse: (text, chunks) => {
     if (!text && (!chunks || chunks.length === 0)) return
     set(state => ({
-      messages: [...state.messages, {
+      messages: trimMessages([...state.messages, {
         id: crypto.randomUUID(),
         role: 'assistant' as const,
         content: text || '(recovered response)',
         chunks,
         timestamp: new Date(),
-      }],
+      }]),
       status: 'complete',
       streamChunks: [],
       streamText: '',

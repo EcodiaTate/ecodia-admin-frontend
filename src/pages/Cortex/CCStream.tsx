@@ -426,16 +426,27 @@ function TokenBar() {
 
 // ─── Main CCStream ──────────────────────────────────────────────────
 
+/** How many messages to show initially. Click "show earlier" to load more. */
+const VISIBLE_BATCH = 30
+
 export default function CCStream() {
   const [input, setInput] = useState('')
+  const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const userScrolledUp = useRef(false)
-  const messages = useOSSessionStore(s => s.messages)
+  const allMessages = useOSSessionStore(s => s.messages)
   const status = useOSSessionStore(s => s.status)
   const streamText = useOSSessionStore(s => s.streamText)
   const addUserMessage = useOSSessionStore(s => s.addUserMessage)
+
+  // Only render the most recent `visibleCount` messages
+  const messages = useMemo(() => {
+    if (allMessages.length <= visibleCount) return allMessages
+    return allMessages.slice(-visibleCount)
+  }, [allMessages, visibleCount])
+  const hasEarlier = allMessages.length > visibleCount
 
   const ghostPrompt = useGhostPrompt()
   const canSend = input.trim().length > 0 && status !== 'streaming'
@@ -635,6 +646,14 @@ export default function CCStream() {
           {hasMessages && (
             <div className="pb-8 pt-4 space-y-1">
               <AmbientVitals />
+              {hasEarlier && (
+                <button
+                  onClick={() => setVisibleCount(c => c + VISIBLE_BATCH)}
+                  className="w-full text-center py-2 text-xs text-on-surface-muted/30 hover:text-on-surface-muted/50 transition-colors font-mono"
+                >
+                  show {Math.min(VISIBLE_BATCH, allMessages.length - visibleCount)} earlier messages
+                </button>
+              )}
               <AnimatePresence initial={false}>
                 {messages.map(msg =>
                   msg.role === 'user'
