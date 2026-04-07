@@ -21,6 +21,7 @@ import {
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
 import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
 import { getGmailStats } from '@/api/gmail'
@@ -322,7 +323,7 @@ function AssistantMessage({ message }: { message: OSSessionMessage }) {
       {/* Response text — futuristic markdown rendering */}
       {displayText && (
         <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayText}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code({ className, children, ...props }) { const match = /language-(\w+)/.exec(className || ''); if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />; return <code className={className} {...props}>{children}</code>; } }}>{displayText}</ReactMarkdown>
         </div>
       )}
     </motion.div>
@@ -361,7 +362,7 @@ function StreamingIndicator({ text }: { text: string }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-3 space-y-3">
       {text && (
         <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code({ className, children, ...props }) { const match = /language-(\w+)/.exec(className || ''); if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />; return <code className={className} {...props}>{children}</code>; } }}>{text}</ReactMarkdown>
         </div>
       )}
       <div className="flex items-center gap-3">
