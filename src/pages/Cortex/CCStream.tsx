@@ -16,10 +16,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowUp, RotateCcw, Brain, ChevronDown,
   Mail, DollarSign, Zap, Activity,
-  GitBranch, TrendingUp,
+  GitBranch, TrendingUp, Download,
 } from 'lucide-react'
 // SpatialLayer removed from input area to fix jitter
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
@@ -246,6 +246,88 @@ function getToolAccent(name?: string) {
   return key ? TOOL_ACCENT[key] : { color: '#1B7A3D', glow: 'rgba(27,122,61,0.08)' }
 }
 
+// ─── API base URL ────────────────────────────────────────────────────
+
+function getApiBase() {
+  return (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL || 'https://api.admin.ecodia.au'
+}
+
+// ─── Download button — rendered when OS outputs a download:// link ───
+// Usage in OS response: [⬇ Download invoice.pdf](download:///api/files/invoice.pdf)
+
+function DownloadButton({ href, label }: { href: string; label: string }) {
+  const [downloading, setDownloading] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const url = href.startsWith('http') ? href : `${getApiBase()}${href.startsWith('/') ? '' : '/'}${href}`
+  const fileName = label.replace(/^[⬇↓\s]+/, '').trim() || url.split('/').pop() || 'file'
+
+  async function handleDownload() {
+    setDownloading(true)
+    try {
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = fileName
+      a.click()
+      URL.revokeObjectURL(a.href)
+      setDone(true)
+      setTimeout(() => setDone(false), 3000)
+    } catch {
+      window.open(url, '_blank')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <motion.button
+      onClick={handleDownload}
+      disabled={downloading}
+      whileTap={{ scale: 0.96 }}
+      className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium my-1"
+      style={{
+        background: done
+          ? 'linear-gradient(135deg, rgba(5,150,105,0.10), rgba(46,204,113,0.06))'
+          : 'linear-gradient(135deg, rgba(27,122,61,0.08), rgba(46,204,113,0.04))',
+        border: `1px solid ${done ? 'rgba(5,150,105,0.20)' : 'rgba(27,122,61,0.15)'}`,
+        color: done ? '#059669' : '#1B7A3D',
+      }}
+    >
+      {downloading ? (
+        <motion.div
+          className="h-3.5 w-3.5 rounded-full border-2"
+          style={{ borderColor: '#1B7A3D', borderTopColor: 'transparent' }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        />
+      ) : (
+        <Download className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.75} />
+      )}
+      <span>{done ? 'Downloaded' : fileName}</span>
+    </motion.button>
+  )
+}
+
+// ─── Custom ReactMarkdown renderers ──────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MARKDOWN_COMPONENTS: Components = {
+  a({ href, children }) {
+    const label = typeof children === 'string' ? children : ''
+    if (href?.startsWith('download://')) {
+      return <DownloadButton href={href.replace('download://', '')} label={label} />
+    }
+    return <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary/80 underline underline-offset-2 hover:text-primary transition-colors">{children}</a>
+  },
+  code({ className, children }) {
+    const match = /language-(\w+)/.exec(className || '')
+    if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />
+    return <code className={className}>{children}</code>
+  },
+}
+
 // ─── Message renderers ──────────────────────────────────────────────
 
 function UserMessage({ message }: { message: OSSessionMessage }) {
@@ -323,7 +405,7 @@ function AssistantMessage({ message }: { message: OSSessionMessage }) {
       {/* Response text — futuristic markdown rendering */}
       {displayText && (
         <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code({ className, children, ...props }) { const match = /language-(\w+)/.exec(className || ''); if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />; return <code className={className} {...props}>{children}</code>; } }}>{displayText}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{displayText}</ReactMarkdown>
         </div>
       )}
     </motion.div>
@@ -362,7 +444,7 @@ function StreamingIndicator({ text }: { text: string }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-3 space-y-3">
       {text && (
         <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code({ className, children, ...props }) { const match = /language-(\w+)/.exec(className || ''); if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />; return <code className={className} {...props}>{children}</code>; } }}>{text}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{text}</ReactMarkdown>
         </div>
       )}
       <div className="flex items-center gap-3">
@@ -607,7 +689,7 @@ export default function CCStream() {
   return (
     <div className="relative flex h-full flex-col">
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto max-w-3xl px-6">
+        <div className="mx-auto max-w-5xl px-6">
           {/* Ambient welcome — green + gold presence */}
           {!hasMessages && status !== 'streaming' && (
             <motion.div
@@ -675,7 +757,7 @@ export default function CCStream() {
       </div>
 
       {/* Input - no SpatialLayer, no transition-all, no parallax jitter */}
-      <div className="mx-auto max-w-3xl px-6 py-4">
+      <div className="mx-auto max-w-5xl px-6 py-4">
         <TokenBar />
         <div className="mt-2 rounded-2xl"
           style={{
