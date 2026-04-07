@@ -674,59 +674,54 @@ export default function CCStream() {
         </div>
       </div>
 
-      {/* Input — the whisper bar */}
-      <SpatialLayer z={20}>
-        <div className="mx-auto max-w-3xl px-6 py-4">
-          <TokenBar />
-          <div className="mt-2 rounded-2xl transition-all chromatic-focus"
-            style={{
-              background: 'rgba(255, 255, 255, 0.68)',
-              border: '1px solid rgba(255, 255, 255, 0.55)',
-              borderTopColor: 'rgba(255, 255, 255, 0.80)',
-              boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
-            }}
-          >
-            <div className="flex items-end gap-3 px-5 py-4">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder={ghostPrompt}
-                rows={1}
-                className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/25 outline-none leading-relaxed"
-                style={{ maxHeight: 200 }}
-              />
-              <div className="flex items-center gap-2">
-                {messages.length > 0 && (
-                  <motion.button
-                    onClick={handleRestart}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04] transition-all"
-                    title="New session"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  </motion.button>
-                )}
-                <motion.button
-                  onClick={handleSend}
-                  disabled={!canSend}
-                  whileTap={canSend ? { scale: 0.92 } : {}}
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-all disabled:opacity-0 disabled:scale-90"
-                  style={{
-                    background: canSend ? 'linear-gradient(135deg, #1B7A3D, #2ECC71)' : 'transparent',
-                    boxShadow: canSend ? '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)' : 'none',
-                    color: canSend ? 'white' : 'rgba(27,122,61,0.3)',
-                  }}
+      {/* Input - no SpatialLayer, no transition-all, no parallax jitter */}
+      <div className="mx-auto max-w-3xl px-6 py-4">
+        <TokenBar />
+        <div className="mt-2 rounded-2xl"
+          style={{
+            background: 'rgba(255, 255, 255, 0.68)',
+            border: '1px solid rgba(255, 255, 255, 0.55)',
+            borderTopColor: 'rgba(255, 255, 255, 0.80)',
+            boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
+          }}
+        >
+          <div className="flex items-end gap-3 px-5 py-4">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder={ghostPrompt}
+              rows={1}
+              className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/25 outline-none leading-relaxed"
+              style={{ maxHeight: 200 }}
+            />
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <button
+                  onClick={handleRestart}
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
+                  title="New session"
                 >
-                  <ArrowUp className="h-4 w-4" strokeWidth={2} />
-                </motion.button>
-              </div>
+                  <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
+                </button>
+              )}
+              <button
+                onClick={handleSend}
+                disabled={!canSend}
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0"
+                style={{
+                  background: canSend ? 'linear-gradient(135deg, #1B7A3D, #2ECC71)' : 'transparent',
+                  boxShadow: canSend ? '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)' : 'none',
+                  color: canSend ? 'white' : 'rgba(27,122,61,0.3)',
+                }}
+              >
+                <ArrowUp className="h-4 w-4" strokeWidth={2} />
+              </button>
             </div>
           </div>
         </div>
-      </SpatialLayer>
+      </div>
     </div>
   )
 }
