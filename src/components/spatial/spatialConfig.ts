@@ -78,13 +78,13 @@ export const SCENES: Record<string, SceneConfig> = {
 
 /** Extract the scene key from a pathname (e.g. '/crm/abc' → 'crm') */
 export function getSceneKey(pathname: string): string {
-  const segment = pathname.split('/')[1] || 'dashboard'
-  return segment in SCENES ? segment : 'dashboard'
+  const segment = pathname.split('/')[1] || 'cortex'
+  return segment in SCENES ? segment : 'cortex'
 }
 
 /** Get scene config for a pathname */
 export function getScene(pathname: string): SceneConfig {
-  return SCENES[getSceneKey(pathname)] ?? SCENES.dashboard
+  return SCENES[getSceneKey(pathname)] ?? SCENES.cortex
 }
 
 /**
@@ -92,8 +92,8 @@ export function getScene(pathname: string): SceneConfig {
  * Returns { nx, ny, nz } used by the variant functions.
  */
 export function getDirection(fromKey: string, toKey: string) {
-  const from = SCENES[fromKey] ?? SCENES.dashboard
-  const to = SCENES[toKey] ?? SCENES.dashboard
+  const from = SCENES[fromKey] ?? SCENES.cortex
+  const to = SCENES[toKey] ?? SCENES.cortex
 
   const dx = to.position.x - from.position.x
   const dy = to.position.y - from.position.y
