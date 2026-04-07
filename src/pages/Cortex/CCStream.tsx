@@ -18,7 +18,7 @@ import {
   Mail, DollarSign, Zap, Activity,
   GitBranch, TrendingUp,
 } from 'lucide-react'
-import { SpatialLayer } from '@/components/spatial/SpatialLayer'
+// SpatialLayer removed from input area to fix jitter
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
