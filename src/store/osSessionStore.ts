@@ -26,6 +26,20 @@ export interface TokenUsage {
   needsCompaction: boolean
 }
 
+/** A live tool call being tracked during streaming */
+export interface LiveToolCall {
+  id: string
+  name: string
+  /** SDK tool_use_id — used to match tool_result events */
+  toolUseId?: string
+  /** Raw input JSON as it streams in */
+  input?: string
+  /** Tool result once received */
+  result?: string
+  startedAt: number
+  completedAt?: number
+}
+
 interface OSSessionStore {
   status: 'idle' | 'streaming' | 'complete' | 'error'
   messages: OSSessionMessage[]
@@ -33,6 +47,8 @@ interface OSSessionStore {
   streamChunks: string[]
   /** Extracted text content from current stream (for live display) */
   streamText: string
+  /** Live tool calls in progress during current stream */
+  streamTools: LiveToolCall[]
   sessionId: string | null
   /** Token usage tracking for auto-compaction */
   tokenUsage: TokenUsage | null
@@ -42,6 +58,8 @@ interface OSSessionStore {
   lastUserMessageAt: string | null
   /** Whether recovery has been attempted this session */
   recoveryAttempted: boolean
+  /** Messages sent by user while OS was streaming (interrupt queue) */
+  interruptQueue: string[]
 
   // Actions
   setStatus: (status: OSSessionStore['status']) => void
@@ -49,6 +67,9 @@ interface OSSessionStore {
   appendStreamChunk: (chunk: string) => void
   appendStreamText: (text: string) => void
   replaceStreamText: (text: string) => void
+  addStreamTool: (tool: Omit<LiveToolCall, 'id' | 'startedAt'>) => void
+  /** Match by toolUseId first, fall back to name */
+  updateStreamTool: (idOrName: string, patch: Partial<LiveToolCall>) => void
   finalizeResponse: () => void
   setSessionId: (id: string | null) => void
   setTokenUsage: (usage: TokenUsage | null) => void
@@ -57,6 +78,9 @@ interface OSSessionStore {
   /** Inject a recovered assistant message (from backend recovery) */
   injectRecoveredResponse: (text: string, chunks?: string[]) => void
   setRecoveryAttempted: () => void
+  /** Queue an interrupt message (sent while OS is streaming) */
+  queueInterrupt: (msg: string) => void
+  clearInterruptQueue: () => void
 }
 
 /** Max messages to keep in memory/localStorage. Older messages are trimmed on add. */
@@ -71,11 +95,13 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   messages: [],
   streamChunks: [],
   streamText: '',
+  streamTools: [],
   sessionId: null,
   tokenUsage: null,
   compacting: false,
   lastUserMessageAt: null,
   recoveryAttempted: false,
+  interruptQueue: [],
 
   setStatus: (status) => set({ status }),
 
@@ -90,6 +116,7 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       status: 'streaming' as const,
       streamChunks: [],
       streamText: '',
+      streamTools: [],
       lastUserMessageAt: new Date().toISOString(),
       recoveryAttempted: false,
     }))
@@ -111,11 +138,29 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
     set({ streamText: text })
   },
 
+  addStreamTool: (tool) => {
+    set(state => ({
+      streamTools: [...state.streamTools, {
+        id: crypto.randomUUID(),
+        startedAt: Date.now(),
+        ...tool,
+      }],
+    }))
+  },
+
+  updateStreamTool: (idOrName, patch) => {
+    set(state => ({
+      streamTools: state.streamTools.map(t =>
+        (t.toolUseId === idOrName || t.name === idOrName) ? { ...t, ...patch } : t
+      ),
+    }))
+  },
+
   finalizeResponse: () => {
-    const { streamChunks, streamText } = get()
+    const { streamChunks, streamText, streamTools } = get()
     // Only add a message if we have content
     if (streamChunks.length === 0 && !streamText) {
-      set({ status: 'complete', streamChunks: [], streamText: '', lastUserMessageAt: null })
+      set({ status: 'complete', streamChunks: [], streamText: '', streamTools: [], lastUserMessageAt: null })
       return
     }
     set(state => ({
@@ -129,16 +174,19 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       status: 'complete',
       streamChunks: [],
       streamText: '',
+      streamTools: [],
       lastUserMessageAt: null,
     }))
+    // Suppress unused-var warning: streamTools is used to clear on finalize
+    void streamTools
   },
 
   setSessionId: (id) => set({ sessionId: id }),
   setTokenUsage: (usage) => set({ tokenUsage: usage }),
   setCompacting: (v) => set({ compacting: v }),
   clearMessages: () => set({
-    messages: [], streamChunks: [], streamText: '', status: 'idle',
-    tokenUsage: null, lastUserMessageAt: null, recoveryAttempted: false,
+    messages: [], streamChunks: [], streamText: '', streamTools: [], status: 'idle',
+    tokenUsage: null, lastUserMessageAt: null, recoveryAttempted: false, interruptQueue: [],
   }),
 
   /** Inject a response recovered from the backend after tab close */
@@ -155,11 +203,18 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       status: 'complete',
       streamChunks: [],
       streamText: '',
+      streamTools: [],
       lastUserMessageAt: null,
     }))
   },
 
   setRecoveryAttempted: () => set({ recoveryAttempted: true }),
+
+  queueInterrupt: (msg) => {
+    set(state => ({ interruptQueue: [...state.interruptQueue, msg] }))
+  },
+
+  clearInterruptQueue: () => set({ interruptQueue: [] }),
 }),
 {
   name: 'os-session-chat',

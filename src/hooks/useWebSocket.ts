@@ -206,10 +206,30 @@ export function useWebSocket() {
               else if (chunk.type === 'assistant_text' && chunk.content) {
                 osStore.appendStreamChunk(chunk.content)
               }
-              // tool_use: agent is using a tool (show indicator)
+              // tool_use: agent is using a tool — track each tool live
               else if (chunk.type === 'tool_use' && chunk.tools) {
-                const toolNames = chunk.tools.map((t: { name: string }) => t.name).join(', ')
+                const toolNames = (chunk.tools as Array<{ name: string; id?: string }>).map(t => t.name).join(', ')
                 osStore.appendStreamChunk(`[using: ${toolNames}]`)
+                for (const t of chunk.tools as Array<{ name: string; id?: string; input?: unknown }>) {
+                  osStore.addStreamTool({
+                    name: t.name,
+                    toolUseId: t.id,
+                    input: t.input ? JSON.stringify(t.input, null, 2) : undefined,
+                  })
+                }
+              }
+              // tool_result: tool finished — match by tool_use_id
+              else if (chunk.type === 'tool_result') {
+                const matchKey = chunk.tool_use_id || chunk.name
+                if (matchKey) {
+                  const resultStr = chunk.content
+                    ? (typeof chunk.content === 'string' ? chunk.content : JSON.stringify(chunk.content, null, 2))
+                    : undefined
+                  osStore.updateStreamTool(matchKey, {
+                    result: resultStr,
+                    completedAt: Date.now(),
+                  })
+                }
               }
               // Legacy stream format (backward compat with CLI-spawned sessions)
               else if (chunk.type === 'stream' && chunk.content) {
@@ -220,6 +240,9 @@ export function useWebSocket() {
                     for (const block of parsed.message.content) {
                       if (block.type === 'text' && block.text) {
                         osStore.appendStreamText(block.text)
+                      }
+                      if (block.type === 'tool_use') {
+                        osStore.addStreamTool({ name: block.name })
                       }
                     }
                   }

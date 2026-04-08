@@ -8,22 +8,22 @@
  * Tool badges pulse like neural activity.
  * Links shimmer like gold filaments.
  *
- * The system speaks. You observe. Occasionally you approve.
+ * The system speaks. You observe. Occasionally you interrupt.
  */
-import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, useId, useDeferredValue, memo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowUp, RotateCcw, Brain, ChevronDown,
+  ArrowUp, RotateCcw, Brain, ChevronDown, ChevronUp,
   Mail, DollarSign, Zap, Activity,
   GitBranch, TrendingUp, Download,
   Paperclip, FileText, X, Trash2, Image as ImageIcon,
+  Wrench, CheckCircle2, Clock, Copy, Check,
 } from 'lucide-react'
-// SpatialLayer removed from input area to fix jitter
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
-import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
+import { useOSSessionStore, type OSSessionMessage, type LiveToolCall } from '@/store/osSessionStore'
 import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
 import { EnergyWhisper } from '@/components/spatial/EnergyWhisper'
 import { getGmailStats } from '@/api/gmail'
@@ -97,13 +97,13 @@ const GHOST_PROMPTS = [
   'What\'s on the calendar this week?',
 ]
 
-function useGhostPrompt(): string {
+function useGhostPrompt(): { text: string; key: number } {
   const [idx, setIdx] = useState(0)
   useEffect(() => {
     const t = setInterval(() => setIdx(i => (i + 1) % GHOST_PROMPTS.length), 7000)
     return () => clearInterval(t)
   }, [])
-  return GHOST_PROMPTS[idx]
+  return { text: GHOST_PROMPTS[idx], key: idx }
 }
 
 // ─── Chromatic Vitals — green+gold ambient data ─────────────────────
@@ -279,9 +279,7 @@ function parseStreamChunks(chunks: string[]): ParsedChunk[] {
   return parsed
 }
 
-// ─── Tool badges — green+gold neural activity indicators ────────────
-// Every tool gets a green or gold accent — never blue.
-// The tool name renders like a system identifier: monospace, glowing.
+// ─── Tool accents ────────────────────────────────────────────────────
 
 const TOOL_ACCENT: Record<string, { color: string; glow: string }> = {
   gmail:    { color: '#1B7A3D', glow: 'rgba(27,122,61,0.10)' },
@@ -300,6 +298,129 @@ function getToolAccent(name?: string) {
   if (!name) return { color: '#1B7A3D', glow: 'rgba(27,122,61,0.08)' }
   const key = Object.keys(TOOL_ACCENT).find(k => name.toLowerCase().includes(k))
   return key ? TOOL_ACCENT[key] : { color: '#1B7A3D', glow: 'rgba(27,122,61,0.08)' }
+}
+
+// ─── Live Tool Call Panel ─────────────────────────────────────────────
+// Memoized so text-delta re-renders of StreamingOutput don't cascade into tools.
+
+const LiveToolPanel = memo(function LiveToolPanel({ tool }: { tool: LiveToolCall }) {
+  const [open, setOpen] = useState(false)
+  const accent = getToolAccent(tool.name)
+  const isDone = tool.completedAt !== undefined
+  const elapsed = isDone
+    ? ((tool.completedAt! - tool.startedAt) / 1000).toFixed(1) + 's'
+    : null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+      className="rounded-xl overflow-hidden"
+      style={{
+        background: `linear-gradient(135deg, ${accent.color}06, ${accent.color}03)`,
+        border: `1px solid ${accent.color}18`,
+        boxShadow: `0 2px 12px -4px ${accent.glow}`,
+      }}
+    >
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex w-full items-center gap-2.5 px-3 py-2 text-left"
+      >
+        {isDone ? (
+          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" style={{ color: accent.color }} strokeWidth={2} />
+        ) : (
+          <motion.div
+            className="h-3.5 w-3.5 flex-shrink-0 flex items-center justify-center"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
+          >
+            <Wrench className="h-3.5 w-3.5" style={{ color: accent.color }} strokeWidth={1.75} />
+          </motion.div>
+        )}
+        <span className="flex-1 text-[11px] font-mono tracking-wide" style={{ color: `${accent.color}cc` }}>
+          {tool.name}
+        </span>
+        {isDone ? (
+          <span className="text-[10px] font-mono text-on-surface-muted/30 flex items-center gap-1">
+            <Clock className="h-2.5 w-2.5" strokeWidth={1.75} />
+            {elapsed}
+          </span>
+        ) : (
+          <motion.div
+            className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: accent.color, boxShadow: `0 0 6px ${accent.color}80` }}
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        )}
+        {(tool.input || tool.result) && (
+          <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
+            <ChevronDown className="h-3 w-3 text-on-surface-muted/30 flex-shrink-0" strokeWidth={2} />
+          </motion.div>
+        )}
+      </button>
+      <AnimatePresence>
+        {open && (tool.input || tool.result) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="overflow-hidden"
+          >
+            <div className="px-3 pb-3 space-y-2">
+              {tool.input && (
+                <div>
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface-muted/30 mb-1">input</p>
+                  <pre className="text-[10px] font-mono text-on-surface-muted/50 whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-32"
+                    style={{ background: `${accent.color}04`, borderRadius: 6, padding: '6px 8px' }}>
+                    {tool.input}
+                  </pre>
+                </div>
+              )}
+              {tool.result && (
+                <div>
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface-muted/30 mb-1">result</p>
+                  <pre className="text-[10px] font-mono text-on-surface-muted/50 whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-40"
+                    style={{ background: 'rgba(5,150,105,0.04)', borderRadius: 6, padding: '6px 8px' }}>
+                    {tool.result.length > 1200 ? tool.result.slice(0, 1200) + '\n… (truncated)' : tool.result}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+})
+
+// ─── Finalized tool badge (in completed messages) ────────────────────
+
+function ToolBadge({ toolName, i }: { toolName: string; i: number }) {
+  const accent = getToolAccent(toolName)
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 18, delay: i * 0.03 }}
+      className="flex items-center gap-1.5 rounded-xl px-3 py-1.5"
+      style={{
+        background: `linear-gradient(135deg, ${accent.color}08, ${accent.color}04)`,
+        border: `1px solid ${accent.color}15`,
+        boxShadow: `0 2px 8px -2px ${accent.glow}, inset 0 1px 0 rgba(255,255,255,0.3)`,
+      }}
+    >
+      <div
+        className="h-1 w-1 rounded-full flex-shrink-0"
+        style={{ backgroundColor: accent.color, boxShadow: `0 0 4px ${accent.color}60` }}
+      />
+      <span className="text-[11px] font-mono tracking-wide" style={{ color: `${accent.color}cc` }}>
+        {toolName}
+      </span>
+    </motion.div>
+  )
 }
 
 // ─── API base URL ────────────────────────────────────────────────────
@@ -366,6 +487,34 @@ function DownloadButton({ href, label }: { href: string; label: string }) {
   )
 }
 
+// ─── Copy-code button ─────────────────────────────────────────────────
+
+function CopyCodeButton({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false)
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* ignore */ }
+  }, [code])
+  return (
+    <button
+      onClick={handleCopy}
+      className="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity"
+      style={{
+        background: 'rgba(27,122,61,0.12)',
+        border: '1px solid rgba(27,122,61,0.18)',
+        color: copied ? '#2ECC71' : 'rgba(27,122,61,0.7)',
+        fontSize: 10,
+      }}
+    >
+      {copied ? <Check className="h-2.5 w-2.5" strokeWidth={2.5} /> : <Copy className="h-2.5 w-2.5" strokeWidth={1.75} />}
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  )
+}
+
 // ─── Custom ReactMarkdown renderers ──────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -377,6 +526,18 @@ const MARKDOWN_COMPONENTS: Components = {
     }
     return <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary/80 underline underline-offset-2 hover:text-primary transition-colors">{children}</a>
   },
+  pre({ children }) {
+    // Wrap pre in a group so copy button can hover-show
+    const code = typeof children === 'object' && children !== null && 'props' in (children as React.ReactElement)
+      ? String((children as React.ReactElement).props?.children ?? '')
+      : String(children ?? '')
+    return (
+      <div className="group relative">
+        <pre>{children}</pre>
+        <CopyCodeButton code={code} />
+      </div>
+    )
+  },
   code({ className, children }) {
     const match = /language-(\w+)/.exec(className || '')
     if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />
@@ -386,21 +547,41 @@ const MARKDOWN_COMPONENTS: Components = {
 
 // ─── Message renderers ──────────────────────────────────────────────
 
-function UserMessage({ message }: { message: OSSessionMessage }) {
+function fmtTimestamp(ts: Date | string | undefined): string {
+  if (!ts) return ''
+  const d = ts instanceof Date ? ts : new Date(ts)
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+function UserMessage({ message, isInterrupt }: { message: OSSessionMessage; isInterrupt?: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 90, damping: 22 }}
-      className="py-3"
+      className="group py-3"
     >
       <div className="rounded-2xl px-5 py-3.5" style={{
-        background: 'linear-gradient(135deg, rgba(27,122,61,0.05), rgba(46,204,113,0.03))',
-        border: '1px solid rgba(27,122,61,0.08)',
-        boxShadow: '0 2px 12px -4px rgba(27,122,61,0.06)',
+        background: isInterrupt
+          ? 'linear-gradient(135deg, rgba(217,119,6,0.07), rgba(251,191,36,0.04))'
+          : 'linear-gradient(135deg, rgba(27,122,61,0.05), rgba(46,204,113,0.03))',
+        border: `1px solid ${isInterrupt ? 'rgba(217,119,6,0.12)' : 'rgba(27,122,61,0.08)'}`,
+        boxShadow: isInterrupt
+          ? '0 2px 12px -4px rgba(217,119,6,0.08)'
+          : '0 2px 12px -4px rgba(27,122,61,0.06)',
       }}>
+        {isInterrupt && (
+          <p className="text-[9px] font-mono uppercase tracking-widest mb-1.5" style={{ color: 'rgba(217,119,6,0.5)' }}>
+            interrupt
+          </p>
+        )}
         <p className="text-sm leading-relaxed text-on-surface font-medium">{message.content}</p>
       </div>
+      {message.timestamp && (
+        <p className="mt-1 px-1 text-[10px] font-mono text-on-surface-muted/20 opacity-0 group-hover:opacity-100 transition-opacity">
+          {fmtTimestamp(message.timestamp)}
+        </p>
+      )}
     </motion.div>
   )
 }
@@ -417,52 +598,30 @@ function AssistantMessage({ message }: { message: OSSessionMessage }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.04 }}
-      className="py-3 space-y-3"
+      className="group py-3 space-y-3"
     >
-      {/* Thinking blocks — collapsible, green tint */}
       {thinkingBlocks.map((t, i) => (
         <ThinkingBlock key={`think-${i}`} content={t.content} />
       ))}
 
-      {/* Tool badges — futuristic neural activity pills */}
       {toolUses.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {toolUses.map((t, i) => {
-            const accent = getToolAccent(t.toolName)
-            return (
-              <motion.div
-                key={`tool-${i}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 18, delay: i * 0.03 }}
-                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5"
-                style={{
-                  background: `linear-gradient(135deg, ${accent.color}08, ${accent.color}04)`,
-                  border: `1px solid ${accent.color}15`,
-                  boxShadow: `0 2px 8px -2px ${accent.glow}, inset 0 1px 0 rgba(255,255,255,0.3)`,
-                }}
-              >
-                {/* Pulse dot */}
-                <motion.div
-                  className="h-1 w-1 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: accent.color, boxShadow: `0 0 4px ${accent.color}60` }}
-                  animate={{ opacity: [0.4, 1, 0.4] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                />
-                <span className="text-[11px] font-mono tracking-wide" style={{ color: `${accent.color}cc` }}>
-                  {t.toolName || t.content}
-                </span>
-              </motion.div>
-            )
-          })}
+          {toolUses.map((t, i) => (
+            <ToolBadge key={`tool-${i}`} toolName={t.toolName || t.content} i={i} />
+          ))}
         </div>
       )}
 
-      {/* Response text — futuristic markdown rendering */}
       {displayText && (
         <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{displayText}</ReactMarkdown>
         </div>
+      )}
+
+      {message.timestamp && (
+        <p className="px-1 text-[10px] font-mono text-on-surface-muted/20 opacity-0 group-hover:opacity-100 transition-opacity">
+          {fmtTimestamp(message.timestamp)}
+        </p>
       )}
     </motion.div>
   )
@@ -493,16 +652,40 @@ function ThinkingBlock({ content }: { content: string }) {
   )
 }
 
-// ─── Streaming indicator — green + gold breathing ───────────────────
+// ─── Streaming tools panel — memoized, only re-renders when tools change ──
 
-function StreamingIndicator({ text }: { text: string }) {
+const StreamingTools = memo(function StreamingTools({ tools }: { tools: LiveToolCall[] }) {
+  if (tools.length === 0) return null
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-3 space-y-3">
-      {text && (
-        <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{text}</ReactMarkdown>
-        </div>
-      )}
+    <div className="space-y-1.5">
+      {tools.map(tool => (
+        <LiveToolPanel key={tool.id} tool={tool} />
+      ))}
+    </div>
+  )
+})
+
+// ─── Streaming text — deferred so high-frequency deltas don't block UI ──
+
+function StreamingText({ text }: { text: string }) {
+  // useDeferredValue lets React deprioritise the Markdown re-parse during rapid deltas
+  const deferred = useDeferredValue(text)
+  if (!deferred) return null
+  return (
+    <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{deferred}</ReactMarkdown>
+    </div>
+  )
+}
+
+// ─── Streaming output — text + live tool panels ─────────────────────
+
+function StreamingOutput({ text, tools }: { text: string; tools: LiveToolCall[] }) {
+  const hasActiveTools = tools.some(t => !t.completedAt)
+  return (
+    <div className="py-3 space-y-3">
+      <StreamingTools tools={tools} />
+      <StreamingText text={text} />
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
           {[
@@ -520,9 +703,37 @@ function StreamingIndicator({ text }: { text: string }) {
           ))}
         </div>
         <span className="text-[11px] text-on-surface-muted/30 font-mono tracking-wider">
-          {text ? 'working' : 'thinking'}
+          {hasActiveTools ? 'using tools' : text ? 'working' : 'thinking'}
         </span>
       </div>
+    </div>
+  )
+}
+
+// ─── Interrupt notification banner ────────────────────────────────────
+
+function InterruptBanner({ count }: { count: number }) {
+  if (count === 0) return null
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      className="flex items-center gap-2 rounded-xl px-3 py-2 mx-auto max-w-sm"
+      style={{
+        background: 'linear-gradient(135deg, rgba(217,119,6,0.08), rgba(251,191,36,0.04))',
+        border: '1px solid rgba(217,119,6,0.15)',
+      }}
+    >
+      <motion.div
+        className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+        style={{ backgroundColor: '#F59E0B' }}
+        animate={{ opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 1.2, repeat: Infinity }}
+      />
+      <span className="text-[11px] font-mono text-on-surface-muted/50">
+        {count} interrupt{count > 1 ? 's' : ''} queued — OS will read when it pauses
+      </span>
     </motion.div>
   )
 }
@@ -565,26 +776,37 @@ function TokenBar() {
 
 // ─── Main CCStream ──────────────────────────────────────────────────
 
-/** How many messages to show initially. Click "show earlier" to load more. */
 const VISIBLE_BATCH = 30
+// Distance from bottom (px) before we stop auto-scrolling
+const SCROLL_LOCK_THRESHOLD = 120
 
 export default function CCStream() {
   const [input, setInput] = useState('')
   const [attachments, setAttachments] = useState<AttachedFile[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH)
+  const [userScrolledUp, setUserScrolledUp] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const lastSeenMessageCount = useRef(0)
+
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const fileInputId = useId()
   const chatEndRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  const userScrolledUp = useRef(false)
+  // Ref mirror for use inside callbacks without stale closure
+  const scrolledUpRef = useRef(false)
+  const isProgrammaticScroll = useRef(false)
+
   const allMessages = useOSSessionStore(s => s.messages)
   const status = useOSSessionStore(s => s.status)
   const streamText = useOSSessionStore(s => s.streamText)
+  const streamTools = useOSSessionStore(s => s.streamTools)
+  const interruptQueue = useOSSessionStore(s => s.interruptQueue)
   const addUserMessage = useOSSessionStore(s => s.addUserMessage)
+  const queueInterrupt = useOSSessionStore(s => s.queueInterrupt)
+  const clearInterruptQueue = useOSSessionStore(s => s.clearInterruptQueue)
 
-  // Only render the most recent `visibleCount` messages
   const messages = useMemo(() => {
     if (allMessages.length <= visibleCount) return allMessages
     return allMessages.slice(-visibleCount)
@@ -592,7 +814,10 @@ export default function CCStream() {
   const hasEarlier = allMessages.length > visibleCount
 
   const ghostPrompt = useGhostPrompt()
-  const canSend = (input.trim().length > 0 || attachments.length > 0) && status !== 'streaming'
+  const isStreaming = status === 'streaming'
+  // ghost prompt fades: key change triggers AnimatePresence exit+enter
+  // Always allow sending — during streaming it becomes an interrupt
+  const canSend = input.trim().length > 0 || attachments.length > 0
 
   // File handlers
   const handleFiles = useCallback(async (files: FileList | File[]) => {
@@ -613,34 +838,69 @@ export default function CCStream() {
     const el = scrollRef.current
     if (!el) return
     const onScroll = () => {
+      if (isProgrammaticScroll.current) return
       const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-      userScrolledUp.current = distFromBottom > 80
+      const scrolledUp = distFromBottom > SCROLL_LOCK_THRESHOLD
+      scrolledUpRef.current = scrolledUp
+      setUserScrolledUp(scrolledUp)
     }
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Auto-scroll only when user is near the bottom (or on new messages/status change)
-  useEffect(() => {
-    if (!userScrolledUp.current) {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [messages, status, streamText])
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    const el = chatEndRef.current
+    if (!el) return
+    isProgrammaticScroll.current = true
+    el.scrollIntoView({ behavior })
+    setTimeout(() => { isProgrammaticScroll.current = false }, 400)
+  }, [])
 
-  // Always scroll down when the user sends a new message
+  // Auto-scroll as stream text grows — only when user hasn't scrolled up
+  useEffect(() => {
+    if (!scrolledUpRef.current) {
+      scrollToBottom('smooth')
+    }
+  }, [streamText, scrollToBottom])
+
+  // Auto-scroll on new messages — always on own message, otherwise respect scroll lock
   const prevMessageCount = useRef(messages.length)
   useEffect(() => {
     if (messages.length > prevMessageCount.current) {
       const lastMsg = messages[messages.length - 1]
       if (lastMsg?.role === 'user') {
-        userScrolledUp.current = false
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        scrolledUpRef.current = false
+        setUserScrolledUp(false)
+        setUnreadCount(0)
+        lastSeenMessageCount.current = messages.length
+        scrollToBottom('smooth')
+      } else if (!scrolledUpRef.current) {
+        lastSeenMessageCount.current = messages.length
+        scrollToBottom('smooth')
+      } else {
+        // User is scrolled up — accumulate unread count
+        setUnreadCount(messages.length - lastSeenMessageCount.current)
       }
     }
     prevMessageCount.current = messages.length
-  }, [messages])
+  }, [messages, scrollToBottom])
 
   useEffect(() => { inputRef.current?.focus() }, [])
+
+  // '/' from anywhere refocuses the input (like Slack/Linear)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const active = document.activeElement
+      const isEditing = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
+      if (isEditing) return
+      if (e.key === '/' || e.key === 'Escape') {
+        e.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // ─── Recovery: reconnect after tab close mid-turn ─────────────────
   // On mount, check if we had an in-flight request (lastUserMessageAt set).
@@ -715,7 +975,6 @@ export default function CCStream() {
     setAttachments([])
     if (inputRef.current) inputRef.current.style.height = 'auto'
 
-    // Build full message: text + file contents appended inline
     let fullMessage = text
     for (const a of currentAttachments) {
       if (a.dataUrl) {
@@ -728,13 +987,24 @@ export default function CCStream() {
     }
     fullMessage = fullMessage.trim() || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`
 
+    if (isStreaming) {
+      // Interrupt: show in thread immediately, queue for OS awareness
+      queueInterrupt(fullMessage)
+      addUserMessage(fullMessage)
+      try {
+        await sendOSMessage(fullMessage)
+      } catch {
+        // Interrupt delivery failure is non-fatal
+      }
+      return
+    }
+
     addUserMessage(fullMessage)
+    clearInterruptQueue()
     try {
       const result = await sendOSMessage(fullMessage)
       const store = useOSSessionStore.getState()
       if (store.status === 'streaming') {
-        // WebSocket didn't deliver os-session:complete — use HTTP response as fallback
-        // Only inject text if WebSocket didn't already stream it via deltas
         if (result.text && !store.streamText) {
           store.appendStreamText(result.text)
         }
@@ -753,7 +1023,7 @@ export default function CCStream() {
         }],
       }))
     }
-  }, [input, addUserMessage])
+  }, [input, attachments, isStreaming, addUserMessage, queueInterrupt, clearInterruptQueue])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
@@ -803,8 +1073,8 @@ export default function CCStream() {
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-5xl px-6">
-          {/* Ambient welcome — green + gold presence */}
-          {!hasMessages && status !== 'streaming' && (
+          {/* Welcome state */}
+          {!hasMessages && !isStreaming && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -842,7 +1112,7 @@ export default function CCStream() {
             </motion.div>
           )}
 
-          {/* Conversation stream */}
+          {/* Conversation thread */}
           {hasMessages && (
             <div className="pb-8 pt-4 space-y-1">
               <AmbientVitals />
@@ -855,21 +1125,68 @@ export default function CCStream() {
                 </button>
               )}
               <AnimatePresence initial={false}>
-                {messages.map(msg =>
-                  msg.role === 'user'
-                    ? <UserMessage key={msg.id} message={msg} />
+                {messages.map((msg, i) => {
+                  const prevMsg = messages[i - 1]
+                  const isInterrupt = msg.role === 'user' && prevMsg?.role === 'user'
+                  return msg.role === 'user'
+                    ? <UserMessage key={msg.id} message={msg} isInterrupt={isInterrupt} />
                     : <AssistantMessage key={msg.id} message={msg} />
-                )}
+                })}
               </AnimatePresence>
             </div>
           )}
 
-          {status === 'streaming' && <StreamingIndicator text={streamText} />}
+          {/* Live streaming output */}
+          {isStreaming && <StreamingOutput text={streamText} tools={streamTools} />}
+
+          {/* Interrupt queue indicator */}
+          <AnimatePresence>
+            {isStreaming && interruptQueue.length > 0 && (
+              <div className="pb-3">
+                <InterruptBanner count={interruptQueue.length} />
+              </div>
+            )}
+          </AnimatePresence>
+
           <div ref={chatEndRef} />
         </div>
       </div>
 
-      {/* Input - wider on laptop, sits lower with more padding */}
+      {/* Floating scroll-to-bottom button with unread count */}
+      <AnimatePresence>
+        {userScrolledUp && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 8 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+            onClick={() => {
+              scrolledUpRef.current = false
+              setUserScrolledUp(false)
+              setUnreadCount(0)
+              lastSeenMessageCount.current = messages.length
+              scrollToBottom('smooth')
+            }}
+            className="absolute bottom-28 right-8 z-20 flex items-center gap-1.5 rounded-full shadow-lg px-3 py-2"
+            style={{
+              background: 'linear-gradient(135deg, rgba(27,122,61,0.90), rgba(46,204,113,0.80))',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(27,122,61,0.20)',
+              boxShadow: '0 4px 20px -4px rgba(27,122,61,0.35)',
+              color: 'white',
+            }}
+          >
+            <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.5} />
+            {unreadCount > 0 && (
+              <span className="text-[11px] font-mono font-semibold leading-none">
+                {unreadCount} new
+              </span>
+            )}
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Input area */}
       <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-center gap-4 mb-1">
@@ -900,14 +1217,44 @@ export default function CCStream() {
             )}
           </AnimatePresence>
 
-          <div className="mt-1 rounded-2xl"
+          <div className="mt-1 rounded-2xl transition-all duration-300"
             style={{
               background: 'rgba(255, 255, 255, 0.68)',
-              border: '1px solid rgba(255, 255, 255, 0.55)',
-              borderTopColor: 'rgba(255, 255, 255, 0.80)',
-              boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
+              border: isStreaming
+                ? '1px solid rgba(217,119,6,0.20)'
+                : '1px solid rgba(255, 255, 255, 0.55)',
+              borderTopColor: isStreaming
+                ? 'rgba(217,119,6,0.25)'
+                : 'rgba(255, 255, 255, 0.80)',
+              boxShadow: isStreaming
+                ? '0 20px 48px -12px rgba(217,119,6,0.08), 0 8px 20px -8px rgba(217,119,6,0.04), inset 0 1px 0 rgba(255,255,255,0.4)'
+                : '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
             }}
           >
+            {/* Interrupt mode hint strip */}
+            <AnimatePresence>
+              {isStreaming && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 px-5 pt-3 pb-0">
+                    <motion.div
+                      className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: '#F59E0B' }}
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity }}
+                    />
+                    <span className="text-[10px] font-mono text-on-surface-muted/35 tracking-wide">
+                      interrupt mode — OS will respond when it pauses
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="flex items-end gap-3 px-5 py-4">
               {/* Paperclip */}
               <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/30 transition-all hover:text-on-surface-muted/60" style={{ color: 'rgba(27,122,61,0.35)' }}>
@@ -923,17 +1270,35 @@ export default function CCStream() {
                 onChange={e => e.target.files && handleFiles(e.target.files)}
               />
 
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onPaste={handlePaste}
-                placeholder={ghostPrompt}
-                rows={1}
-                className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/25 outline-none leading-relaxed"
-                style={{ maxHeight: 200 }}
-              />
+              <div className="relative flex-1">
+                {/* Animated ghost placeholder — fades between prompts */}
+                {!input && !isStreaming && (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={ghostPrompt.key}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                      className="pointer-events-none absolute inset-0 flex items-center text-sm text-on-surface-muted/25 leading-relaxed"
+                      aria-hidden
+                    >
+                      {ghostPrompt.text}
+                    </motion.span>
+                  </AnimatePresence>
+                )}
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onPaste={handlePaste}
+                  placeholder={isStreaming ? 'Interrupt…' : ''}
+                  rows={1}
+                  className="w-full resize-none bg-transparent text-sm text-on-surface outline-none leading-relaxed"
+                  style={{ maxHeight: 200 }}
+                />
+              </div>
               <div className="flex items-center gap-2">
                 {messages.length > 0 && (
                   <button
@@ -947,14 +1312,26 @@ export default function CCStream() {
                 <button
                   onClick={handleSend}
                   disabled={!canSend}
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0"
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0 transition-all"
+                  title={isStreaming ? 'Send interrupt' : 'Send'}
                   style={{
-                    background: canSend ? 'linear-gradient(135deg, #1B7A3D, #2ECC71)' : 'transparent',
-                    boxShadow: canSend ? '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)' : 'none',
+                    background: !canSend
+                      ? 'transparent'
+                      : isStreaming
+                        ? 'linear-gradient(135deg, #D97706, #F59E0B)'
+                        : 'linear-gradient(135deg, #1B7A3D, #2ECC71)',
+                    boxShadow: !canSend
+                      ? 'none'
+                      : isStreaming
+                        ? '0 4px 16px -4px rgba(245,158,11,0.4), 0 0 12px rgba(245,158,11,0.15)'
+                        : '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)',
                     color: canSend ? 'white' : 'rgba(27,122,61,0.3)',
                   }}
                 >
-                  <ArrowUp className="h-4 w-4" strokeWidth={2} />
+                  {isStreaming
+                    ? <ChevronUp className="h-4 w-4" strokeWidth={2.5} />
+                    : <ArrowUp className="h-4 w-4" strokeWidth={2} />
+                  }
                 </button>
               </div>
             </div>
