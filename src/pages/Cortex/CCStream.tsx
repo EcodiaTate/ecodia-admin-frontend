@@ -739,10 +739,17 @@ function UserMessage({ message, isInterrupt }: { message: OSSessionMessage; isIn
 }
 
 function AssistantMessage({ message }: { message: OSSessionMessage }) {
+  // New path: tools and thinking saved directly on the message
+  const savedTools = message.tools ?? []
+  const savedThinking = message.thinking ?? ''
+
+  // Legacy path: parse from raw chunks (older messages)
   const chunks = message.chunks ? parseStreamChunks(message.chunks) : []
   const textContent = chunks.filter(c => c.type === 'text').map(c => c.content).join('\n\n')
-  const toolUses = chunks.filter(c => c.type === 'tool_use')
-  const thinkingBlocks = chunks.filter(c => c.type === 'thinking')
+  // Only use chunk-parsed tool badges if no saved tools (backward compat)
+  const legacyToolUses = savedTools.length === 0 ? chunks.filter(c => c.type === 'tool_use') : []
+  // Only use chunk-parsed thinking if no saved thinking (backward compat)
+  const legacyThinking = !savedThinking ? chunks.filter(c => c.type === 'thinking') : []
   const displayText = textContent || message.content
 
   return (
@@ -752,13 +759,23 @@ function AssistantMessage({ message }: { message: OSSessionMessage }) {
       transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.04 }}
       className="group py-3 space-y-3"
     >
-      {thinkingBlocks.map((t, i) => (
+      {/* Thinking — saved directly (new) or from chunks (legacy) */}
+      {savedThinking && <ThinkingBlock content={savedThinking} />}
+      {legacyThinking.map((t, i) => (
         <ThinkingBlock key={`think-${i}`} content={t.content} />
       ))}
 
-      {toolUses.length > 0 && (
+      {/* Tool calls — full panels with input/output if saved (new), plain badges if legacy */}
+      {savedTools.length > 0 && (
+        <div className="space-y-1.5">
+          {savedTools.map(tool => (
+            <LiveToolPanel key={tool.id} tool={tool} />
+          ))}
+        </div>
+      )}
+      {legacyToolUses.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {toolUses.map((t, i) => (
+          {legacyToolUses.map((t, i) => (
             <ToolBadge key={`tool-${i}`} toolName={t.toolName || t.content} i={i} />
           ))}
         </div>

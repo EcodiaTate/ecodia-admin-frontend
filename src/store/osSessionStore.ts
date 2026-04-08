@@ -15,6 +15,10 @@ export interface OSSessionMessage {
   content: string
   /** Raw NDJSON chunks from CC stream-json (for distillation) */
   chunks?: string[]
+  /** Tool calls that occurred during this response */
+  tools?: LiveToolCall[]
+  /** Extended thinking content for this response */
+  thinking?: string
   timestamp: Date
 }
 
@@ -110,21 +114,41 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   setStatus: (status) => set({ status }),
 
   addUserMessage: (content) => {
-    set(state => ({
-      messages: trimMessages([...state.messages, {
-        id: crypto.randomUUID(),
-        role: 'user' as const,
-        content,
-        timestamp: new Date(),
-      }]),
-      status: 'streaming' as const,
-      streamChunks: [],
-      streamText: '',
-      streamTools: [],
-      streamThinking: '',
-      lastUserMessageAt: new Date().toISOString(),
-      recoveryAttempted: false,
-    }))
+    set(state => {
+      // If there's an in-progress stream, snapshot it as a completed assistant message
+      // before adding the user message. This preserves tools/thinking on interrupt.
+      const inFlightMessages: OSSessionMessage[] = []
+      if (state.streamText || state.streamChunks.length > 0 || state.streamTools.length > 0) {
+        inFlightMessages.push({
+          id: crypto.randomUUID(),
+          role: 'assistant' as const,
+          content: state.streamText || '(processing...)',
+          chunks: state.streamChunks,
+          tools: state.streamTools.length > 0 ? state.streamTools : undefined,
+          thinking: state.streamThinking || undefined,
+          timestamp: new Date(),
+        })
+      }
+      return {
+        messages: trimMessages([
+          ...state.messages,
+          ...inFlightMessages,
+          {
+            id: crypto.randomUUID(),
+            role: 'user' as const,
+            content,
+            timestamp: new Date(),
+          },
+        ]),
+        status: 'streaming' as const,
+        streamChunks: [],
+        streamText: '',
+        streamTools: [],
+        streamThinking: '',
+        lastUserMessageAt: new Date().toISOString(),
+        recoveryAttempted: false,
+      }
+    })
   },
 
   appendStreamChunk: (chunk) => {
@@ -166,9 +190,9 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   },
 
   finalizeResponse: () => {
-    const { streamChunks, streamText } = get()
+    const { streamChunks, streamText, streamTools, streamThinking } = get()
     // Only add a message if we have content
-    if (streamChunks.length === 0 && !streamText) {
+    if (streamChunks.length === 0 && !streamText && streamTools.length === 0 && !streamThinking) {
       set({ status: 'complete', streamChunks: [], streamText: '', streamTools: [], streamThinking: '', lastUserMessageAt: null })
       return
     }
@@ -178,6 +202,8 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
         role: 'assistant' as const,
         content: streamText || '(processing...)',
         chunks: streamChunks,
+        tools: streamTools.length > 0 ? streamTools : undefined,
+        thinking: streamThinking || undefined,
         timestamp: new Date(),
       }]),
       status: 'complete',
