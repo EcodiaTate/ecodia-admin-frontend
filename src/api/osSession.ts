@@ -6,7 +6,7 @@ import api from './client'
  */
 
 export async function sendOSMessage(message: string) {
-  const { data } = await api.post('/os-session/message', { message }, { timeout: 300_000 })
+  const { data } = await api.post('/os-session/message', { message }, { timeout: 0 })
   return data as { sessionId: string; ccCliSessionId: string | null; code: number; text: string }
 }
 
@@ -32,7 +32,7 @@ export async function getOSHistory(limit = 100) {
 }
 
 export async function compactOS(summary: string) {
-  const { data } = await api.post('/os-session/compact', { summary }, { timeout: 300_000 })
+  const { data } = await api.post('/os-session/compact', { summary }, { timeout: 0 })
   return data as { sessionId: string }
 }
 

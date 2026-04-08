@@ -8,8 +8,8 @@ import type {
   OSCoreFact,
 } from '@/types/os'
 
-// 5 minute timeout for multi-turn task execution
-const LONG_TIMEOUT = 300_000
+// No timeout — CC sessions are agentic and indefinite
+const LONG_TIMEOUT = 0
 
 export async function runOSTask(
   workspace: string,
