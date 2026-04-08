@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Lightbulb } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { MarkdownLink } from '@/components/shared/MarkdownLink'
 import type { InsightBlock as InsightBlockType } from '@/types/cortex'
 
 const URGENCY_BG = {
@@ -30,7 +31,7 @@ export function InsightBlock({ block }: { block: InsightBlockType }) {
         [&_strong]:text-on-surface [&_strong]:font-medium
         [&_code]:bg-black/20 [&_code]:px-1 [&_code]:rounded [&_code]:font-mono
         [&_ul]:pl-4 [&_ul]:my-1 [&_li]:my-0.5">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.message}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>{block.message}</ReactMarkdown>
       </div>
     </motion.div>
   )

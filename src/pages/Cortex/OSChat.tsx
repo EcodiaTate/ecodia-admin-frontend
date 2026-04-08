@@ -10,6 +10,7 @@ import { ArrowUp, Paperclip, FileText, X, Trash2, Loader2, CheckCircle2, AlertCi
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { MarkdownLink } from '@/components/shared/MarkdownLink'
 import { useOSCortexStore } from '@/store/osCortexStore'
 import { runOSTask, getWorkspaces, getTask } from '@/api/os'
 import { uploadCSV } from '@/api/bookkeeping'
@@ -309,7 +310,7 @@ function OSBlockRenderer({ block }: { block: OSBlock }) {
     case 'text':
       return (
         <div className="text-sm leading-[1.8] text-on-surface-variant [&_p]:my-0 [&_p+p]:mt-3 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-0.5 [&_strong]:text-on-surface [&_strong]:font-semibold [&_code]:rounded-md [&_code]:bg-black/6 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.78em] [&_code]:text-primary/90">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>{block.content}</ReactMarkdown>
         </div>
       )
 
@@ -411,7 +412,7 @@ function OSAssistantMessage({ message }: { message: OSChatMessage }) {
       ))}
       {(!message.blocks || message.blocks.length === 0) && message.content && (
         <div className="text-sm leading-[1.8] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>{message.content}</ReactMarkdown>
         </div>
       )}
     </motion.div>

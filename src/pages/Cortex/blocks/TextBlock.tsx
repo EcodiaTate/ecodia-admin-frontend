@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { Check, Copy } from 'lucide-react'
+import { MarkdownLink } from '@/components/shared/MarkdownLink'
 import type { TextBlock as TextBlockType } from '@/types/cortex'
 
 // Minimal dark theme tuned to our light surface bg
@@ -183,6 +184,8 @@ export function TextBlock({ block }: { block: TextBlockType }) {
               </td>
             )
           },
+
+          a: MarkdownLink,
         }}
       >
         {block.content}

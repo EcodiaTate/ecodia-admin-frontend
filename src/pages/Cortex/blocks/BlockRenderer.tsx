@@ -6,6 +6,7 @@ import { TaskCard } from './TaskCard'
 import { StatusUpdate } from './StatusUpdate'
 import { InsightBlock } from './InsightBlock'
 import { LivingSession } from './LivingSession'
+import { DownloadButton } from './DownloadButton'
 
 export function BlockRenderer({ block }: { block: CortexBlock }) {
   switch (block.type) {
@@ -23,6 +24,8 @@ export function BlockRenderer({ block }: { block: CortexBlock }) {
       return <InsightBlock block={block} />
     case 'cc_session':
       return <LivingSession block={block} />
+    case 'download_button':
+      return <DownloadButton block={block} />
     default:
       return null
   }

@@ -59,6 +59,13 @@ export interface CCSessionBlock {
   title: string           // short description of what was asked
 }
 
+export interface DownloadButtonBlock {
+  type: 'download_button'
+  label: string
+  url: string
+  filename?: string
+}
+
 export type CortexBlock =
   | TextBlock
   | ActionCardBlock
@@ -67,6 +74,7 @@ export type CortexBlock =
   | StatusUpdateBlock
   | InsightBlock
   | CCSessionBlock
+  | DownloadButtonBlock
 
 export interface AttachedFile {
   id: string

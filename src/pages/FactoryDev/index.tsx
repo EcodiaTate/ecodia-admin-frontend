@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { MarkdownLink } from '@/components/shared/MarkdownLink'
 
 // ─── Status / Pipeline helpers ────────────────────────────────────────
 
@@ -278,7 +279,7 @@ function LogViewer({ sessionId, isLive }: { sessionId: string; isLive: boolean }
                     prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                     prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:pl-2 prose-blockquote:my-1 prose-blockquote:text-gray-600
                     prose-table:text-xs prose-th:p-1 prose-td:p-1">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>
                       {truncated ? line.content.slice(0, 300) + '…' : line.content}
                     </ReactMarkdown>
                   </div>
