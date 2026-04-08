@@ -54,16 +54,14 @@ export function SpatialEdgeLight() {
   // Listen for events that should trigger whispers
   useEffect(() => {
     const onActionQueue = () => triggerWhisper('dashboard')
-    const onOrganism = () => triggerWhisper('knowledge-graph')
+    const onPressure = () => triggerWhisper('knowledge-graph')
 
     window.addEventListener('ecodia:action-queue-update', onActionQueue)
-    window.addEventListener('ecodia:organism-surfacing', onOrganism)
-    window.addEventListener('ecodia:metabolic-pressure', onOrganism)
+    window.addEventListener('ecodia:metabolic-pressure', onPressure)
 
     return () => {
       window.removeEventListener('ecodia:action-queue-update', onActionQueue)
-      window.removeEventListener('ecodia:organism-surfacing', onOrganism)
-      window.removeEventListener('ecodia:metabolic-pressure', onOrganism)
+      window.removeEventListener('ecodia:metabolic-pressure', onPressure)
       if (whisperTimerRef.current) clearTimeout(whisperTimerRef.current)
     }
   }, [triggerWhisper])

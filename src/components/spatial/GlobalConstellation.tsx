@@ -21,7 +21,6 @@ interface Star {
 const SUBSYSTEMS = ['gmail', 'linkedin', 'finance', 'crm', 'factory', 'knowledge', 'workspace', 'organism']
 const BASE_OPACITY = 0.03
 const FLARE_DECAY = 0.012 // per frame at ~20fps → ~3.3s full decay
-const CC_FLARE_STRENGTH = 0.8
 const WORKER_FLARE_STRENGTH = 0.4
 const FRAME_INTERVAL = 1000 / 20
 
@@ -91,16 +90,13 @@ export function GlobalConstellation() {
     if (isCortex) return
 
     const onActionQueue = () => flare('organism', WORKER_FLARE_STRENGTH)
-    const onSurfacing = () => flare('organism', CC_FLARE_STRENGTH)
     const onPressure = () => flare('organism', WORKER_FLARE_STRENGTH * 0.5)
 
     window.addEventListener('ecodia:action-queue-update', onActionQueue)
-    window.addEventListener('ecodia:organism-surfacing', onSurfacing)
     window.addEventListener('ecodia:metabolic-pressure', onPressure)
 
     return () => {
       window.removeEventListener('ecodia:action-queue-update', onActionQueue)
-      window.removeEventListener('ecodia:organism-surfacing', onSurfacing)
       window.removeEventListener('ecodia:metabolic-pressure', onPressure)
     }
   }, [isCortex, flare])

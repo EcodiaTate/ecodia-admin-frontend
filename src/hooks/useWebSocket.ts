@@ -313,15 +313,6 @@ export function useWebSocket() {
               window.dispatchEvent(new CustomEvent('ecodia:metabolic-pressure', { detail: msg.payload }))
               break
 
-            // ─── Organism Surfacings ──────────────────────────────
-            case 'cognitive_broadcast':
-              window.dispatchEvent(new CustomEvent('ecodia:organism-surfacing', { detail: msg.payload }))
-              break
-
-            // ─── Self-Modification Proposals ──────────────────────
-            case 'self_modification':
-              window.dispatchEvent(new CustomEvent('ecodia:self-modification', { detail: msg.payload }))
-              break
           }
         }
 

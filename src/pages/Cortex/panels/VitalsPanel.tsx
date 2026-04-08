@@ -8,12 +8,12 @@ import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
-import { getOrganismVitals } from '@/api/symbridge'
+import { getSystemVitals } from '@/api/symbridge'
 import { getMomentum } from '@/api/momentum'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import { cn } from '@/lib/utils'
 import {
-  DollarSign, Activity, Cpu, Heart, Flame,
+  DollarSign, Activity, Cpu, Flame,
   ChevronRight, ChevronDown, AlertTriangle,
 } from 'lucide-react'
 import type { WorkerStatus } from '@/store/workerStore'
@@ -77,11 +77,6 @@ function StatsStrip() {
     queryFn: getActionStats,
     staleTime: 30_000,
   })
-  const workers = useWorkerStatus() as Record<string, WorkerStatus>
-
-  const workerList = Object.values(workers)
-  const totalWorkers = workerList.length
-  const healthyWorkers = workerList.filter(w => w.status === 'active').length
 
   const pending = actions?.pending ?? 0
 
@@ -99,12 +94,6 @@ function StatsStrip() {
         value={String(pending)}
         accent={pending > 0 ? 'text-gold' : undefined}
       />
-      <Stat
-        icon={Heart}
-        label="Workers"
-        value={totalWorkers > 0 ? `${healthyWorkers}/${totalWorkers}` : '--'}
-        accent={totalWorkers > 0 && healthyWorkers < totalWorkers ? 'text-gold' : undefined}
-      />
     </div>
   )
 }
@@ -113,8 +102,8 @@ function StatsStrip() {
 
 function SystemHealthSection() {
   const { data: vitals } = useQuery({
-    queryKey: ['vitals-organism'],
-    queryFn: getOrganismVitals,
+    queryKey: ['vitals-system'],
+    queryFn: getSystemVitals,
     staleTime: 30_000,
   })
   const workers = useWorkerStatus() as Record<string, WorkerStatus>
@@ -125,41 +114,24 @@ function SystemHealthSection() {
   const errorWorkers = workerList.filter(w => w.status === 'error')
   const fraction = totalWorkers > 0 ? (activeWorkers / totalWorkers) * 100 : 0
 
-  const osHealthy = vitals?.ecodiaos?.healthy
-  const orgHealthy = vitals?.organism?.healthy
+  const healthy = vitals?.healthy
 
   return (
     <div className="space-y-2 px-2">
-      {/* Organism status */}
+      {/* EcodiaOS status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <div className={cn(
             'h-1.5 w-1.5 rounded-full',
-            osHealthy ? 'bg-green-400' : osHealthy === false ? 'bg-error' : 'bg-on-surface-muted/15',
+            healthy ? 'bg-green-400' : healthy === false ? 'bg-error' : 'bg-on-surface-muted/15',
           )} />
           <span className="text-[10px] text-on-surface-muted/50">EcodiaOS</span>
         </div>
         <span className={cn(
           'text-[10px] font-mono tabular-nums',
-          osHealthy ? 'text-green-400/60' : 'text-on-surface-muted/25',
+          healthy ? 'text-green-400/60' : 'text-on-surface-muted/25',
         )}>
-          {osHealthy ? 'healthy' : osHealthy === false ? 'degraded' : 'unknown'}
-        </span>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <div className={cn(
-            'h-1.5 w-1.5 rounded-full',
-            orgHealthy ? 'bg-green-400' : orgHealthy === false ? 'bg-error' : 'bg-on-surface-muted/15',
-          )} />
-          <span className="text-[10px] text-on-surface-muted/50">Organism</span>
-        </div>
-        <span className={cn(
-          'text-[10px] font-mono tabular-nums',
-          orgHealthy ? 'text-green-400/60' : 'text-on-surface-muted/25',
-        )}>
-          {orgHealthy ? 'healthy' : orgHealthy === false ? 'degraded' : 'unknown'}
+          {healthy ? 'healthy' : healthy === false ? 'degraded' : 'unknown'}
         </span>
       </div>
 

@@ -73,22 +73,6 @@ function collectWhispers(): SceneWhisper[] {
     sessionStorage.removeItem('ecodia:pending-actions-while-away')
   }
 
-  // Check for organism surfacings
-  const surfacings = sessionStorage.getItem('ecodia:surfacings-while-away')
-  if (surfacings) {
-    try {
-      const count = JSON.parse(surfacings)
-      if (count > 0) {
-        whispers.push({
-          scene: 'knowledge-graph',
-          text: `organism — ${count} surfacing${count > 1 ? 's' : ''} while away`,
-          priority: 6,
-        })
-      }
-    } catch { /* skip */ }
-    sessionStorage.removeItem('ecodia:surfacings-while-away')
-  }
-
   // Sort by priority descending — show all significant events from absence
   return whispers.sort((a, b) => b.priority - a.priority)
 }
@@ -128,19 +112,13 @@ export function useHomecoming(): HomecomingState {
       const current = parseInt(sessionStorage.getItem('ecodia:pending-actions-while-away') || '0')
       sessionStorage.setItem('ecodia:pending-actions-while-away', String(current + 1))
     }
-    const onSurfacing = () => {
-      const current = parseInt(sessionStorage.getItem('ecodia:surfacings-while-away') || '0')
-      sessionStorage.setItem('ecodia:surfacings-while-away', String(current + 1))
-    }
 
     window.addEventListener('ecodia:cc-session-complete', onFactory)
     window.addEventListener('ecodia:action-queue-update', onAction)
-    window.addEventListener('ecodia:organism-surfacing', onSurfacing)
 
     return () => {
       window.removeEventListener('ecodia:cc-session-complete', onFactory)
       window.removeEventListener('ecodia:action-queue-update', onAction)
-      window.removeEventListener('ecodia:organism-surfacing', onSurfacing)
     }
   }, [])
 

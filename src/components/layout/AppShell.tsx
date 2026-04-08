@@ -9,7 +9,6 @@ import { FloatingNav } from '@/components/spatial/FloatingNav'
 import { AmbientStatus } from '@/components/spatial/AmbientStatus'
 import { EcosystemStatusBar } from '@/components/spatial/EcosystemStatusBar'
 import { GlobalConstellation } from '@/components/spatial/GlobalConstellation'
-import { OrganismSurfacings } from '@/components/spatial/OrganismSurfacings'
 import { HomecomingOverlay } from '@/components/spatial/HomecomingOverlay'
 
 export function AppShell() {
@@ -39,9 +38,6 @@ export function AppShell() {
 
           {/* Layer 4: Ambient status indicators */}
           <AmbientStatus />
-
-          {/* Layer 5: Organism surfacings - cognitive broadcasts + self-mod proposals */}
-          <OrganismSurfacings />
 
           {/* Layer 6: Homecoming overlay — drift state on return after absence */}
           <HomecomingOverlay />

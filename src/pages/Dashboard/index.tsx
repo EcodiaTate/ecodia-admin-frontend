@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
-import { getOrganismVitals } from '@/api/symbridge'
+import { getSystemVitals } from '@/api/symbridge'
 import { getMomentum } from '@/api/momentum'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
@@ -36,8 +36,8 @@ export default function DashboardPage() {
     refetchInterval: 120_000,
   })
   const { data: vitals } = useQuery({
-    queryKey: ['organismVitals'],
-    queryFn: getOrganismVitals,
+    queryKey: ['systemVitals'],
+    queryFn: getSystemVitals,
     retry: 1,
     refetchInterval: 30000,
   })
@@ -48,7 +48,7 @@ export default function DashboardPage() {
   })
 
   const net = finance?.net ?? 0
-  const organismAlive = vitals ? vitals.organism.healthy !== false : false
+  const systemHealthy = vitals?.healthy ?? false
 
   // Workers as a single pressure reading - fraction active
   const activeWorkers = Object.values(workers).filter(w => w.status === 'active').length
@@ -85,18 +85,18 @@ export default function DashboardPage() {
 
       {/* System breath - not a status bar, just a pulse */}
       <SpatialLayer z={15} className="mt-12 mb-16 flex items-center gap-6">
-        {/* Organism heartbeat */}
+        {/* System heartbeat */}
         <motion.div
-          animate={organismAlive ? {
+          animate={systemHealthy ? {
             scale: [1, 1.15, 1],
             opacity: [0.4, 0.7, 0.4],
           } : { opacity: 0.15 }}
-          transition={organismAlive ? {
+          transition={systemHealthy ? {
             repeat: Infinity,
             duration: 2.4,
             ease: 'easeInOut',
           } : {}}
-          className={`h-1.5 w-1.5 rounded-full ${organismAlive ? 'bg-secondary' : 'bg-on-surface-muted/20'}`}
+          className={`h-1.5 w-1.5 rounded-full ${systemHealthy ? 'bg-secondary' : 'bg-on-surface-muted/20'}`}
         />
 
         {/* Worker pressure - a single bar, not a grid */}
@@ -113,13 +113,6 @@ export default function DashboardPage() {
             {activeWorkers}/{totalWorkers}
           </span>
         </div>
-
-        {/* Latency whisper */}
-        {vitals?.organism?.lastResponseMs != null && (
-          <span className="font-mono text-[10px] text-on-surface-muted/20">
-            {vitals.organism.lastResponseMs}ms
-          </span>
-        )}
 
         {/* Activity today - only shown if there's something to say */}
         {actionStats && actionStats.executed_24h > 0 && (
