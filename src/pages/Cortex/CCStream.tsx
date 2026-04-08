@@ -25,6 +25,7 @@ import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
 import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
+import { EnergyWhisper } from '@/components/spatial/EnergyWhisper'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
@@ -871,7 +872,10 @@ export default function CCStream() {
       {/* Input - wider on laptop, sits lower with more padding */}
       <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
         <div className="mx-auto max-w-4xl">
-          <TokenBar />
+          <div className="flex items-center gap-4 mb-1">
+            <div className="flex-1"><TokenBar /></div>
+            <EnergyWhisper />
+          </div>
 
           {/* Attachment chips */}
           <AnimatePresence>

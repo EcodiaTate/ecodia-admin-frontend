@@ -241,6 +241,13 @@ export function useWebSocket() {
               osStore.finalizeResponse()
               break
             }
+            case 'os-session:energy': {
+              // Server pushed a fresh energy snapshot — update React Query cache directly
+              if (msg && msg.pctRemaining != null) {
+                queryClient.setQueryData(['claudeEnergy'], msg)
+              }
+              break
+            }
             case 'os-session:tokens': {
               const osStore = useOSSessionStore.getState()
               osStore.setTokenUsage(msg)

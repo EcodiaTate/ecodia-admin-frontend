@@ -41,6 +41,40 @@ export async function getTokenUsage() {
   return data as { input: number; output: number; total: number; threshold: number; needsCompaction: boolean }
 }
 
+export interface EnergySnapshot {
+  weekStart: string
+  inputTokens: number
+  outputTokens: number
+  turns: number
+  pctUsed: number
+  pctRemaining: number
+  avgDailyBurn: number
+  projectedPctUsed: number
+  daysUntilExhaustion: number | null
+  hoursUntilReset: number
+  level: 'full' | 'healthy' | 'conserve' | 'low' | 'critical'
+  label: string
+  modelRec: 'opus' | 'sonnet' | 'bedrock-sonnet'
+  scheduleMultiplier: number
+  summary: string
+}
+
+export async function getEnergy() {
+  const { data } = await api.get('/os-session/energy')
+  return data as EnergySnapshot
+}
+
+export async function getEnergyHistory(weeks = 4) {
+  const { data } = await api.get('/os-session/energy/history', { params: { weeks } })
+  return data.history as Array<{
+    week_start: string
+    provider: string
+    input_tokens: number
+    output_tokens: number
+    turns: number
+  }>
+}
+
 /** Recover missed assistant response after tab close / disconnect */
 export async function recoverResponse(since?: string) {
   const { data } = await api.get('/os-session/recover', { params: since ? { since } : {} })

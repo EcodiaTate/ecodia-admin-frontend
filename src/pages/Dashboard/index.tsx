@@ -5,6 +5,7 @@ import { getOrganismVitals } from '@/api/symbridge'
 import { getMomentum } from '@/api/momentum'
 import { SpatialLayer } from '@/components/spatial/SpatialLayer'
 import { GlassPanel } from '@/components/spatial/GlassPanel'
+import { EnergyWhisper } from '@/components/spatial/EnergyWhisper'
 import { useWorkerStatus } from '@/hooks/useWorkerStatus'
 import type { WorkerStatus } from '@/store/workerStore'
 import { ActionStream } from './ActionStream'
@@ -126,6 +127,9 @@ export default function DashboardPage() {
             {actionStats.executed_24h} done today
           </span>
         )}
+
+        {/* Claude energy — ambient, expands on hover */}
+        <EnergyWhisper />
       </SpatialLayer>
 
       {/* Momentum tracker — recent Factory activity */}
