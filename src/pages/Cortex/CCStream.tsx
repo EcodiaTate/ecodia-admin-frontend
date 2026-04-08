@@ -10,13 +10,14 @@
  *
  * The system speaks. You observe. Occasionally you approve.
  */
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowUp, RotateCcw, Brain, ChevronDown,
   Mail, DollarSign, Zap, Activity,
   GitBranch, TrendingUp, Download,
+  Paperclip, FileText, X, Trash2, Image as ImageIcon,
 } from 'lucide-react'
 // SpatialLayer removed from input area to fix jitter
 import ReactMarkdown, { type Components } from 'react-markdown'
@@ -28,6 +29,60 @@ import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
 import { getMomentum } from '@/api/momentum'
+import type { AttachedFile } from '@/types/cortex'
+
+// ─── File helpers ────────────────────────────────────────────────────
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function readFileAsAttachment(file: File): Promise<AttachedFile> {
+  const id = crypto.randomUUID()
+  if (file.type.startsWith('image/')) {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = e => resolve(e.target!.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+    return { id, name: file.name, type: file.type, size: file.size, dataUrl }
+  }
+  if (file.type.startsWith('text/') || file.name.match(/\.(md|txt|csv|json|ts|tsx|js|jsx|py|go|rs|sh|yaml|yml|toml|sql|html|css|xml)$/i)) {
+    const text = await file.text()
+    return { id, name: file.name, type: file.type || 'text/plain', size: file.size, text }
+  }
+  return { id, name: file.name, type: file.type || 'application/octet-stream', size: file.size }
+}
+
+// ─── Attachment chip ─────────────────────────────────────────────────
+
+function AttachmentChip({ file, onRemove }: { file: AttachedFile; onRemove: () => void }) {
+  if (file.dataUrl) {
+    return (
+      <div className="group relative flex-shrink-0">
+        <img src={file.dataUrl} alt={file.name} className="h-14 w-14 rounded-xl object-cover" style={{ border: '1px solid rgba(27,122,61,0.12)' }} />
+        <button onClick={onRemove} className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-on-surface text-surface shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+          <X className="h-2.5 w-2.5" strokeWidth={2.5} />
+        </button>
+      </div>
+    )
+  }
+  return (
+    <div className="group flex items-center gap-2 rounded-xl px-3 py-2 flex-shrink-0" style={{ border: '1px solid rgba(27,122,61,0.10)', background: 'rgba(27,122,61,0.03)' }}>
+      <FileText className="h-4 w-4 flex-shrink-0" style={{ color: '#1B7A3D' }} strokeWidth={1.5} />
+      <div className="min-w-0">
+        <p className="max-w-[120px] truncate text-xs font-medium text-on-surface">{file.name}</p>
+        <p className="text-[10px] text-on-surface-muted/50">{formatBytes(file.size)}</p>
+      </div>
+      <button onClick={onRemove} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface-muted/40 hover:text-error transition-colors">
+        <X className="h-3 w-3" strokeWidth={2} />
+      </button>
+    </div>
+  )
+}
 
 // ─── Ghost prompts ──────────────────────────────────────────────────
 const GHOST_PROMPTS = [
@@ -514,8 +569,12 @@ const VISIBLE_BATCH = 30
 
 export default function CCStream() {
   const [input, setInput] = useState('')
+  const [attachments, setAttachments] = useState<AttachedFile[]>([])
+  const [isDragging, setIsDragging] = useState(false)
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputId = useId()
   const chatEndRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const userScrolledUp = useRef(false)
@@ -532,7 +591,21 @@ export default function CCStream() {
   const hasEarlier = allMessages.length > visibleCount
 
   const ghostPrompt = useGhostPrompt()
-  const canSend = input.trim().length > 0 && status !== 'streaming'
+  const canSend = (input.trim().length > 0 || attachments.length > 0) && status !== 'streaming'
+
+  // File handlers
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
+    const parsed = await Promise.all(Array.from(files).map(readFileAsAttachment))
+    setAttachments(prev => [...prev, ...parsed])
+  }, [])
+
+  const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
+    const imageItems = Array.from(e.clipboardData.items).filter(i => i.type.startsWith('image/'))
+    if (!imageItems.length) return
+    e.preventDefault()
+    const files = imageItems.map(i => i.getAsFile()).filter(Boolean) as File[]
+    await handleFiles(files)
+  }, [handleFiles])
 
   // Track whether user has scrolled away from bottom
   useEffect(() => {
@@ -634,12 +707,29 @@ export default function CCStream() {
 
   const handleSend = useCallback(async () => {
     const text = input.trim()
-    if (!text) return
+    if (!text && !attachments.length) return
+
+    const currentAttachments = [...attachments]
     setInput('')
+    setAttachments([])
     if (inputRef.current) inputRef.current.style.height = 'auto'
-    addUserMessage(text)
+
+    // Build full message: text + file contents appended inline
+    let fullMessage = text
+    for (const a of currentAttachments) {
+      if (a.dataUrl) {
+        fullMessage = `${fullMessage}\n\n[Image: ${a.name}]\n${a.dataUrl}`
+      } else if (a.text) {
+        fullMessage = `${fullMessage}\n\n[File: ${a.name}]\n${a.text}`
+      } else {
+        fullMessage = `${fullMessage}\n\n[Attached: ${a.name} (${formatBytes(a.size)}, ${a.type})]`
+      }
+    }
+    fullMessage = fullMessage.trim() || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`
+
+    addUserMessage(fullMessage)
     try {
-      const result = await sendOSMessage(text)
+      const result = await sendOSMessage(fullMessage)
       const store = useOSSessionStore.getState()
       if (store.status === 'streaming') {
         // WebSocket didn't deliver os-session:complete — use HTTP response as fallback
@@ -687,7 +777,29 @@ export default function CCStream() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="relative flex h-full flex-col">
+    <div
+      className="relative flex h-full flex-col"
+      onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+      onDragLeave={e => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false) }}
+      onDrop={async e => { e.preventDefault(); setIsDragging(false); await handleFiles(e.dataTransfer.files) }}
+    >
+      {/* Drop overlay */}
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          >
+            <div className="absolute inset-4 rounded-3xl border-2 border-dashed" style={{ borderColor: 'rgba(27,122,61,0.35)', background: 'rgba(27,122,61,0.02)' }} />
+            <div className="relative flex flex-col items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: 'rgba(27,122,61,0.08)' }}>
+                <ImageIcon className="h-6 w-6" style={{ color: '#1B7A3D' }} strokeWidth={1.5} />
+              </div>
+              <p className="text-sm font-medium text-on-surface">Drop to attach</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-5xl px-6">
           {/* Ambient welcome — green + gold presence */}
@@ -756,50 +868,91 @@ export default function CCStream() {
         </div>
       </div>
 
-      {/* Input - no SpatialLayer, no transition-all, no parallax jitter */}
-      <div className="mx-auto max-w-5xl px-6 py-4">
-        <TokenBar />
-        <div className="mt-2 rounded-2xl"
-          style={{
-            background: 'rgba(255, 255, 255, 0.68)',
-            border: '1px solid rgba(255, 255, 255, 0.55)',
-            borderTopColor: 'rgba(255, 255, 255, 0.80)',
-            boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
-          }}
-        >
-          <div className="flex items-end gap-3 px-5 py-4">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder={ghostPrompt}
-              rows={1}
-              className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/25 outline-none leading-relaxed"
-              style={{ maxHeight: 200 }}
-            />
-            <div className="flex items-center gap-2">
-              {messages.length > 0 && (
-                <button
-                  onClick={handleRestart}
-                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
-                  title="New session"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
-                </button>
-              )}
-              <button
-                onClick={handleSend}
-                disabled={!canSend}
-                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0"
-                style={{
-                  background: canSend ? 'linear-gradient(135deg, #1B7A3D, #2ECC71)' : 'transparent',
-                  boxShadow: canSend ? '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)' : 'none',
-                  color: canSend ? 'white' : 'rgba(27,122,61,0.3)',
-                }}
+      {/* Input - wider on laptop, sits lower with more padding */}
+      <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
+        <div className="mx-auto max-w-4xl">
+          <TokenBar />
+
+          {/* Attachment chips */}
+          <AnimatePresence>
+            {attachments.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
               >
-                <ArrowUp className="h-4 w-4" strokeWidth={2} />
-              </button>
+                <div className="mb-2 flex flex-wrap gap-2 px-1 pb-1">
+                  {attachments.map(a => (
+                    <AttachmentChip key={a.id} file={a} onRemove={() => setAttachments(prev => prev.filter(f => f.id !== a.id))} />
+                  ))}
+                  {attachments.length > 1 && (
+                    <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface-muted/50 hover:text-error transition-colors">
+                      <Trash2 className="h-3 w-3" strokeWidth={1.75} /> Clear all
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="mt-1 rounded-2xl"
+            style={{
+              background: 'rgba(255, 255, 255, 0.68)',
+              border: '1px solid rgba(255, 255, 255, 0.55)',
+              borderTopColor: 'rgba(255, 255, 255, 0.80)',
+              boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
+            }}
+          >
+            <div className="flex items-end gap-3 px-5 py-4">
+              {/* Paperclip */}
+              <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/30 transition-all hover:text-on-surface-muted/60" style={{ color: 'rgba(27,122,61,0.35)' }}>
+                <Paperclip className="h-4 w-4" strokeWidth={1.75} />
+              </label>
+              <input
+                id={fileInputId}
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.txt,.md,.csv,.json,.ts,.tsx,.js,.jsx,.py,.go,.rs,.sh,.yaml,.yml,.toml,.sql,.html,.css,.xml,.doc,.docx,.xls,.xlsx"
+                className="sr-only"
+                onChange={e => e.target.files && handleFiles(e.target.files)}
+              />
+
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                placeholder={ghostPrompt}
+                rows={1}
+                className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/25 outline-none leading-relaxed"
+                style={{ maxHeight: 200 }}
+              />
+              <div className="flex items-center gap-2">
+                {messages.length > 0 && (
+                  <button
+                    onClick={handleRestart}
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
+                    title="New session"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
+                )}
+                <button
+                  onClick={handleSend}
+                  disabled={!canSend}
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0"
+                  style={{
+                    background: canSend ? 'linear-gradient(135deg, #1B7A3D, #2ECC71)' : 'transparent',
+                    boxShadow: canSend ? '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)' : 'none',
+                    color: canSend ? 'white' : 'rgba(27,122,61,0.3)',
+                  }}
+                >
+                  <ArrowUp className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
