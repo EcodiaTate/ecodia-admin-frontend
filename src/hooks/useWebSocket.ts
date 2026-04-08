@@ -193,8 +193,16 @@ export function useWebSocket() {
               const chunk = msg.data
               if (!chunk) break
 
+              // thinking_delta: real-time streaming of extended thinking
+              if (chunk.type === 'thinking_delta' && chunk.content) {
+                osStore.appendStreamThinking(chunk.content)
+              }
+              // thinking: complete thinking block (from assistant message)
+              else if (chunk.type === 'thinking' && chunk.content) {
+                osStore.appendStreamThinking(chunk.content)
+              }
               // text_delta: real-time streaming from Agent SDK partial messages
-              if (chunk.type === 'text_delta' && chunk.content) {
+              else if (chunk.type === 'text_delta' && chunk.content) {
                 osStore.appendStreamChunk(chunk.content)
                 osStore.appendStreamText(chunk.content)
               }

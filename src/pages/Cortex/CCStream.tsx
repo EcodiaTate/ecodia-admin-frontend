@@ -19,12 +19,13 @@ import {
   GitBranch, TrendingUp, Download,
   Paperclip, FileText, X, Trash2, Image as ImageIcon,
   Wrench, CheckCircle2, Clock, Copy, Check,
+  Maximize2, Minimize2, Code2, RefreshCw, ExternalLink,
 } from 'lucide-react'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage, type LiveToolCall } from '@/store/osSessionStore'
-import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
+import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse, getEnergy } from '@/api/osSession'
 import { EnergyWhisper } from '@/components/spatial/EnergyWhisper'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
@@ -515,6 +516,152 @@ function CopyCodeButton({ code }: { code: string }) {
   )
 }
 
+// ─── HTML Preview Panel ───────────────────────────────────────────────
+// Renders html code blocks as live, editable iframes.
+// Toggle between rendered preview and source editor.
+// Fullscreen mode, external-open, and live edit-and-reload.
+
+function HtmlPreviewPanel({ initialHtml }: { initialHtml: string }) {
+  const [html, setHtml] = useState(initialHtml)
+  const [showSource, setShowSource] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [height, setHeight] = useState(420)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const srcDoc = html
+
+  // Sync live edits to iframe via srcdoc
+  useEffect(() => {
+    if (iframeRef.current && !showSource) {
+      iframeRef.current.srcdoc = html
+    }
+  }, [html, showSource])
+
+  const openExternal = useCallback(() => {
+    const blob = new Blob([html], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank')
+    setTimeout(() => URL.revokeObjectURL(url), 10000)
+  }, [html])
+
+  const reset = useCallback(() => setHtml(initialHtml), [initialHtml])
+
+  const panel = (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      className={fullscreen ? 'fixed inset-4 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl' : 'rounded-2xl overflow-hidden my-3'}
+      style={{
+        background: fullscreen ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.92)',
+        border: '1px solid rgba(27,122,61,0.12)',
+        boxShadow: fullscreen
+          ? '0 32px 80px -16px rgba(27,122,61,0.20)'
+          : '0 8px 32px -8px rgba(27,122,61,0.10)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
+      {/* Toolbar */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ borderColor: 'rgba(27,122,61,0.08)', background: 'rgba(27,122,61,0.02)' }}>
+        {/* Traffic light dots */}
+        <div className="flex items-center gap-1.5 mr-2">
+          <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(239,68,68,0.5)' }} />
+          <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(245,158,11,0.5)' }} />
+          <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(34,197,94,0.5)' }} />
+        </div>
+        <span className="text-[10px] font-mono text-on-surface-muted/40 flex-1 tracking-wide">html preview</span>
+
+        {/* Controls */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowSource(s => !s)}
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-mono transition-all"
+            style={{
+              background: showSource ? 'rgba(27,122,61,0.10)' : 'transparent',
+              color: showSource ? '#1B7A3D' : 'rgba(0,0,0,0.35)',
+              border: `1px solid ${showSource ? 'rgba(27,122,61,0.20)' : 'transparent'}`,
+            }}
+            title="Toggle source"
+          >
+            <Code2 className="h-3 w-3" strokeWidth={1.75} />
+            source
+          </button>
+          <button onClick={reset} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.3)' }} title="Reset to original">
+            <RefreshCw className="h-3 w-3" strokeWidth={1.75} />
+          </button>
+          <button onClick={openExternal} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.3)' }} title="Open in new tab">
+            <ExternalLink className="h-3 w-3" strokeWidth={1.75} />
+          </button>
+          <button
+            onClick={() => setFullscreen(f => !f)}
+            className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]"
+            style={{ color: 'rgba(0,0,0,0.3)' }}
+            title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          >
+            {fullscreen ? <Minimize2 className="h-3 w-3" strokeWidth={1.75} /> : <Maximize2 className="h-3 w-3" strokeWidth={1.75} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className={fullscreen ? 'flex-1 overflow-hidden' : ''} style={!fullscreen ? { height } : undefined}>
+        {showSource ? (
+          <textarea
+            value={html}
+            onChange={e => setHtml(e.target.value)}
+            className="w-full h-full resize-none font-mono text-[11px] leading-relaxed outline-none p-3"
+            style={{
+              height: fullscreen ? '100%' : height,
+              background: '#0f172a',
+              color: '#e2e8f0',
+              tabSize: 2,
+            }}
+            spellCheck={false}
+          />
+        ) : (
+          <iframe
+            ref={iframeRef}
+            srcDoc={srcDoc}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            className="w-full border-0 bg-white"
+            style={{ height: fullscreen ? '100%' : height }}
+            title="HTML Preview"
+          />
+        )}
+      </div>
+
+      {/* Resize handle (only when not fullscreen) */}
+      {!fullscreen && (
+        <div
+          className="flex items-center justify-center py-1 cursor-ns-resize select-none"
+          style={{ background: 'rgba(27,122,61,0.02)', borderTop: '1px solid rgba(27,122,61,0.06)' }}
+          onMouseDown={e => {
+            const startY = e.clientY
+            const startH = height
+            const onMove = (mv: MouseEvent) => setHeight(Math.max(200, Math.min(1200, startH + mv.clientY - startY)))
+            const onUp = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+            window.addEventListener('mousemove', onMove)
+            window.addEventListener('mouseup', onUp)
+          }}
+        >
+          <div className="h-0.5 w-8 rounded-full" style={{ background: 'rgba(27,122,61,0.15)' }} />
+        </div>
+      )}
+    </motion.div>
+  )
+
+  if (fullscreen) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setFullscreen(false)} />
+        {panel}
+      </>
+    )
+  }
+  return panel
+}
+
 // ─── Custom ReactMarkdown renderers ──────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -541,6 +688,11 @@ const MARKDOWN_COMPONENTS: Components = {
   code({ className, children }) {
     const match = /language-(\w+)/.exec(className || '')
     if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />
+    // html code blocks render as live interactive iframe panels
+    if (match?.[1] === 'html') {
+      const raw = String(children).replace(/\n$/, '')
+      return <HtmlPreviewPanel initialHtml={raw} />
+    }
     return <code className={className}>{children}</code>
   },
 }
@@ -678,12 +830,48 @@ function StreamingText({ text }: { text: string }) {
   )
 }
 
+// ─── Live thinking panel — streams reasoning as it arrives ───────────
+
+const LiveThinkingPanel = memo(function LiveThinkingPanel({ thinking }: { thinking: string }) {
+  const [expanded, setExpanded] = useState(false)
+  const preview = thinking.length > 140 ? thinking.slice(0, 140) + '…' : thinking
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, rgba(27,122,61,0.04), rgba(46,204,113,0.02))',
+        border: '1px solid rgba(27,122,61,0.10)',
+      }}
+      layout
+    >
+      <button onClick={() => setExpanded(e => !e)} className="flex items-start gap-2.5 px-4 py-3 w-full text-left">
+        <motion.div
+          className="h-3.5 w-3.5 mt-0.5 flex-shrink-0"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Brain className="h-3.5 w-3.5" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
+        </motion.div>
+        <span className="text-[11px] font-mono text-on-surface-muted/40 leading-relaxed flex-1 tracking-wide">
+          {expanded ? thinking : preview}
+        </span>
+        <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
+          <ChevronDown className="h-3 w-3 text-on-surface-muted/20 flex-shrink-0 mt-0.5" strokeWidth={2} />
+        </motion.div>
+      </button>
+    </motion.div>
+  )
+})
+
 // ─── Streaming output — text + live tool panels ─────────────────────
 
-function StreamingOutput({ text, tools }: { text: string; tools: LiveToolCall[] }) {
+function StreamingOutput({ text, tools, thinking }: { text: string; tools: LiveToolCall[]; thinking: string }) {
   const hasActiveTools = tools.some(t => !t.completedAt)
   return (
     <div className="py-3 space-y-3">
+      {thinking && <LiveThinkingPanel thinking={thinking} />}
       <StreamingTools tools={tools} />
       <StreamingText text={text} />
       <div className="flex items-center gap-3">
@@ -703,7 +891,7 @@ function StreamingOutput({ text, tools }: { text: string; tools: LiveToolCall[] 
           ))}
         </div>
         <span className="text-[11px] text-on-surface-muted/30 font-mono tracking-wider">
-          {hasActiveTools ? 'using tools' : text ? 'working' : 'thinking'}
+          {thinking && !text && !hasActiveTools ? 'thinking deeply' : hasActiveTools ? 'using tools' : text ? 'working' : 'thinking'}
         </span>
       </div>
     </div>
@@ -774,6 +962,28 @@ function TokenBar() {
   )
 }
 
+// ─── Thinking mode badge ──────────────────────────────────────────────
+
+function ThinkingModeBadge() {
+  const { data: energy } = useQuery({ queryKey: ['claudeEnergy'], queryFn: getEnergy, staleTime: 60_000, retry: 1 })
+  const isThinkingMode = energy?.level === 'full' || energy?.level === 'healthy'
+  if (!isThinkingMode || !energy) return null
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex items-center gap-1.5 px-2 py-1 rounded-xl"
+      style={{ background: 'rgba(27,122,61,0.05)', border: '1px solid rgba(27,122,61,0.10)' }}
+      title={`Extended thinking active — ${energy.label}`}
+    >
+      <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 2.5, repeat: Infinity }}>
+        <Brain className="h-3 w-3" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
+      </motion.div>
+      <span className="text-[9px] font-mono text-on-surface-muted/35 tracking-wider">thinking on</span>
+    </motion.div>
+  )
+}
+
 // ─── Main CCStream ──────────────────────────────────────────────────
 
 const VISIBLE_BATCH = 30
@@ -802,6 +1012,7 @@ export default function CCStream() {
   const status = useOSSessionStore(s => s.status)
   const streamText = useOSSessionStore(s => s.streamText)
   const streamTools = useOSSessionStore(s => s.streamTools)
+  const streamThinking = useOSSessionStore(s => s.streamThinking)
   const interruptQueue = useOSSessionStore(s => s.interruptQueue)
   const addUserMessage = useOSSessionStore(s => s.addUserMessage)
   const queueInterrupt = useOSSessionStore(s => s.queueInterrupt)
@@ -1137,7 +1348,7 @@ export default function CCStream() {
           )}
 
           {/* Live streaming output */}
-          {isStreaming && <StreamingOutput text={streamText} tools={streamTools} />}
+          {isStreaming && <StreamingOutput text={streamText} tools={streamTools} thinking={streamThinking} />}
 
           {/* Interrupt queue indicator */}
           <AnimatePresence>
@@ -1189,8 +1400,9 @@ export default function CCStream() {
       {/* Input area */}
       <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
         <div className="mx-auto max-w-4xl">
-          <div className="flex items-center gap-4 mb-1">
+          <div className="flex items-center gap-2 mb-1">
             <div className="flex-1"><TokenBar /></div>
+            <ThinkingModeBadge />
             <EnergyWhisper />
           </div>
 

@@ -49,6 +49,8 @@ interface OSSessionStore {
   streamText: string
   /** Live tool calls in progress during current stream */
   streamTools: LiveToolCall[]
+  /** Accumulated thinking text during current stream (real-time) */
+  streamThinking: string
   sessionId: string | null
   /** Token usage tracking for auto-compaction */
   tokenUsage: TokenUsage | null
@@ -70,6 +72,7 @@ interface OSSessionStore {
   addStreamTool: (tool: Omit<LiveToolCall, 'id' | 'startedAt'>) => void
   /** Match by toolUseId first, fall back to name */
   updateStreamTool: (idOrName: string, patch: Partial<LiveToolCall>) => void
+  appendStreamThinking: (text: string) => void
   finalizeResponse: () => void
   setSessionId: (id: string | null) => void
   setTokenUsage: (usage: TokenUsage | null) => void
@@ -96,6 +99,7 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   streamChunks: [],
   streamText: '',
   streamTools: [],
+  streamThinking: '',
   sessionId: null,
   tokenUsage: null,
   compacting: false,
@@ -117,6 +121,7 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       streamChunks: [],
       streamText: '',
       streamTools: [],
+      streamThinking: '',
       lastUserMessageAt: new Date().toISOString(),
       recoveryAttempted: false,
     }))
@@ -156,11 +161,15 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
     }))
   },
 
+  appendStreamThinking: (text) => {
+    set(state => ({ streamThinking: state.streamThinking + text }))
+  },
+
   finalizeResponse: () => {
-    const { streamChunks, streamText, streamTools } = get()
+    const { streamChunks, streamText } = get()
     // Only add a message if we have content
     if (streamChunks.length === 0 && !streamText) {
-      set({ status: 'complete', streamChunks: [], streamText: '', streamTools: [], lastUserMessageAt: null })
+      set({ status: 'complete', streamChunks: [], streamText: '', streamTools: [], streamThinking: '', lastUserMessageAt: null })
       return
     }
     set(state => ({
@@ -175,17 +184,16 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       streamChunks: [],
       streamText: '',
       streamTools: [],
+      streamThinking: '',
       lastUserMessageAt: null,
     }))
-    // Suppress unused-var warning: streamTools is used to clear on finalize
-    void streamTools
   },
 
   setSessionId: (id) => set({ sessionId: id }),
   setTokenUsage: (usage) => set({ tokenUsage: usage }),
   setCompacting: (v) => set({ compacting: v }),
   clearMessages: () => set({
-    messages: [], streamChunks: [], streamText: '', streamTools: [], status: 'idle',
+    messages: [], streamChunks: [], streamText: '', streamTools: [], streamThinking: '', status: 'idle',
     tokenUsage: null, lastUserMessageAt: null, recoveryAttempted: false, interruptQueue: [],
   }),
 
@@ -204,6 +212,7 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
       streamChunks: [],
       streamText: '',
       streamTools: [],
+      streamThinking: '',
       lastUserMessageAt: null,
     }))
   },
