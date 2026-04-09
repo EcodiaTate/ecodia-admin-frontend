@@ -1452,8 +1452,12 @@ export default function CCStream() {
             </div>
           )}
 
-          {/* Live streaming output */}
-          {isStreaming && <StreamingOutput text={streamText} tools={streamTools} thinking={streamThinking} />}
+          {/* Live streaming output — show whenever there's content, not just when status is 'streaming'.
+              Between turns (e.g. after an interrupt), status briefly flips to 'complete' before the next
+              turn starts, which would hide in-progress content. */}
+          {(isStreaming || streamText || streamTools.length > 0 || streamThinking) && (
+            <StreamingOutput text={streamText} tools={streamTools} thinking={streamThinking} />
+          )}
 
           {/* Interrupt queue indicator */}
           <AnimatePresence>
