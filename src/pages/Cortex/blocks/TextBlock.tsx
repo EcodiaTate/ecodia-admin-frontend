@@ -94,6 +94,35 @@ export function TextBlock({ block }: { block: TextBlockType }) {
             const codeStr = String(children).replace(/\n$/, '')
             const isBlock = !!className
 
+            // HTML preview — render as sandboxed iframe with macOS chrome
+            if (match?.[1] === 'html' && isBlock && codeStr.includes('<')) {
+              return (
+                <div className="my-3 rounded-xl overflow-hidden border border-white/[0.08]" style={{ background: '#1a1a1a' }}>
+                  <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]" style={{ background: '#2a2a2a' }}>
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full" style={{ background: '#ff5f57' }} />
+                      <div className="w-3 h-3 rounded-full" style={{ background: '#febc2e' }} />
+                      <div className="w-3 h-3 rounded-full" style={{ background: '#28c840' }} />
+                    </div>
+                    <span className="font-mono text-[10px] text-white/30 ml-2 flex-1">Preview</span>
+                    <CopyButton text={codeStr} />
+                  </div>
+                  <iframe
+                    srcDoc={codeStr}
+                    sandbox="allow-same-origin"
+                    className="w-full border-0"
+                    style={{ minHeight: '400px', maxHeight: '80vh', background: '#fff' }}
+                    onLoad={(e) => {
+                      const frame = e.target as HTMLIFrameElement
+                      if (frame.contentDocument?.body) {
+                        frame.style.height = Math.min(frame.contentDocument.body.scrollHeight + 20, window.innerHeight * 0.8) + 'px'
+                      }
+                    }}
+                  />
+                </div>
+              )
+            }
+
             if (match && isBlock) {
               return (
                 <div className="my-3 rounded-xl overflow-hidden" style={{ background: '#0f172a' }}>
