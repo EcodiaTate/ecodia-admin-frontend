@@ -282,23 +282,37 @@ export function useWebSocket() {
             case 'os-session:tokens': {
               const osStore = useOSSessionStore.getState()
               osStore.setTokenUsage(msg)
-              // Auto-compact when threshold exceeded
-              if (msg.needsCompaction && !osStore.compacting && osStore.status !== 'streaming') {
+              // Auto-handover is now backend-driven (autoHandover in osSessionService).
+              // Frontend only tracks compacting state for the token bar display.
+              break
+            }
+
+            // ─── Seamless session handover ────────────────────────
+            case 'os-session:handover': {
+              const osStore = useOSSessionStore.getState()
+              const phase = msg.phase as string
+              if (phase === 'preparing' || phase === 'warming') {
+                osStore.setHandover({ phase: phase as 'preparing' | 'warming' })
                 osStore.setCompacting(true)
-                // Build a summary from the last N messages for context transfer
-                const recentMessages = osStore.messages.slice(-20)
-                const summary = recentMessages
-                  .map(m => `[${m.role}] ${m.content.slice(0, 500)}`)
-                  .join('\n\n')
-                // Fire compact in background — don't await, don't block
-                import('@/api/osSession').then(({ compactOS }) => {
-                  compactOS(summary).then(() => {
-                    osStore.setCompacting(false)
-                    osStore.setTokenUsage(null)
-                  }).catch(() => {
-                    osStore.setCompacting(false)
-                  })
+              } else if (phase === 'complete') {
+                osStore.setHandover({
+                  phase: 'complete',
+                  newSessionId: msg.newSessionId,
+                  briefPreview: msg.briefPreview,
                 })
+                // Reset compacting flag and token usage — fresh slate
+                osStore.setCompacting(false)
+                osStore.setTokenUsage(null)
+                // Clear the handover indicator after a short delay
+                setTimeout(() => {
+                  useOSSessionStore.getState().setHandover(null)
+                }, 4000)
+              } else if (phase === 'failed' || phase === 'cancelled') {
+                osStore.setHandover({ phase: phase as 'failed' | 'cancelled', error: msg.error })
+                osStore.setCompacting(false)
+                setTimeout(() => {
+                  useOSSessionStore.getState().setHandover(null)
+                }, 3000)
               }
               break
             }

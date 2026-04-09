@@ -8,7 +8,6 @@ import { motion } from 'framer-motion'
 // ─── Code-split every route-level page ──────────────────────────────────
 // All workspace pages are now consolidated inside Cortex as tabs.
 const CortexPage = lazy(() => import('./pages/Cortex'))
-const SettingsPage = lazy(() => import('./pages/Settings'))
 const LoginPage = lazy(() => import('./pages/Login'))
 
 /** Ambient loading state — a soft breathing glow, not a spinner */
@@ -63,7 +62,7 @@ export default function App() {
         >
           <Route index element={<Navigate to="/cortex" />} />
           <Route path="/cortex" element={<Scene name="Cortex"><CortexPage /></Scene>} />
-          <Route path="/settings" element={<Scene name="System Nodes"><SettingsPage /></Scene>} />
+          <Route path="/settings" element={<Navigate to="/cortex" replace />} />
           {/* All old standalone pages redirect to Cortex with workspace param */}
           <Route path="/dashboard" element={<Navigate to="/cortex?ws=vitals" replace />} />
           <Route path="/gmail" element={<Navigate to="/cortex?ws=socials" replace />} />

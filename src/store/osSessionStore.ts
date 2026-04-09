@@ -66,6 +66,13 @@ interface OSSessionStore {
   recoveryAttempted: boolean
   /** Messages sent by user while OS was streaming (interrupt queue) */
   interruptQueue: string[]
+  /** Handover state — null when idle */
+  handover: {
+    phase: 'preparing' | 'warming' | 'complete' | 'failed' | 'cancelled'
+    briefPreview?: string
+    newSessionId?: string
+    error?: string
+  } | null
 
   // Actions
   setStatus: (status: OSSessionStore['status']) => void
@@ -88,6 +95,8 @@ interface OSSessionStore {
   /** Queue an interrupt message (sent while OS is streaming) */
   queueInterrupt: (msg: string) => void
   clearInterruptQueue: () => void
+  /** Update handover state (from WebSocket events) */
+  setHandover: (state: OSSessionStore['handover']) => void
 }
 
 /** Max messages to keep in memory/localStorage. Older messages are trimmed on add. */
@@ -110,6 +119,7 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   lastUserMessageAt: null,
   recoveryAttempted: false,
   interruptQueue: [],
+  handover: null,
 
   setStatus: (status) => set({ status }),
 
@@ -250,6 +260,8 @@ export const useOSSessionStore = create<OSSessionStore>()(persist((set, get) => 
   },
 
   clearInterruptQueue: () => set({ interruptQueue: [] }),
+
+  setHandover: (handoverState) => set({ handover: handoverState }),
 }),
 {
   name: 'os-session-chat',

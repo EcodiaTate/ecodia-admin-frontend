@@ -88,3 +88,9 @@ export async function recoverResponse(since?: string) {
     sessionId?: string
   }
 }
+
+/** Manually trigger a handover (generates brief + warms new session) */
+export async function triggerHandover() {
+  const { data } = await api.post('/os-session/handover', {}, { timeout: 0 })
+  return data
+}

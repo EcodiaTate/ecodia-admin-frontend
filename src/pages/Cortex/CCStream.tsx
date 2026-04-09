@@ -25,7 +25,7 @@ import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage, type LiveToolCall } from '@/store/osSessionStore'
-import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse, getEnergy } from '@/api/osSession'
+import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse, getEnergy, triggerHandover } from '@/api/osSession'
 import { EnergyWhisper } from '@/components/spatial/EnergyWhisper'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
@@ -882,6 +882,85 @@ const LiveThinkingPanel = memo(function LiveThinkingPanel({ thinking }: { thinki
   )
 })
 
+// ─── Handover banner — shown during seamless session transitions ─────
+//
+// Three phases:
+//   preparing — current session is writing the handover brief
+//   warming    — new session is reading docs and loading brief
+//   complete   — flash green, then fade out
+//
+// Designed to be ambient, not alarming. User should barely notice.
+
+function HandoverBanner({ phase }: {
+  phase: 'preparing' | 'warming' | 'complete' | 'failed' | 'cancelled'
+  briefPreview?: string
+}) {
+  const isComplete = phase === 'complete'
+  const isFailed = phase === 'failed' || phase === 'cancelled'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 26 }}
+      className="flex items-center gap-3 rounded-2xl px-5 py-3 mx-auto max-w-lg"
+      style={{
+        background: isComplete
+          ? 'linear-gradient(135deg, rgba(5,150,105,0.07), rgba(46,204,113,0.04))'
+          : isFailed
+            ? 'linear-gradient(135deg, rgba(217,119,6,0.07), rgba(251,191,36,0.03))'
+            : 'linear-gradient(135deg, rgba(27,122,61,0.05), rgba(46,204,113,0.03))',
+        border: isComplete
+          ? '1px solid rgba(5,150,105,0.15)'
+          : isFailed
+            ? '1px solid rgba(217,119,6,0.15)'
+            : '1px solid rgba(27,122,61,0.10)',
+      }}
+    >
+      {isComplete ? (
+        <motion.div
+          initial={{ scale: 0.5 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        >
+          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#059669' }} strokeWidth={2} />
+        </motion.div>
+      ) : isFailed ? (
+        <motion.div
+          className="h-2 w-2 rounded-full flex-shrink-0"
+          style={{ backgroundColor: '#F59E0B' }}
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+      ) : (
+        <motion.div
+          className="h-3.5 w-3.5 flex-shrink-0"
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+        >
+          <RefreshCw className="h-3.5 w-3.5" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
+        </motion.div>
+      )}
+
+      <div className="flex-1 min-w-0">
+        <span className="text-[11px] font-mono tracking-wide" style={{
+          color: isComplete ? '#059669' : isFailed ? '#D97706' : 'rgba(27,122,61,0.7)',
+        }}>
+          {phase === 'preparing' && 'preparing context handover…'}
+          {phase === 'warming' && 'warming new session…'}
+          {phase === 'complete' && 'fresh context — continuing seamlessly'}
+          {phase === 'failed' && 'handover failed — continuing on current session'}
+          {phase === 'cancelled' && 'handover cancelled'}
+        </span>
+        {phase === 'warming' && (
+          <p className="text-[9px] text-on-surface-muted/30 font-mono mt-0.5">reading docs · loading brief · ready soon</p>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
 // ─── Streaming output — text + live tool panels ─────────────────────
 
 function StreamingOutput({ text, tools, thinking }: { text: string; tools: LiveToolCall[]; thinking: string }) {
@@ -1031,6 +1110,7 @@ export default function CCStream() {
   const streamTools = useOSSessionStore(s => s.streamTools)
   const streamThinking = useOSSessionStore(s => s.streamThinking)
   const interruptQueue = useOSSessionStore(s => s.interruptQueue)
+  const handover = useOSSessionStore(s => s.handover)
   const addUserMessage = useOSSessionStore(s => s.addUserMessage)
   const queueInterrupt = useOSSessionStore(s => s.queueInterrupt)
   const clearInterruptQueue = useOSSessionStore(s => s.clearInterruptQueue)
@@ -1273,6 +1353,14 @@ export default function CCStream() {
     useOSSessionStore.getState().clearMessages()
   }, [])
 
+  const handleHandover = useCallback(async () => {
+    if (handover) return // already in progress
+    try {
+      // Fire and forget — backend streams progress via WebSocket
+      triggerHandover().catch(() => {})
+    } catch { /* non-fatal */ }
+  }, [handover])
+
   const hasMessages = messages.length > 0
 
   return (
@@ -1372,6 +1460,15 @@ export default function CCStream() {
             {isStreaming && interruptQueue.length > 0 && (
               <div className="pb-3">
                 <InterruptBanner count={interruptQueue.length} />
+              </div>
+            )}
+          </AnimatePresence>
+
+          {/* Handover banner — ambient, non-intrusive */}
+          <AnimatePresence>
+            {handover && (
+              <div className="pb-3">
+                <HandoverBanner phase={handover.phase} briefPreview={handover.briefPreview} />
               </div>
             )}
           </AnimatePresence>
@@ -1530,13 +1627,30 @@ export default function CCStream() {
               </div>
               <div className="flex items-center gap-2">
                 {messages.length > 0 && (
-                  <button
-                    onClick={handleRestart}
-                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
-                    title="New session"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  </button>
+                  <>
+                    {/* Seamless handover — generates brief + warms new session */}
+                    <button
+                      onClick={handleHandover}
+                      disabled={!!handover || isStreaming}
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04] disabled:opacity-30 disabled:cursor-not-allowed"
+                      title="Context handover — refresh session with full brief"
+                    >
+                      <motion.div
+                        animate={handover ? { rotate: 360 } : { rotate: 0 }}
+                        transition={handover ? { duration: 2, repeat: Infinity, ease: 'linear' } : {}}
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </motion.div>
+                    </button>
+                    {/* Hard restart — no brief, fresh slate */}
+                    <button
+                      onClick={handleRestart}
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
+                      title="Hard restart — fresh session, no context transfer"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={handleSend}
