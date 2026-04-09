@@ -105,7 +105,7 @@ export interface ChatMessage {
  */
 export interface AmbientEvent {
   id: string
-  kind: 'action_success' | 'action_failure' | 'action_dismissed' | 'action_expired' | 'cc_complete' | 'cc_error' | 'cc_deployed' | 'cc_deploy_failed' | 'cc_started' | 'system'
+  kind: 'action_success' | 'action_failure' | 'action_dismissed' | 'action_expired' | 'cc_complete' | 'cc_error' | 'cc_deployed' | 'cc_deploy_failed' | 'cc_started' | 'organism_surfacing' | 'system'
   summary: string           // one-line human-readable summary
   detail?: string           // raw response / error body (for the AI to read)
   timestamp: Date
