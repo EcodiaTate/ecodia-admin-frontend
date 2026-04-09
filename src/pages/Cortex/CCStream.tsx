@@ -25,8 +25,7 @@ import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage, type LiveToolCall } from '@/store/osSessionStore'
-import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse, getEnergy, triggerHandover } from '@/api/osSession'
-import { EnergyWhisper } from '@/components/spatial/EnergyWhisper'
+import { sendOSMessage, restartOS, getOSStatus, recoverResponse, getEnergy, triggerHandover } from '@/api/osSession'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
@@ -77,9 +76,9 @@ function AttachmentChip({ file, onRemove }: { file: AttachedFile; onRemove: () =
       <FileText className="h-4 w-4 flex-shrink-0" style={{ color: '#1B7A3D' }} strokeWidth={1.5} />
       <div className="min-w-0">
         <p className="max-w-[120px] truncate text-xs font-medium text-on-surface">{file.name}</p>
-        <p className="text-[10px] text-on-surface-muted/50">{formatBytes(file.size)}</p>
+        <p className="text-[10px] text-on-surface">{formatBytes(file.size)}</p>
       </div>
-      <button onClick={onRemove} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface-muted/40 hover:text-error transition-colors">
+      <button onClick={onRemove} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface hover:text-error transition-colors">
         <X className="h-3 w-3" strokeWidth={2} />
       </button>
     </div>
@@ -140,7 +139,7 @@ function ChromaticVital({ icon: Icon, value, label, color, glowColor, delay = 0 
         <p className="text-sm font-semibold font-mono tabular-nums" style={{ color: '#151716' }}>
           {value}
         </p>
-        <p className="text-[10px] uppercase tracking-[0.08em] text-on-surface-muted/40 font-mono">{label}</p>
+        <p className="text-[10px] uppercase tracking-[0.08em] text-on-surface font-mono">{label}</p>
       </div>
     </motion.div>
   )
@@ -243,7 +242,7 @@ function PendingActionsBanner() {
         {actions.pending} action{actions.pending > 1 ? 's' : ''} waiting
         {actions.urgent > 0 && <span className="ml-1 font-medium" style={{ color: '#D97706' }}>&middot; {actions.urgent} urgent</span>}
       </span>
-      <span className="text-[10px] text-on-surface-muted/25 ml-auto font-mono">ask cortex</span>
+      <span className="text-[10px] text-on-surface ml-auto font-mono">ask cortex</span>
     </motion.div>
   )
 }
@@ -343,7 +342,7 @@ const LiveToolPanel = memo(function LiveToolPanel({ tool }: { tool: LiveToolCall
           {tool.name}
         </span>
         {isDone ? (
-          <span className="text-[10px] font-mono text-on-surface-muted/30 flex items-center gap-1">
+          <span className="text-[10px] font-mono text-on-surface flex items-center gap-1">
             <Clock className="h-2.5 w-2.5" strokeWidth={1.75} />
             {elapsed}
           </span>
@@ -357,7 +356,7 @@ const LiveToolPanel = memo(function LiveToolPanel({ tool }: { tool: LiveToolCall
         )}
         {(tool.input || tool.result) && (
           <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
-            <ChevronDown className="h-3 w-3 text-on-surface-muted/30 flex-shrink-0" strokeWidth={2} />
+            <ChevronDown className="h-3 w-3 text-on-surface flex-shrink-0" strokeWidth={2} />
           </motion.div>
         )}
       </button>
@@ -373,8 +372,8 @@ const LiveToolPanel = memo(function LiveToolPanel({ tool }: { tool: LiveToolCall
             <div className="px-3 pb-3 space-y-2">
               {tool.input && (
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface-muted/30 mb-1">input</p>
-                  <pre className="text-[10px] font-mono text-on-surface-muted/50 whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-32"
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface mb-1">input</p>
+                  <pre className="text-[10px] font-mono text-on-surface whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-32"
                     style={{ background: `${accent.color}04`, borderRadius: 6, padding: '6px 8px' }}>
                     {tool.input}
                   </pre>
@@ -382,8 +381,8 @@ const LiveToolPanel = memo(function LiveToolPanel({ tool }: { tool: LiveToolCall
               )}
               {tool.result && (
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface-muted/30 mb-1">result</p>
-                  <pre className="text-[10px] font-mono text-on-surface-muted/50 whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-40"
+                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface mb-1">result</p>
+                  <pre className="text-[10px] font-mono text-on-surface whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-40"
                     style={{ background: 'rgba(5,150,105,0.04)', borderRadius: 6, padding: '6px 8px' }}>
                     {tool.result.length > 1200 ? tool.result.slice(0, 1200) + '\n… (truncated)' : tool.result}
                   </pre>
@@ -569,7 +568,7 @@ function HtmlPreviewPanel({ initialHtml }: { initialHtml: string }) {
           <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(245,158,11,0.5)' }} />
           <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(34,197,94,0.5)' }} />
         </div>
-        <span className="text-[10px] font-mono text-on-surface-muted/40 flex-1 tracking-wide">html preview</span>
+        <span className="text-[10px] font-mono text-on-surface flex-1 tracking-wide">html preview</span>
 
         {/* Controls */}
         <div className="flex items-center gap-1">
@@ -578,7 +577,7 @@ function HtmlPreviewPanel({ initialHtml }: { initialHtml: string }) {
             className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-mono transition-all"
             style={{
               background: showSource ? 'rgba(27,122,61,0.10)' : 'transparent',
-              color: showSource ? '#1B7A3D' : 'rgba(0,0,0,0.35)',
+              color: showSource ? '#1B7A3D' : 'rgba(0,0,0,0.7)',
               border: `1px solid ${showSource ? 'rgba(27,122,61,0.20)' : 'transparent'}`,
             }}
             title="Toggle source"
@@ -586,16 +585,16 @@ function HtmlPreviewPanel({ initialHtml }: { initialHtml: string }) {
             <Code2 className="h-3 w-3" strokeWidth={1.75} />
             source
           </button>
-          <button onClick={reset} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.3)' }} title="Reset to original">
+          <button onClick={reset} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.7)' }} title="Reset to original">
             <RefreshCw className="h-3 w-3" strokeWidth={1.75} />
           </button>
-          <button onClick={openExternal} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.3)' }} title="Open in new tab">
+          <button onClick={openExternal} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.7)' }} title="Open in new tab">
             <ExternalLink className="h-3 w-3" strokeWidth={1.75} />
           </button>
           <button
             onClick={() => setFullscreen(f => !f)}
             className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]"
-            style={{ color: 'rgba(0,0,0,0.3)' }}
+            style={{ color: 'rgba(0,0,0,0.7)' }}
             title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {fullscreen ? <Minimize2 className="h-3 w-3" strokeWidth={1.75} /> : <Maximize2 className="h-3 w-3" strokeWidth={1.75} />}
@@ -730,7 +729,7 @@ function UserMessage({ message, isInterrupt }: { message: OSSessionMessage; isIn
         <p className="text-sm leading-relaxed text-on-surface font-medium">{message.content}</p>
       </div>
       {message.timestamp && (
-        <p className="mt-1 px-1 text-[10px] font-mono text-on-surface-muted/20 opacity-0 group-hover:opacity-100 transition-opacity">
+        <p className="mt-1 px-1 text-[10px] font-mono text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
           {fmtTimestamp(message.timestamp)}
         </p>
       )}
@@ -788,7 +787,7 @@ function AssistantMessage({ message }: { message: OSSessionMessage }) {
       )}
 
       {message.timestamp && (
-        <p className="px-1 text-[10px] font-mono text-on-surface-muted/20 opacity-0 group-hover:opacity-100 transition-opacity">
+        <p className="px-1 text-[10px] font-mono text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
           {fmtTimestamp(message.timestamp)}
         </p>
       )}
@@ -812,9 +811,9 @@ function ThinkingBlock({ content }: { content: string }) {
     >
       <button onClick={() => setExpanded(!expanded)} className="flex items-start gap-2.5 px-4 py-3 w-full text-left">
         <Brain className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
-        <span className="text-xs text-on-surface-muted/50 leading-relaxed flex-1">{expanded ? content : preview}</span>
+        <span className="text-xs text-on-surface leading-relaxed flex-1">{expanded ? content : preview}</span>
         <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
-          <ChevronDown className="h-3 w-3 text-on-surface-muted/25 flex-shrink-0 mt-0.5" strokeWidth={2} />
+          <ChevronDown className="h-3 w-3 text-on-surface flex-shrink-0 mt-0.5" strokeWidth={2} />
         </motion.div>
       </button>
     </motion.div>
@@ -871,11 +870,11 @@ const LiveThinkingPanel = memo(function LiveThinkingPanel({ thinking }: { thinki
         >
           <Brain className="h-3.5 w-3.5" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
         </motion.div>
-        <span className="text-[11px] font-mono text-on-surface-muted/40 leading-relaxed flex-1 tracking-wide">
+        <span className="text-[11px] font-mono text-on-surface leading-relaxed flex-1 tracking-wide">
           {expanded ? thinking : preview}
         </span>
         <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
-          <ChevronDown className="h-3 w-3 text-on-surface-muted/20 flex-shrink-0 mt-0.5" strokeWidth={2} />
+          <ChevronDown className="h-3 w-3 text-on-surface flex-shrink-0 mt-0.5" strokeWidth={2} />
         </motion.div>
       </button>
     </motion.div>
@@ -954,7 +953,7 @@ function HandoverBanner({ phase }: {
           {phase === 'cancelled' && 'handover cancelled'}
         </span>
         {phase === 'warming' && (
-          <p className="text-[9px] text-on-surface-muted/30 font-mono mt-0.5">reading docs · loading brief · ready soon</p>
+          <p className="text-[9px] text-on-surface font-mono mt-0.5">reading docs · loading brief · ready soon</p>
         )}
       </div>
     </motion.div>
@@ -986,7 +985,7 @@ function StreamingOutput({ text, tools, thinking }: { text: string; tools: LiveT
             />
           ))}
         </div>
-        <span className="text-[11px] text-on-surface-muted/30 font-mono tracking-wider">
+        <span className="text-[11px] text-on-surface font-mono tracking-wider">
           {thinking && !text && !hasActiveTools ? 'thinking deeply' : hasActiveTools ? 'using tools' : text ? 'working' : 'thinking'}
         </span>
       </div>
@@ -1015,68 +1014,22 @@ function InterruptBanner({ count }: { count: number }) {
         animate={{ opacity: [0.4, 1, 0.4] }}
         transition={{ duration: 1.2, repeat: Infinity }}
       />
-      <span className="text-[11px] font-mono text-on-surface-muted/50">
+      <span className="text-[11px] font-mono text-on-surface">
         {count} interrupt{count > 1 ? 's' : ''} queued — OS will read when it pauses
       </span>
     </motion.div>
   )
 }
 
-// ─── Token usage — green-to-gold gradient bar ───────────────────────
+// ─── Account badge — tiny "1" or "2" showing which Claude Max account is active ──
 
-function TokenBar() {
-  const { data } = useQuery({ queryKey: ['os-tokens'], queryFn: getTokenUsage, staleTime: 15_000, retry: 1 })
-  const compacting = useOSSessionStore(s => s.compacting)
-
-  if (!data || data.total === 0) return null
-
-  const pct = Math.min((data.total / data.threshold) * 100, 100)
-  const isHigh = pct > 75
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 px-1">
-      <div className="flex-1 h-0.5 rounded-full bg-on-surface-muted/[0.06] overflow-hidden">
-        <motion.div
-          className="h-full rounded-full"
-          style={{
-            background: isHigh
-              ? 'linear-gradient(90deg, #D97706, #EA580C)'
-              : 'linear-gradient(90deg, #1B7A3D, #2ECC71)',
-            boxShadow: isHigh
-              ? '0 0 8px rgba(217,119,6,0.3)'
-              : '0 0 8px rgba(46,204,113,0.2)',
-          }}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ type: 'spring', stiffness: 60, damping: 20 }}
-        />
-      </div>
-      <span className="text-[9px] font-mono text-on-surface-muted/25 tabular-nums whitespace-nowrap">
-        {compacting ? 'compacting...' : `${Math.round(pct)}%`}
-      </span>
-    </motion.div>
-  )
-}
-
-// ─── Thinking mode badge ──────────────────────────────────────────────
-
-function ThinkingModeBadge() {
+function AccountBadge() {
   const { data: energy } = useQuery({ queryKey: ['claudeEnergy'], queryFn: getEnergy, staleTime: 60_000, retry: 1 })
-  const isThinkingMode = energy?.level === 'full' || energy?.level === 'healthy'
-  if (!isThinkingMode || !energy) return null
+  const acctNum = energy?.currentProvider === 'claude_max_2' ? '2' : '1'
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex items-center gap-1.5 px-2 py-1 rounded-xl"
-      style={{ background: 'rgba(27,122,61,0.05)', border: '1px solid rgba(27,122,61,0.10)' }}
-      title={`Extended thinking active — ${energy.label}`}
-    >
-      <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ duration: 2.5, repeat: Infinity }}>
-        <Brain className="h-3 w-3" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
-      </motion.div>
-      <span className="text-[9px] font-mono text-on-surface-muted/35 tracking-wider">thinking on</span>
-    </motion.div>
+    <span className="font-mono text-[10px] text-on-surface tabular-nums" title={`Claude Max account ${acctNum}`}>
+      {acctNum}
+    </span>
   )
 }
 
@@ -1397,7 +1350,7 @@ export default function CCStream() {
               transition={{ type: 'spring', stiffness: 60, damping: 20 }}
               className="flex flex-col items-center pt-[10vh] pb-4"
             >
-              <span className="text-label-md font-mono uppercase tracking-[0.3em] text-on-surface-muted/25">
+              <span className="text-label-md font-mono uppercase tracking-[0.3em] text-on-surface">
                 Ambient Intelligence
               </span>
               <h1 className="mt-3 font-display text-display-lg font-light text-on-surface">
@@ -1435,7 +1388,7 @@ export default function CCStream() {
               {hasEarlier && (
                 <button
                   onClick={() => setVisibleCount(c => c + VISIBLE_BATCH)}
-                  className="w-full text-center py-2 text-xs text-on-surface-muted/30 hover:text-on-surface-muted/50 transition-colors font-mono"
+                  className="w-full text-center py-2 text-xs text-on-surface hover:text-on-surface transition-colors font-mono"
                 >
                   show {Math.min(VISIBLE_BATCH, allMessages.length - visibleCount)} earlier messages
                 </button>
@@ -1519,9 +1472,7 @@ export default function CCStream() {
       <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-center gap-2 mb-1">
-            <div className="flex-1"><TokenBar /></div>
-            <ThinkingModeBadge />
-            <EnergyWhisper />
+            <AccountBadge />
           </div>
 
           {/* Attachment chips */}
@@ -1538,7 +1489,7 @@ export default function CCStream() {
                     <AttachmentChip key={a.id} file={a} onRemove={() => setAttachments(prev => prev.filter(f => f.id !== a.id))} />
                   ))}
                   {attachments.length > 1 && (
-                    <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface-muted/50 hover:text-error transition-colors">
+                    <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface hover:text-error transition-colors">
                       <Trash2 className="h-3 w-3" strokeWidth={1.75} /> Clear all
                     </button>
                   )}
@@ -1577,7 +1528,7 @@ export default function CCStream() {
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.2, repeat: Infinity }}
                     />
-                    <span className="text-[10px] font-mono text-on-surface-muted/35 tracking-wide">
+                    <span className="text-[10px] font-mono text-on-surface tracking-wide">
                       interrupt mode — OS will respond when it pauses
                     </span>
                   </div>
@@ -1587,7 +1538,7 @@ export default function CCStream() {
 
             <div className="flex items-end gap-3 px-5 py-4">
               {/* Paperclip */}
-              <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/30 transition-all hover:text-on-surface-muted/60" style={{ color: 'rgba(27,122,61,0.35)' }}>
+              <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface transition-all hover:text-on-surface" style={{ color: 'rgba(27,122,61,0.7)' }}>
                 <Paperclip className="h-4 w-4" strokeWidth={1.75} />
               </label>
               <input
@@ -1610,7 +1561,7 @@ export default function CCStream() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.4 }}
-                      className="pointer-events-none absolute inset-0 flex items-center text-sm text-on-surface-muted/25 leading-relaxed"
+                      className="pointer-events-none absolute inset-0 flex items-center text-sm text-on-surface leading-relaxed"
                       aria-hidden
                     >
                       {ghostPrompt.text}
@@ -1636,7 +1587,7 @@ export default function CCStream() {
                     <button
                       onClick={handleHandover}
                       disabled={!!handover || isStreaming}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04] disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface hover:text-on-surface hover:bg-on-surface-muted/[0.04] disabled:opacity-30 disabled:cursor-not-allowed"
                       title="Context handover — refresh session with full brief"
                     >
                       <motion.div
@@ -1649,7 +1600,7 @@ export default function CCStream() {
                     {/* Hard restart — no brief, fresh slate */}
                     <button
                       onClick={handleRestart}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface hover:text-on-surface hover:bg-on-surface-muted/[0.04]"
                       title="Hard restart — fresh session, no context transfer"
                     >
                       <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
