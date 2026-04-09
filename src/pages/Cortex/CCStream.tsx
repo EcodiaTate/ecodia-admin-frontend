@@ -85,27 +85,6 @@ function AttachmentChip({ file, onRemove }: { file: AttachedFile; onRemove: () =
   )
 }
 
-// ─── Ghost prompts ──────────────────────────────────────────────────
-const GHOST_PROMPTS = [
-  'How\'s the business doing?',
-  'Check all inboxes, what needs attention?',
-  'Show me the CRM pipeline',
-  'Draft replies to urgent emails',
-  'What happened while I was away?',
-  'Fix the bookkeeping, categorize everything',
-  'Any pending code requests?',
-  'What\'s on the calendar this week?',
-]
-
-function useGhostPrompt(): { text: string; key: number } {
-  const [idx, setIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % GHOST_PROMPTS.length), 7000)
-    return () => clearInterval(t)
-  }, [])
-  return { text: GHOST_PROMPTS[idx], key: idx }
-}
-
 // ─── Chromatic Vitals — green+gold ambient data ─────────────────────
 
 function ChromaticVital({ icon: Icon, value, label, color, glowColor, delay = 0 }: {
@@ -1074,7 +1053,6 @@ export default function CCStream() {
   }, [allMessages, visibleCount])
   const hasEarlier = allMessages.length > visibleCount
 
-  const ghostPrompt = useGhostPrompt()
   const isStreaming = status === 'streaming'
   // ghost prompt fades: key change triggers AnimatePresence exit+enter
   // Always allow sending — during streaming it becomes an interrupt
