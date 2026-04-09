@@ -1552,29 +1552,13 @@ export default function CCStream() {
               />
 
               <div className="relative flex-1">
-                {/* Animated ghost placeholder — fades between prompts */}
-                {!input && !isStreaming && (
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={ghostPrompt.key}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.4 }}
-                      className="pointer-events-none absolute inset-0 flex items-center text-sm text-on-surface leading-relaxed"
-                      aria-hidden
-                    >
-                      {ghostPrompt.text}
-                    </motion.span>
-                  </AnimatePresence>
-                )}
                 <textarea
                   ref={inputRef}
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
-                  placeholder={isStreaming ? 'Interrupt…' : ''}
+                  placeholder=""
                   rows={1}
                   className="w-full resize-none bg-transparent text-sm text-on-surface outline-none leading-relaxed"
                   style={{ maxHeight: 200 }}
