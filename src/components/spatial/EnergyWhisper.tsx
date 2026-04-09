@@ -68,6 +68,17 @@ export function EnergyWhisper({ className = '' }: { className?: string }) {
         {Math.round(pctRemaining)}%
       </span>
 
+      {/* Account indicator dot — only shown when not on primary */}
+      {energy.currentProvider && energy.currentProvider !== 'claude_max' && (
+        <span className="font-mono text-[9px] tracking-wide" style={{
+          color: energy.currentProvider === 'claude_max_2' ? '#D97706'
+            : energy.currentProvider === 'bedrock_opus' ? '#7C3AED'
+            : '#9CA3AF',
+        }}>
+          {energy.currentProvider === 'claude_max_2' ? 'acct2' : 'bdrk'}
+        </span>
+      )}
+
       {/* Expanded tooltip on hover */}
       <AnimatePresence>
         {expanded && (
@@ -121,10 +132,20 @@ export function EnergyWhisper({ className = '' }: { className?: string }) {
                 <Row label="Recommended model" value={energy.modelRec} highlight={textClass} />
               </div>
 
-              {/* Energy level label */}
-              <div className={`mt-2 pt-2 border-t border-on-surface-muted/10 font-mono text-[9px] uppercase tracking-[0.2em] ${textClass}`}>
-                {energy.label}
-                {energy.scheduleMultiplier < 1 && ` · scheduling at ${energy.scheduleMultiplier}×`}
+              {/* Energy level label + active account */}
+              <div className={`mt-2 pt-2 border-t border-on-surface-muted/10 font-mono text-[9px] uppercase tracking-[0.2em] ${textClass} flex items-center justify-between`}>
+                <span>{energy.label}{energy.scheduleMultiplier < 1 && ` · ${energy.scheduleMultiplier}×`}</span>
+                {energy.currentProvider && energy.currentProvider !== 'claude_max' && (
+                  <span className="text-[9px] font-mono tracking-wide" style={{
+                    color: energy.currentProvider === 'claude_max_2' ? '#D97706'
+                      : energy.currentProvider === 'bedrock_opus' ? '#7C3AED'
+                      : '#6B7280',
+                  }}>
+                    {energy.currentProvider === 'claude_max_2' ? '⚡ acct 2'
+                      : energy.currentProvider === 'bedrock_opus' ? 'bedrock opus'
+                      : 'bedrock sonnet'}
+                  </span>
+                )}
               </div>
             </div>
           </motion.div>

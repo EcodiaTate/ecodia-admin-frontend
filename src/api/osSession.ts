@@ -57,6 +57,7 @@ export interface EnergySnapshot {
   modelRec: 'opus' | 'sonnet' | 'bedrock-sonnet'
   scheduleMultiplier: number
   summary: string
+  currentProvider: 'claude_max' | 'claude_max_2' | 'bedrock_opus' | 'bedrock_sonnet'
 }
 
 export async function getEnergy() {
