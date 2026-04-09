@@ -310,7 +310,7 @@ function OSBlockRenderer({ block }: { block: OSBlock }) {
     case 'text':
       return (
         <div className="text-sm leading-[1.8] text-on-surface-variant [&_p]:my-0 [&_p+p]:mt-3 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_li]:my-0.5 [&_strong]:text-on-surface [&_strong]:font-semibold [&_code]:rounded-md [&_code]:bg-black/6 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.78em] [&_code]:text-primary/90">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>{block.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={(url) => url} components={{ a: MarkdownLink }}>{block.content}</ReactMarkdown>
         </div>
       )
 
@@ -412,7 +412,7 @@ function OSAssistantMessage({ message }: { message: OSChatMessage }) {
       ))}
       {(!message.blocks || message.blocks.length === 0) && message.content && (
         <div className="text-sm leading-[1.8] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>{message.content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={(url) => url} components={{ a: MarkdownLink }}>{message.content}</ReactMarkdown>
         </div>
       )}
     </motion.div>

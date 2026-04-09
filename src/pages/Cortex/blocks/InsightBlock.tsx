@@ -31,7 +31,7 @@ export function InsightBlock({ block }: { block: InsightBlockType }) {
         [&_strong]:text-on-surface [&_strong]:font-medium
         [&_code]:bg-black/20 [&_code]:px-1 [&_code]:rounded [&_code]:font-mono
         [&_ul]:pl-4 [&_ul]:my-1 [&_li]:my-0.5">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: MarkdownLink }}>{block.message}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={(url) => url} components={{ a: MarkdownLink }}>{block.message}</ReactMarkdown>
       </div>
     </motion.div>
   )

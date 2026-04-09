@@ -87,6 +87,7 @@ export function TextBlock({ block }: { block: TextBlockType }) {
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
+        urlTransform={(url) => url}
         components={{
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '')

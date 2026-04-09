@@ -8,24 +8,23 @@
  * Tool badges pulse like neural activity.
  * Links shimmer like gold filaments.
  *
- * The system speaks. You observe. Occasionally you interrupt.
+ * The system speaks. You observe. Occasionally you approve.
  */
-import { useState, useRef, useEffect, useCallback, useMemo, useId, useDeferredValue, memo } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowUp, RotateCcw, Brain, ChevronDown, ChevronUp,
+  ArrowUp, RotateCcw, Brain, ChevronDown,
   Mail, DollarSign, Zap, Activity,
   GitBranch, TrendingUp, Download,
   Paperclip, FileText, X, Trash2, Image as ImageIcon,
-  Wrench, CheckCircle2, Clock, Copy, Check,
-  Maximize2, Minimize2, Code2, RefreshCw, ExternalLink,
 } from 'lucide-react'
+// SpatialLayer removed from input area to fix jitter
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
-import { useOSSessionStore, type OSSessionMessage, type LiveToolCall } from '@/store/osSessionStore'
-import { sendOSMessage, restartOS, getOSStatus, recoverResponse, getEnergy, triggerHandover } from '@/api/osSession'
+import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
+import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
@@ -76,13 +75,34 @@ function AttachmentChip({ file, onRemove }: { file: AttachedFile; onRemove: () =
       <FileText className="h-4 w-4 flex-shrink-0" style={{ color: '#1B7A3D' }} strokeWidth={1.5} />
       <div className="min-w-0">
         <p className="max-w-[120px] truncate text-xs font-medium text-on-surface">{file.name}</p>
-        <p className="text-[10px] text-on-surface">{formatBytes(file.size)}</p>
+        <p className="text-[10px] text-on-surface-muted/50">{formatBytes(file.size)}</p>
       </div>
-      <button onClick={onRemove} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface hover:text-error transition-colors">
+      <button onClick={onRemove} className="ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-on-surface-muted/40 hover:text-error transition-colors">
         <X className="h-3 w-3" strokeWidth={2} />
       </button>
     </div>
   )
+}
+
+// ─── Ghost prompts ──────────────────────────────────────────────────
+const GHOST_PROMPTS = [
+  'How\'s the business doing?',
+  'Check all inboxes, what needs attention?',
+  'Show me the CRM pipeline',
+  'Draft replies to urgent emails',
+  'What happened while I was away?',
+  'Fix the bookkeeping, categorize everything',
+  'Any pending code requests?',
+  'What\'s on the calendar this week?',
+]
+
+function useGhostPrompt(): string {
+  const [idx, setIdx] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % GHOST_PROMPTS.length), 7000)
+    return () => clearInterval(t)
+  }, [])
+  return GHOST_PROMPTS[idx]
 }
 
 // ─── Chromatic Vitals — green+gold ambient data ─────────────────────
@@ -118,7 +138,7 @@ function ChromaticVital({ icon: Icon, value, label, color, glowColor, delay = 0 
         <p className="text-sm font-semibold font-mono tabular-nums" style={{ color: '#151716' }}>
           {value}
         </p>
-        <p className="text-[10px] uppercase tracking-[0.08em] text-on-surface font-mono">{label}</p>
+        <p className="text-[10px] uppercase tracking-[0.08em] text-on-surface-muted/40 font-mono">{label}</p>
       </div>
     </motion.div>
   )
@@ -221,7 +241,7 @@ function PendingActionsBanner() {
         {actions.pending} action{actions.pending > 1 ? 's' : ''} waiting
         {actions.urgent > 0 && <span className="ml-1 font-medium" style={{ color: '#D97706' }}>&middot; {actions.urgent} urgent</span>}
       </span>
-      <span className="text-[10px] text-on-surface ml-auto font-mono">ask cortex</span>
+      <span className="text-[10px] text-on-surface-muted/25 ml-auto font-mono">ask cortex</span>
     </motion.div>
   )
 }
@@ -258,7 +278,9 @@ function parseStreamChunks(chunks: string[]): ParsedChunk[] {
   return parsed
 }
 
-// ─── Tool accents ────────────────────────────────────────────────────
+// ─── Tool badges — green+gold neural activity indicators ────────────
+// Every tool gets a green or gold accent — never blue.
+// The tool name renders like a system identifier: monospace, glowing.
 
 const TOOL_ACCENT: Record<string, { color: string; glow: string }> = {
   gmail:    { color: '#1B7A3D', glow: 'rgba(27,122,61,0.10)' },
@@ -277,129 +299,6 @@ function getToolAccent(name?: string) {
   if (!name) return { color: '#1B7A3D', glow: 'rgba(27,122,61,0.08)' }
   const key = Object.keys(TOOL_ACCENT).find(k => name.toLowerCase().includes(k))
   return key ? TOOL_ACCENT[key] : { color: '#1B7A3D', glow: 'rgba(27,122,61,0.08)' }
-}
-
-// ─── Live Tool Call Panel ─────────────────────────────────────────────
-// Memoized so text-delta re-renders of StreamingOutput don't cascade into tools.
-
-const LiveToolPanel = memo(function LiveToolPanel({ tool }: { tool: LiveToolCall }) {
-  const [open, setOpen] = useState(false)
-  const accent = getToolAccent(tool.name)
-  const isDone = tool.completedAt !== undefined
-  const elapsed = isDone
-    ? ((tool.completedAt! - tool.startedAt) / 1000).toFixed(1) + 's'
-    : null
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-      className="rounded-xl overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${accent.color}06, ${accent.color}03)`,
-        border: `1px solid ${accent.color}18`,
-        boxShadow: `0 2px 12px -4px ${accent.glow}`,
-      }}
-    >
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="flex w-full items-center gap-2.5 px-3 py-2 text-left"
-      >
-        {isDone ? (
-          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" style={{ color: accent.color }} strokeWidth={2} />
-        ) : (
-          <motion.div
-            className="h-3.5 w-3.5 flex-shrink-0 flex items-center justify-center"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'linear' }}
-          >
-            <Wrench className="h-3.5 w-3.5" style={{ color: accent.color }} strokeWidth={1.75} />
-          </motion.div>
-        )}
-        <span className="flex-1 text-[11px] font-mono tracking-wide" style={{ color: `${accent.color}cc` }}>
-          {tool.name}
-        </span>
-        {isDone ? (
-          <span className="text-[10px] font-mono text-on-surface flex items-center gap-1">
-            <Clock className="h-2.5 w-2.5" strokeWidth={1.75} />
-            {elapsed}
-          </span>
-        ) : (
-          <motion.div
-            className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: accent.color, boxShadow: `0 0 6px ${accent.color}80` }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        )}
-        {(tool.input || tool.result) && (
-          <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
-            <ChevronDown className="h-3 w-3 text-on-surface flex-shrink-0" strokeWidth={2} />
-          </motion.div>
-        )}
-      </button>
-      <AnimatePresence>
-        {open && (tool.input || tool.result) && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="overflow-hidden"
-          >
-            <div className="px-3 pb-3 space-y-2">
-              {tool.input && (
-                <div>
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface mb-1">input</p>
-                  <pre className="text-[10px] font-mono text-on-surface whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-32"
-                    style={{ background: `${accent.color}04`, borderRadius: 6, padding: '6px 8px' }}>
-                    {tool.input}
-                  </pre>
-                </div>
-              )}
-              {tool.result && (
-                <div>
-                  <p className="text-[9px] font-mono uppercase tracking-widest text-on-surface mb-1">result</p>
-                  <pre className="text-[10px] font-mono text-on-surface whitespace-pre-wrap break-all leading-relaxed overflow-x-auto max-h-40"
-                    style={{ background: 'rgba(5,150,105,0.04)', borderRadius: 6, padding: '6px 8px' }}>
-                    {tool.result.length > 1200 ? tool.result.slice(0, 1200) + '\n… (truncated)' : tool.result}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
-})
-
-// ─── Finalized tool badge (in completed messages) ────────────────────
-
-function ToolBadge({ toolName, i }: { toolName: string; i: number }) {
-  const accent = getToolAccent(toolName)
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 18, delay: i * 0.03 }}
-      className="flex items-center gap-1.5 rounded-xl px-3 py-1.5"
-      style={{
-        background: `linear-gradient(135deg, ${accent.color}08, ${accent.color}04)`,
-        border: `1px solid ${accent.color}15`,
-        boxShadow: `0 2px 8px -2px ${accent.glow}, inset 0 1px 0 rgba(255,255,255,0.3)`,
-      }}
-    >
-      <div
-        className="h-1 w-1 rounded-full flex-shrink-0"
-        style={{ backgroundColor: accent.color, boxShadow: `0 0 4px ${accent.color}60` }}
-      />
-      <span className="text-[11px] font-mono tracking-wide" style={{ color: `${accent.color}cc` }}>
-        {toolName}
-      </span>
-    </motion.div>
-  )
 }
 
 // ─── API base URL ────────────────────────────────────────────────────
@@ -466,180 +365,6 @@ function DownloadButton({ href, label }: { href: string; label: string }) {
   )
 }
 
-// ─── Copy-code button ─────────────────────────────────────────────────
-
-function CopyCodeButton({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false)
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch { /* ignore */ }
-  }, [code])
-  return (
-    <button
-      onClick={handleCopy}
-      className="absolute top-2.5 right-2.5 flex items-center gap-1.5 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity"
-      style={{
-        background: 'rgba(27,122,61,0.12)',
-        border: '1px solid rgba(27,122,61,0.18)',
-        color: copied ? '#2ECC71' : 'rgba(27,122,61,0.7)',
-        fontSize: 10,
-      }}
-    >
-      {copied ? <Check className="h-2.5 w-2.5" strokeWidth={2.5} /> : <Copy className="h-2.5 w-2.5" strokeWidth={1.75} />}
-      {copied ? 'Copied' : 'Copy'}
-    </button>
-  )
-}
-
-// ─── HTML Preview Panel ───────────────────────────────────────────────
-// Renders html code blocks as live, editable iframes.
-// Toggle between rendered preview and source editor.
-// Fullscreen mode, external-open, and live edit-and-reload.
-
-function HtmlPreviewPanel({ initialHtml }: { initialHtml: string }) {
-  const [html, setHtml] = useState(initialHtml)
-  const [showSource, setShowSource] = useState(false)
-  const [fullscreen, setFullscreen] = useState(false)
-  const [height, setHeight] = useState(420)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const srcDoc = html
-
-  // Sync live edits to iframe via srcdoc
-  useEffect(() => {
-    if (iframeRef.current && !showSource) {
-      iframeRef.current.srcdoc = html
-    }
-  }, [html, showSource])
-
-  const openExternal = useCallback(() => {
-    const blob = new Blob([html], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank')
-    setTimeout(() => URL.revokeObjectURL(url), 10000)
-  }, [html])
-
-  const reset = useCallback(() => setHtml(initialHtml), [initialHtml])
-
-  const panel = (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-      className={fullscreen ? 'fixed inset-4 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl' : 'rounded-2xl overflow-hidden my-3'}
-      style={{
-        background: fullscreen ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.92)',
-        border: '1px solid rgba(27,122,61,0.12)',
-        boxShadow: fullscreen
-          ? '0 32px 80px -16px rgba(27,122,61,0.20)'
-          : '0 8px 32px -8px rgba(27,122,61,0.10)',
-        backdropFilter: 'blur(12px)',
-      }}
-    >
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ borderColor: 'rgba(27,122,61,0.08)', background: 'rgba(27,122,61,0.02)' }}>
-        {/* Traffic light dots */}
-        <div className="flex items-center gap-1.5 mr-2">
-          <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(239,68,68,0.5)' }} />
-          <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(245,158,11,0.5)' }} />
-          <div className="h-2.5 w-2.5 rounded-full" style={{ background: 'rgba(34,197,94,0.5)' }} />
-        </div>
-        <span className="text-[10px] font-mono text-on-surface flex-1 tracking-wide">html preview</span>
-
-        {/* Controls */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowSource(s => !s)}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-mono transition-all"
-            style={{
-              background: showSource ? 'rgba(27,122,61,0.10)' : 'transparent',
-              color: showSource ? '#1B7A3D' : 'rgba(0,0,0,0.7)',
-              border: `1px solid ${showSource ? 'rgba(27,122,61,0.20)' : 'transparent'}`,
-            }}
-            title="Toggle source"
-          >
-            <Code2 className="h-3 w-3" strokeWidth={1.75} />
-            source
-          </button>
-          <button onClick={reset} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.7)' }} title="Reset to original">
-            <RefreshCw className="h-3 w-3" strokeWidth={1.75} />
-          </button>
-          <button onClick={openExternal} className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]" style={{ color: 'rgba(0,0,0,0.7)' }} title="Open in new tab">
-            <ExternalLink className="h-3 w-3" strokeWidth={1.75} />
-          </button>
-          <button
-            onClick={() => setFullscreen(f => !f)}
-            className="flex items-center justify-center h-6 w-6 rounded-lg transition-colors hover:bg-on-surface-muted/[0.06]"
-            style={{ color: 'rgba(0,0,0,0.7)' }}
-            title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-          >
-            {fullscreen ? <Minimize2 className="h-3 w-3" strokeWidth={1.75} /> : <Maximize2 className="h-3 w-3" strokeWidth={1.75} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className={fullscreen ? 'flex-1 overflow-hidden' : ''} style={!fullscreen ? { height } : undefined}>
-        {showSource ? (
-          <textarea
-            value={html}
-            onChange={e => setHtml(e.target.value)}
-            className="w-full h-full resize-none font-mono text-[11px] leading-relaxed outline-none p-3"
-            style={{
-              height: fullscreen ? '100%' : height,
-              background: '#0f172a',
-              color: '#e2e8f0',
-              tabSize: 2,
-            }}
-            spellCheck={false}
-          />
-        ) : (
-          <iframe
-            ref={iframeRef}
-            srcDoc={srcDoc}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            className="w-full border-0 bg-white"
-            style={{ height: fullscreen ? '100%' : height }}
-            title="HTML Preview"
-          />
-        )}
-      </div>
-
-      {/* Resize handle (only when not fullscreen) */}
-      {!fullscreen && (
-        <div
-          className="flex items-center justify-center py-1 cursor-ns-resize select-none"
-          style={{ background: 'rgba(27,122,61,0.02)', borderTop: '1px solid rgba(27,122,61,0.06)' }}
-          onMouseDown={e => {
-            const startY = e.clientY
-            const startH = height
-            const onMove = (mv: MouseEvent) => setHeight(Math.max(200, Math.min(1200, startH + mv.clientY - startY)))
-            const onUp = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
-            window.addEventListener('mousemove', onMove)
-            window.addEventListener('mouseup', onUp)
-          }}
-        >
-          <div className="h-0.5 w-8 rounded-full" style={{ background: 'rgba(27,122,61,0.15)' }} />
-        </div>
-      )}
-    </motion.div>
-  )
-
-  if (fullscreen) {
-    return (
-      <>
-        {/* Backdrop */}
-        <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setFullscreen(false)} />
-        {panel}
-      </>
-    )
-  }
-  return panel
-}
-
 // ─── Custom ReactMarkdown renderers ──────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -651,83 +376,39 @@ const MARKDOWN_COMPONENTS: Components = {
     }
     return <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary/80 underline underline-offset-2 hover:text-primary transition-colors">{children}</a>
   },
-  pre({ children }) {
-    // Wrap pre in a group so copy button can hover-show
-    const code = typeof children === 'object' && children !== null && 'props' in (children as React.ReactElement)
-      ? String((children as React.ReactElement).props?.children ?? '')
-      : String(children ?? '')
-    return (
-      <div className="group relative">
-        <pre>{children}</pre>
-        <CopyCodeButton code={code} />
-      </div>
-    )
-  },
   code({ className, children }) {
     const match = /language-(\w+)/.exec(className || '')
     if (match?.[1] === 'mermaid') return <MermaidBlock code={String(children).replace(/\n$/, '')} />
-    // html code blocks render as live interactive iframe panels
-    if (match?.[1] === 'html') {
-      const raw = String(children).replace(/\n$/, '')
-      return <HtmlPreviewPanel initialHtml={raw} />
-    }
     return <code className={className}>{children}</code>
   },
 }
 
 // ─── Message renderers ──────────────────────────────────────────────
 
-function fmtTimestamp(ts: Date | string | undefined): string {
-  if (!ts) return ''
-  const d = ts instanceof Date ? ts : new Date(ts)
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-function UserMessage({ message, isInterrupt }: { message: OSSessionMessage; isInterrupt?: boolean }) {
+function UserMessage({ message }: { message: OSSessionMessage }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 90, damping: 22 }}
-      className="group py-3"
+      className="py-3"
     >
       <div className="rounded-2xl px-5 py-3.5" style={{
-        background: isInterrupt
-          ? 'linear-gradient(135deg, rgba(217,119,6,0.07), rgba(251,191,36,0.04))'
-          : 'linear-gradient(135deg, rgba(27,122,61,0.05), rgba(46,204,113,0.03))',
-        border: `1px solid ${isInterrupt ? 'rgba(217,119,6,0.12)' : 'rgba(27,122,61,0.08)'}`,
-        boxShadow: isInterrupt
-          ? '0 2px 12px -4px rgba(217,119,6,0.08)'
-          : '0 2px 12px -4px rgba(27,122,61,0.06)',
+        background: 'linear-gradient(135deg, rgba(27,122,61,0.05), rgba(46,204,113,0.03))',
+        border: '1px solid rgba(27,122,61,0.08)',
+        boxShadow: '0 2px 12px -4px rgba(27,122,61,0.06)',
       }}>
-        {isInterrupt && (
-          <p className="text-[9px] font-mono uppercase tracking-widest mb-1.5" style={{ color: 'rgba(217,119,6,0.5)' }}>
-            interrupt
-          </p>
-        )}
         <p className="text-sm leading-relaxed text-on-surface font-medium">{message.content}</p>
       </div>
-      {message.timestamp && (
-        <p className="mt-1 px-1 text-[10px] font-mono text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
-          {fmtTimestamp(message.timestamp)}
-        </p>
-      )}
     </motion.div>
   )
 }
 
 function AssistantMessage({ message }: { message: OSSessionMessage }) {
-  // New path: tools and thinking saved directly on the message
-  const savedTools = message.tools ?? []
-  const savedThinking = message.thinking ?? ''
-
-  // Legacy path: parse from raw chunks (older messages)
   const chunks = message.chunks ? parseStreamChunks(message.chunks) : []
   const textContent = chunks.filter(c => c.type === 'text').map(c => c.content).join('\n\n')
-  // Only use chunk-parsed tool badges if no saved tools (backward compat)
-  const legacyToolUses = savedTools.length === 0 ? chunks.filter(c => c.type === 'tool_use') : []
-  // Only use chunk-parsed thinking if no saved thinking (backward compat)
-  const legacyThinking = !savedThinking ? chunks.filter(c => c.type === 'thinking') : []
+  const toolUses = chunks.filter(c => c.type === 'tool_use')
+  const thinkingBlocks = chunks.filter(c => c.type === 'thinking')
   const displayText = textContent || message.content
 
   return (
@@ -735,40 +416,52 @@ function AssistantMessage({ message }: { message: OSSessionMessage }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 22, delay: 0.04 }}
-      className="group py-3 space-y-3"
+      className="py-3 space-y-3"
     >
-      {/* Thinking — saved directly (new) or from chunks (legacy) */}
-      {savedThinking && <ThinkingBlock content={savedThinking} />}
-      {legacyThinking.map((t, i) => (
+      {/* Thinking blocks — collapsible, green tint */}
+      {thinkingBlocks.map((t, i) => (
         <ThinkingBlock key={`think-${i}`} content={t.content} />
       ))}
 
-      {/* Tool calls — full panels with input/output if saved (new), plain badges if legacy */}
-      {savedTools.length > 0 && (
-        <div className="space-y-1.5">
-          {savedTools.map(tool => (
-            <LiveToolPanel key={tool.id} tool={tool} />
-          ))}
-        </div>
-      )}
-      {legacyToolUses.length > 0 && (
+      {/* Tool badges — futuristic neural activity pills */}
+      {toolUses.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {legacyToolUses.map((t, i) => (
-            <ToolBadge key={`tool-${i}`} toolName={t.toolName || t.content} i={i} />
-          ))}
+          {toolUses.map((t, i) => {
+            const accent = getToolAccent(t.toolName)
+            return (
+              <motion.div
+                key={`tool-${i}`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 100, damping: 18, delay: i * 0.03 }}
+                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5"
+                style={{
+                  background: `linear-gradient(135deg, ${accent.color}08, ${accent.color}04)`,
+                  border: `1px solid ${accent.color}15`,
+                  boxShadow: `0 2px 8px -2px ${accent.glow}, inset 0 1px 0 rgba(255,255,255,0.3)`,
+                }}
+              >
+                {/* Pulse dot */}
+                <motion.div
+                  className="h-1 w-1 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: accent.color, boxShadow: `0 0 4px ${accent.color}60` }}
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <span className="text-[11px] font-mono tracking-wide" style={{ color: `${accent.color}cc` }}>
+                  {t.toolName || t.content}
+                </span>
+              </motion.div>
+            )
+          })}
         </div>
       )}
 
+      {/* Response text — futuristic markdown rendering */}
       {displayText && (
         <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{displayText}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={(url) => url} components={MARKDOWN_COMPONENTS}>{displayText}</ReactMarkdown>
         </div>
-      )}
-
-      {message.timestamp && (
-        <p className="px-1 text-[10px] font-mono text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">
-          {fmtTimestamp(message.timestamp)}
-        </p>
       )}
     </motion.div>
   )
@@ -790,164 +483,25 @@ function ThinkingBlock({ content }: { content: string }) {
     >
       <button onClick={() => setExpanded(!expanded)} className="flex items-start gap-2.5 px-4 py-3 w-full text-left">
         <Brain className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
-        <span className="text-xs text-on-surface leading-relaxed flex-1">{expanded ? content : preview}</span>
+        <span className="text-xs text-on-surface-muted/50 leading-relaxed flex-1">{expanded ? content : preview}</span>
         <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
-          <ChevronDown className="h-3 w-3 text-on-surface flex-shrink-0 mt-0.5" strokeWidth={2} />
+          <ChevronDown className="h-3 w-3 text-on-surface-muted/25 flex-shrink-0 mt-0.5" strokeWidth={2} />
         </motion.div>
       </button>
     </motion.div>
   )
 }
 
-// ─── Streaming tools panel — memoized, only re-renders when tools change ──
+// ─── Streaming indicator — green + gold breathing ───────────────────
 
-const StreamingTools = memo(function StreamingTools({ tools }: { tools: LiveToolCall[] }) {
-  if (tools.length === 0) return null
+function StreamingIndicator({ text }: { text: string }) {
   return (
-    <div className="space-y-1.5">
-      {tools.map(tool => (
-        <LiveToolPanel key={tool.id} tool={tool} />
-      ))}
-    </div>
-  )
-})
-
-// ─── Streaming text — deferred so high-frequency deltas don't block UI ──
-
-function StreamingText({ text }: { text: string }) {
-  // useDeferredValue lets React deprioritise the Markdown re-parse during rapid deltas
-  const deferred = useDeferredValue(text)
-  if (!deferred) return null
-  return (
-    <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>{deferred}</ReactMarkdown>
-    </div>
-  )
-}
-
-// ─── Live thinking panel — streams reasoning as it arrives ───────────
-
-const LiveThinkingPanel = memo(function LiveThinkingPanel({ thinking }: { thinking: string }) {
-  const [expanded, setExpanded] = useState(false)
-  const preview = thinking.length > 140 ? thinking.slice(0, 140) + '…' : thinking
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, rgba(27,122,61,0.04), rgba(46,204,113,0.02))',
-        border: '1px solid rgba(27,122,61,0.10)',
-      }}
-      layout
-    >
-      <button onClick={() => setExpanded(e => !e)} className="flex items-start gap-2.5 px-4 py-3 w-full text-left">
-        <motion.div
-          className="h-3.5 w-3.5 mt-0.5 flex-shrink-0"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <Brain className="h-3.5 w-3.5" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
-        </motion.div>
-        <span className="text-[11px] font-mono text-on-surface leading-relaxed flex-1 tracking-wide">
-          {expanded ? thinking : preview}
-        </span>
-        <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
-          <ChevronDown className="h-3 w-3 text-on-surface flex-shrink-0 mt-0.5" strokeWidth={2} />
-        </motion.div>
-      </button>
-    </motion.div>
-  )
-})
-
-// ─── Handover banner — shown during seamless session transitions ─────
-//
-// Three phases:
-//   preparing — current session is writing the handover brief
-//   warming    — new session is reading docs and loading brief
-//   complete   — flash green, then fade out
-//
-// Designed to be ambient, not alarming. User should barely notice.
-
-function HandoverBanner({ phase }: {
-  phase: 'preparing' | 'warming' | 'complete' | 'failed' | 'cancelled'
-  briefPreview?: string
-}) {
-  const isComplete = phase === 'complete'
-  const isFailed = phase === 'failed' || phase === 'cancelled'
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -4 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 26 }}
-      className="flex items-center gap-3 rounded-2xl px-5 py-3 mx-auto max-w-lg"
-      style={{
-        background: isComplete
-          ? 'linear-gradient(135deg, rgba(5,150,105,0.07), rgba(46,204,113,0.04))'
-          : isFailed
-            ? 'linear-gradient(135deg, rgba(217,119,6,0.07), rgba(251,191,36,0.03))'
-            : 'linear-gradient(135deg, rgba(27,122,61,0.05), rgba(46,204,113,0.03))',
-        border: isComplete
-          ? '1px solid rgba(5,150,105,0.15)'
-          : isFailed
-            ? '1px solid rgba(217,119,6,0.15)'
-            : '1px solid rgba(27,122,61,0.10)',
-      }}
-    >
-      {isComplete ? (
-        <motion.div
-          initial={{ scale: 0.5 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        >
-          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" style={{ color: '#059669' }} strokeWidth={2} />
-        </motion.div>
-      ) : isFailed ? (
-        <motion.div
-          className="h-2 w-2 rounded-full flex-shrink-0"
-          style={{ backgroundColor: '#F59E0B' }}
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        />
-      ) : (
-        <motion.div
-          className="h-3.5 w-3.5 flex-shrink-0"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        >
-          <RefreshCw className="h-3.5 w-3.5" style={{ color: '#2ECC71' }} strokeWidth={1.75} />
-        </motion.div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-3 space-y-3">
+      {text && (
+        <div className="cortex-prose text-sm leading-[1.85] text-on-surface-variant">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} urlTransform={(url) => url} components={MARKDOWN_COMPONENTS}>{text}</ReactMarkdown>
+        </div>
       )}
-
-      <div className="flex-1 min-w-0">
-        <span className="text-[11px] font-mono tracking-wide" style={{
-          color: isComplete ? '#059669' : isFailed ? '#D97706' : 'rgba(27,122,61,0.7)',
-        }}>
-          {phase === 'preparing' && 'preparing context handover…'}
-          {phase === 'warming' && 'warming new session…'}
-          {phase === 'complete' && 'fresh context — continuing seamlessly'}
-          {phase === 'failed' && 'handover failed — continuing on current session'}
-          {phase === 'cancelled' && 'handover cancelled'}
-        </span>
-        {phase === 'warming' && (
-          <p className="text-[9px] text-on-surface font-mono mt-0.5">reading docs · loading brief · ready soon</p>
-        )}
-      </div>
-    </motion.div>
-  )
-}
-
-// ─── Streaming output — text + live tool panels ─────────────────────
-
-function StreamingOutput({ text, tools, thinking }: { text: string; tools: LiveToolCall[]; thinking: string }) {
-  const hasActiveTools = tools.some(t => !t.completedAt)
-  return (
-    <div className="py-3 space-y-3">
-      {thinking && <LiveThinkingPanel thinking={thinking} />}
-      <StreamingTools tools={tools} />
-      <StreamingText text={text} />
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
           {[
@@ -964,99 +518,80 @@ function StreamingOutput({ text, tools, thinking }: { text: string; tools: LiveT
             />
           ))}
         </div>
-        <span className="text-[11px] text-on-surface font-mono tracking-wider">
-          {thinking && !text && !hasActiveTools ? 'thinking deeply' : hasActiveTools ? 'using tools' : text ? 'working' : 'thinking'}
+        <span className="text-[11px] text-on-surface-muted/30 font-mono tracking-wider">
+          {text ? 'working' : 'thinking'}
         </span>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-// ─── Interrupt notification banner ────────────────────────────────────
+// ─── Token usage — green-to-gold gradient bar ───────────────────────
 
-function InterruptBanner({ count }: { count: number }) {
-  if (count === 0) return null
+function TokenBar() {
+  const { data } = useQuery({ queryKey: ['os-tokens'], queryFn: getTokenUsage, staleTime: 15_000, retry: 1 })
+  const compacting = useOSSessionStore(s => s.compacting)
+
+  if (!data || data.total === 0) return null
+
+  const pct = Math.min((data.total / data.threshold) * 100, 100)
+  const isHigh = pct > 75
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -4 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -4 }}
-      className="flex items-center gap-2 rounded-xl px-3 py-2 mx-auto max-w-sm"
-      style={{
-        background: 'linear-gradient(135deg, rgba(217,119,6,0.08), rgba(251,191,36,0.04))',
-        border: '1px solid rgba(217,119,6,0.15)',
-      }}
-    >
-      <motion.div
-        className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-        style={{ backgroundColor: '#F59E0B' }}
-        animate={{ opacity: [0.4, 1, 0.4] }}
-        transition={{ duration: 1.2, repeat: Infinity }}
-      />
-      <span className="text-[11px] font-mono text-on-surface">
-        {count} interrupt{count > 1 ? 's' : ''} queued — OS will read when it pauses
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 px-1">
+      <div className="flex-1 h-0.5 rounded-full bg-on-surface-muted/[0.06] overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          style={{
+            background: isHigh
+              ? 'linear-gradient(90deg, #D97706, #EA580C)'
+              : 'linear-gradient(90deg, #1B7A3D, #2ECC71)',
+            boxShadow: isHigh
+              ? '0 0 8px rgba(217,119,6,0.3)'
+              : '0 0 8px rgba(46,204,113,0.2)',
+          }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ type: 'spring', stiffness: 60, damping: 20 }}
+        />
+      </div>
+      <span className="text-[9px] font-mono text-on-surface-muted/25 tabular-nums whitespace-nowrap">
+        {compacting ? 'compacting...' : `${Math.round(pct)}%`}
       </span>
     </motion.div>
   )
 }
 
-// ─── Account badge — tiny "1" or "2" showing which Claude Max account is active ──
-
-function AccountBadge() {
-  const { data: energy } = useQuery({ queryKey: ['claudeEnergy'], queryFn: getEnergy, staleTime: 60_000, retry: 1 })
-  const acctNum = energy?.currentProvider === 'claude_max_2' ? '2' : '1'
-  return (
-    <span className="font-mono text-[10px] text-on-surface tabular-nums" title={`Claude Max account ${acctNum}`}>
-      {acctNum}
-    </span>
-  )
-}
-
 // ─── Main CCStream ──────────────────────────────────────────────────
 
+/** How many messages to show initially. Click "show earlier" to load more. */
 const VISIBLE_BATCH = 30
-// Distance from bottom (px) before we stop auto-scrolling
-const SCROLL_LOCK_THRESHOLD = 120
 
 export default function CCStream() {
   const [input, setInput] = useState('')
   const [attachments, setAttachments] = useState<AttachedFile[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [visibleCount, setVisibleCount] = useState(VISIBLE_BATCH)
-  const [userScrolledUp, setUserScrolledUp] = useState(false)
-  const [unreadCount, setUnreadCount] = useState(0)
-  const lastSeenMessageCount = useRef(0)
-
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const fileInputId = useId()
   const chatEndRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-  // Ref mirror for use inside callbacks without stale closure
-  const scrolledUpRef = useRef(false)
-  const isProgrammaticScroll = useRef(false)
-
+  const userScrolledUp = useRef(false)
   const allMessages = useOSSessionStore(s => s.messages)
   const status = useOSSessionStore(s => s.status)
   const streamText = useOSSessionStore(s => s.streamText)
-  const streamTools = useOSSessionStore(s => s.streamTools)
-  const streamThinking = useOSSessionStore(s => s.streamThinking)
-  const interruptQueue = useOSSessionStore(s => s.interruptQueue)
-  const handover = useOSSessionStore(s => s.handover)
   const addUserMessage = useOSSessionStore(s => s.addUserMessage)
-  const queueInterrupt = useOSSessionStore(s => s.queueInterrupt)
-  const clearInterruptQueue = useOSSessionStore(s => s.clearInterruptQueue)
 
+  // Only render the most recent `visibleCount` messages
   const messages = useMemo(() => {
     if (allMessages.length <= visibleCount) return allMessages
     return allMessages.slice(-visibleCount)
   }, [allMessages, visibleCount])
   const hasEarlier = allMessages.length > visibleCount
 
-  const isStreaming = status === 'streaming'
-  // ghost prompt fades: key change triggers AnimatePresence exit+enter
-  // Always allow sending — during streaming it becomes an interrupt
-  const canSend = input.trim().length > 0 || attachments.length > 0
+  const ghostPrompt = useGhostPrompt()
+  const canSend = (input.trim().length > 0 || attachments.length > 0) && status !== 'streaming'
 
   // File handlers
   const handleFiles = useCallback(async (files: FileList | File[]) => {
@@ -1077,69 +612,34 @@ export default function CCStream() {
     const el = scrollRef.current
     if (!el) return
     const onScroll = () => {
-      if (isProgrammaticScroll.current) return
       const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight
-      const scrolledUp = distFromBottom > SCROLL_LOCK_THRESHOLD
-      scrolledUpRef.current = scrolledUp
-      setUserScrolledUp(scrolledUp)
+      userScrolledUp.current = distFromBottom > 80
     }
     el.addEventListener('scroll', onScroll, { passive: true })
     return () => el.removeEventListener('scroll', onScroll)
   }, [])
 
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-    const el = chatEndRef.current
-    if (!el) return
-    isProgrammaticScroll.current = true
-    el.scrollIntoView({ behavior })
-    setTimeout(() => { isProgrammaticScroll.current = false }, 400)
-  }, [])
-
-  // Auto-scroll as stream text grows — only when user hasn't scrolled up
+  // Auto-scroll only when user is near the bottom (or on new messages/status change)
   useEffect(() => {
-    if (!scrolledUpRef.current) {
-      scrollToBottom('smooth')
+    if (!userScrolledUp.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [streamText, scrollToBottom])
+  }, [messages, status, streamText])
 
-  // Auto-scroll on new messages — always on own message, otherwise respect scroll lock
+  // Always scroll down when the user sends a new message
   const prevMessageCount = useRef(messages.length)
   useEffect(() => {
     if (messages.length > prevMessageCount.current) {
       const lastMsg = messages[messages.length - 1]
       if (lastMsg?.role === 'user') {
-        scrolledUpRef.current = false
-        setUserScrolledUp(false)
-        setUnreadCount(0)
-        lastSeenMessageCount.current = messages.length
-        scrollToBottom('smooth')
-      } else if (!scrolledUpRef.current) {
-        lastSeenMessageCount.current = messages.length
-        scrollToBottom('smooth')
-      } else {
-        // User is scrolled up — accumulate unread count
-        setUnreadCount(messages.length - lastSeenMessageCount.current)
+        userScrolledUp.current = false
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
       }
     }
     prevMessageCount.current = messages.length
-  }, [messages, scrollToBottom])
+  }, [messages])
 
   useEffect(() => { inputRef.current?.focus() }, [])
-
-  // '/' from anywhere refocuses the input (like Slack/Linear)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const active = document.activeElement
-      const isEditing = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
-      if (isEditing) return
-      if (e.key === '/' || e.key === 'Escape') {
-        e.preventDefault()
-        inputRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
 
   // ─── Recovery: reconnect after tab close mid-turn ─────────────────
   // On mount, check if we had an in-flight request (lastUserMessageAt set).
@@ -1214,6 +714,7 @@ export default function CCStream() {
     setAttachments([])
     if (inputRef.current) inputRef.current.style.height = 'auto'
 
+    // Build full message: text + file contents appended inline
     let fullMessage = text
     for (const a of currentAttachments) {
       if (a.dataUrl) {
@@ -1226,24 +727,13 @@ export default function CCStream() {
     }
     fullMessage = fullMessage.trim() || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`
 
-    if (isStreaming) {
-      // Interrupt: show in thread immediately, queue for OS awareness
-      queueInterrupt(fullMessage)
-      addUserMessage(fullMessage)
-      try {
-        await sendOSMessage(fullMessage)
-      } catch {
-        // Interrupt delivery failure is non-fatal
-      }
-      return
-    }
-
     addUserMessage(fullMessage)
-    clearInterruptQueue()
     try {
       const result = await sendOSMessage(fullMessage)
       const store = useOSSessionStore.getState()
       if (store.status === 'streaming') {
+        // WebSocket didn't deliver os-session:complete — use HTTP response as fallback
+        // Only inject text if WebSocket didn't already stream it via deltas
         if (result.text && !store.streamText) {
           store.appendStreamText(result.text)
         }
@@ -1262,7 +752,7 @@ export default function CCStream() {
         }],
       }))
     }
-  }, [input, attachments, isStreaming, addUserMessage, queueInterrupt, clearInterruptQueue])
+  }, [input, addUserMessage])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
@@ -1283,14 +773,6 @@ export default function CCStream() {
     await restartOS()
     useOSSessionStore.getState().clearMessages()
   }, [])
-
-  const handleHandover = useCallback(async () => {
-    if (handover) return // already in progress
-    try {
-      // Fire and forget — backend streams progress via WebSocket
-      triggerHandover().catch(() => {})
-    } catch { /* non-fatal */ }
-  }, [handover])
 
   const hasMessages = messages.length > 0
 
@@ -1320,15 +802,15 @@ export default function CCStream() {
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-5xl px-6">
-          {/* Welcome state */}
-          {!hasMessages && !isStreaming && (
+          {/* Ambient welcome — green + gold presence */}
+          {!hasMessages && status !== 'streaming' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 60, damping: 20 }}
               className="flex flex-col items-center pt-[10vh] pb-4"
             >
-              <span className="text-label-md font-mono uppercase tracking-[0.3em] text-on-surface">
+              <span className="text-label-md font-mono uppercase tracking-[0.3em] text-on-surface-muted/25">
                 Ambient Intelligence
               </span>
               <h1 className="mt-3 font-display text-display-lg font-light text-on-surface">
@@ -1359,99 +841,37 @@ export default function CCStream() {
             </motion.div>
           )}
 
-          {/* Conversation thread */}
+          {/* Conversation stream */}
           {hasMessages && (
             <div className="pb-8 pt-4 space-y-1">
               <AmbientVitals />
               {hasEarlier && (
                 <button
                   onClick={() => setVisibleCount(c => c + VISIBLE_BATCH)}
-                  className="w-full text-center py-2 text-xs text-on-surface hover:text-on-surface transition-colors font-mono"
+                  className="w-full text-center py-2 text-xs text-on-surface-muted/30 hover:text-on-surface-muted/50 transition-colors font-mono"
                 >
                   show {Math.min(VISIBLE_BATCH, allMessages.length - visibleCount)} earlier messages
                 </button>
               )}
               <AnimatePresence initial={false}>
-                {messages.map((msg, i) => {
-                  const prevMsg = messages[i - 1]
-                  const isInterrupt = msg.role === 'user' && prevMsg?.role === 'user'
-                  return msg.role === 'user'
-                    ? <UserMessage key={msg.id} message={msg} isInterrupt={isInterrupt} />
+                {messages.map(msg =>
+                  msg.role === 'user'
+                    ? <UserMessage key={msg.id} message={msg} />
                     : <AssistantMessage key={msg.id} message={msg} />
-                })}
+                )}
               </AnimatePresence>
             </div>
           )}
 
-          {/* Live streaming output — show whenever there's content, not just when status is 'streaming'.
-              Between turns (e.g. after an interrupt), status briefly flips to 'complete' before the next
-              turn starts, which would hide in-progress content. */}
-          {(isStreaming || streamText || streamTools.length > 0 || streamThinking) && (
-            <StreamingOutput text={streamText} tools={streamTools} thinking={streamThinking} />
-          )}
-
-          {/* Interrupt queue indicator */}
-          <AnimatePresence>
-            {isStreaming && interruptQueue.length > 0 && (
-              <div className="pb-3">
-                <InterruptBanner count={interruptQueue.length} />
-              </div>
-            )}
-          </AnimatePresence>
-
-          {/* Handover banner — ambient, non-intrusive */}
-          <AnimatePresence>
-            {handover && (
-              <div className="pb-3">
-                <HandoverBanner phase={handover.phase} briefPreview={handover.briefPreview} />
-              </div>
-            )}
-          </AnimatePresence>
-
+          {status === 'streaming' && <StreamingIndicator text={streamText} />}
           <div ref={chatEndRef} />
         </div>
       </div>
 
-      {/* Floating scroll-to-bottom button with unread count */}
-      <AnimatePresence>
-        {userScrolledUp && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 8 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            onClick={() => {
-              scrolledUpRef.current = false
-              setUserScrolledUp(false)
-              setUnreadCount(0)
-              lastSeenMessageCount.current = messages.length
-              scrollToBottom('smooth')
-            }}
-            className="absolute bottom-28 right-8 z-20 flex items-center gap-1.5 rounded-full shadow-lg px-3 py-2"
-            style={{
-              background: 'linear-gradient(135deg, rgba(27,122,61,0.90), rgba(46,204,113,0.80))',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(27,122,61,0.20)',
-              boxShadow: '0 4px 20px -4px rgba(27,122,61,0.35)',
-              color: 'white',
-            }}
-          >
-            <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.5} />
-            {unreadCount > 0 && (
-              <span className="text-[11px] font-mono font-semibold leading-none">
-                {unreadCount} new
-              </span>
-            )}
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Input area */}
+      {/* Input - wider on laptop, sits lower with more padding */}
       <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
         <div className="mx-auto max-w-4xl">
-          <div className="flex items-center gap-2 mb-1">
-            <AccountBadge />
-          </div>
+          <TokenBar />
 
           {/* Attachment chips */}
           <AnimatePresence>
@@ -1467,7 +887,7 @@ export default function CCStream() {
                     <AttachmentChip key={a.id} file={a} onRemove={() => setAttachments(prev => prev.filter(f => f.id !== a.id))} />
                   ))}
                   {attachments.length > 1 && (
-                    <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface hover:text-error transition-colors">
+                    <button onClick={() => setAttachments([])} className="flex items-center gap-1 self-end rounded-lg px-2 py-1 text-[10px] text-on-surface-muted/50 hover:text-error transition-colors">
                       <Trash2 className="h-3 w-3" strokeWidth={1.75} /> Clear all
                     </button>
                   )}
@@ -1476,47 +896,17 @@ export default function CCStream() {
             )}
           </AnimatePresence>
 
-          <div className="mt-1 rounded-2xl transition-all duration-300"
+          <div className="mt-1 rounded-2xl"
             style={{
               background: 'rgba(255, 255, 255, 0.68)',
-              border: isStreaming
-                ? '1px solid rgba(217,119,6,0.20)'
-                : '1px solid rgba(255, 255, 255, 0.55)',
-              borderTopColor: isStreaming
-                ? 'rgba(217,119,6,0.25)'
-                : 'rgba(255, 255, 255, 0.80)',
-              boxShadow: isStreaming
-                ? '0 20px 48px -12px rgba(217,119,6,0.08), 0 8px 20px -8px rgba(217,119,6,0.04), inset 0 1px 0 rgba(255,255,255,0.4)'
-                : '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.55)',
+              borderTopColor: 'rgba(255, 255, 255, 0.80)',
+              boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
             }}
           >
-            {/* Interrupt mode hint strip */}
-            <AnimatePresence>
-              {isStreaming && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="flex items-center gap-2 px-5 pt-3 pb-0">
-                    <motion.div
-                      className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: '#F59E0B' }}
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.2, repeat: Infinity }}
-                    />
-                    <span className="text-[10px] font-mono text-on-surface tracking-wide">
-                      interrupt mode — OS will respond when it pauses
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             <div className="flex items-end gap-3 px-5 py-4">
               {/* Paperclip */}
-              <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface transition-all hover:text-on-surface" style={{ color: 'rgba(27,122,61,0.7)' }}>
+              <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/30 transition-all hover:text-on-surface-muted/60" style={{ color: 'rgba(27,122,61,0.35)' }}>
                 <Paperclip className="h-4 w-4" strokeWidth={1.75} />
               </label>
               <input
@@ -1529,69 +919,38 @@ export default function CCStream() {
                 onChange={e => e.target.files && handleFiles(e.target.files)}
               />
 
-              <div className="relative flex-1">
-                <textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  onPaste={handlePaste}
-                  placeholder=""
-                  rows={1}
-                  className="w-full resize-none bg-transparent text-sm text-on-surface outline-none leading-relaxed"
-                  style={{ maxHeight: 200 }}
-                />
-              </div>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                onPaste={handlePaste}
+                placeholder={ghostPrompt}
+                rows={1}
+                className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface-muted/25 outline-none leading-relaxed"
+                style={{ maxHeight: 200 }}
+              />
               <div className="flex items-center gap-2">
                 {messages.length > 0 && (
-                  <>
-                    {/* Seamless handover — generates brief + warms new session */}
-                    <button
-                      onClick={handleHandover}
-                      disabled={!!handover || isStreaming}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface hover:text-on-surface hover:bg-on-surface-muted/[0.04] disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="Context handover — refresh session with full brief"
-                    >
-                      <motion.div
-                        animate={handover ? { rotate: 360 } : { rotate: 0 }}
-                        transition={handover ? { duration: 2, repeat: Infinity, ease: 'linear' } : {}}
-                      >
-                        <RefreshCw className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      </motion.div>
-                    </button>
-                    {/* Hard restart — no brief, fresh slate */}
-                    <button
-                      onClick={handleRestart}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface hover:text-on-surface hover:bg-on-surface-muted/[0.04]"
-                      title="Hard restart — fresh session, no context transfer"
-                    >
-                      <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
-                    </button>
-                  </>
+                  <button
+                    onClick={handleRestart}
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-on-surface-muted/25 hover:text-on-surface-muted/50 hover:bg-on-surface-muted/[0.04]"
+                    title="New session"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
                 )}
                 <button
                   onClick={handleSend}
                   disabled={!canSend}
-                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0 transition-all"
-                  title={isStreaming ? 'Send interrupt' : 'Send'}
+                  className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl disabled:opacity-0"
                   style={{
-                    background: !canSend
-                      ? 'transparent'
-                      : isStreaming
-                        ? 'linear-gradient(135deg, #D97706, #F59E0B)'
-                        : 'linear-gradient(135deg, #1B7A3D, #2ECC71)',
-                    boxShadow: !canSend
-                      ? 'none'
-                      : isStreaming
-                        ? '0 4px 16px -4px rgba(245,158,11,0.4), 0 0 12px rgba(245,158,11,0.15)'
-                        : '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)',
+                    background: canSend ? 'linear-gradient(135deg, #1B7A3D, #2ECC71)' : 'transparent',
+                    boxShadow: canSend ? '0 4px 16px -4px rgba(46,204,113,0.35), 0 0 12px rgba(46,204,113,0.15)' : 'none',
                     color: canSend ? 'white' : 'rgba(27,122,61,0.3)',
                   }}
                 >
-                  {isStreaming
-                    ? <ChevronUp className="h-4 w-4" strokeWidth={2.5} />
-                    : <ArrowUp className="h-4 w-4" strokeWidth={2} />
-                  }
+                  <ArrowUp className="h-4 w-4" strokeWidth={2} />
                 </button>
               </div>
             </div>
