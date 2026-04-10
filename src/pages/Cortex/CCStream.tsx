@@ -804,7 +804,7 @@ export default function CCStream() {
       </AnimatePresence>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto max-w-3xl px-6 lg:px-20 xl:px-32">
+        <div className="mx-auto max-w-5xl px-6 lg:px-10">
           {/* Ambient welcome — green + gold presence */}
           {!hasMessages && status !== 'streaming' && (
             <motion.div
@@ -871,7 +871,7 @@ export default function CCStream() {
       </div>
 
       {/* Input area — sits near the bottom, no background, black underline */}
-      <div className="w-full px-6 pb-10 pt-2 lg:px-20 xl:px-32">
+      <div className="w-full px-6 pb-10 pt-2 lg:px-10">
         <div className="mx-auto max-w-3xl">
           {/* Attachment chips */}
           <AnimatePresence>
@@ -941,7 +941,7 @@ export default function CCStream() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
-              placeholder={ghostPrompt}
+              placeholder=""
               rows={1}
               className="flex-1 resize-none bg-transparent text-sm text-on-surface placeholder-on-surface/30 outline-none leading-relaxed"
               style={{ maxHeight: 200 }}
