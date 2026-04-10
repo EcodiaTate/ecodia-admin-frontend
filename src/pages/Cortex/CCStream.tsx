@@ -24,7 +24,7 @@ import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { MermaidBlock } from '@/components/MermaidBlock'
 import { useOSSessionStore, type OSSessionMessage } from '@/store/osSessionStore'
-import { sendOSMessage, restartOS, getTokenUsage, getOSStatus, recoverResponse } from '@/api/osSession'
+import { sendOSMessage, restartOS, getOSStatus, recoverResponse } from '@/api/osSession'
 import { getGmailStats } from '@/api/gmail'
 import { getFinanceSummary } from '@/api/finance'
 import { getActionStats } from '@/api/actions'
@@ -553,42 +553,6 @@ function StreamingIndicator({ text }: { text: string }) {
   )
 }
 
-// ─── Token usage — green-to-gold gradient bar ───────────────────────
-
-function TokenBar() {
-  const { data } = useQuery({ queryKey: ['os-tokens'], queryFn: getTokenUsage, staleTime: 15_000, retry: 1 })
-  const compacting = useOSSessionStore(s => s.compacting)
-
-  if (!data || data.total === 0) return null
-
-  const pct = Math.min((data.total / data.threshold) * 100, 100)
-  const isHigh = pct > 75
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 px-1">
-      <div className="flex-1 h-0.5 rounded-full bg-on-surface-muted/[0.06] overflow-hidden">
-        <motion.div
-          className="h-full rounded-full"
-          style={{
-            background: isHigh
-              ? 'linear-gradient(90deg, #D97706, #EA580C)'
-              : 'linear-gradient(90deg, #1B7A3D, #2ECC71)',
-            boxShadow: isHigh
-              ? '0 0 8px rgba(217,119,6,0.3)'
-              : '0 0 8px rgba(46,204,113,0.2)',
-          }}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ type: 'spring', stiffness: 60, damping: 20 }}
-        />
-      </div>
-      <span className="text-[9px] font-mono text-on-surface-muted/25 tabular-nums whitespace-nowrap">
-        {compacting ? 'compacting...' : `${Math.round(pct)}%`}
-      </span>
-    </motion.div>
-  )
-}
-
 // ─── Main CCStream ──────────────────────────────────────────────────
 
 /** How many messages to show initially. Click "show earlier" to load more. */
@@ -894,40 +858,6 @@ export default function CCStream() {
         </div>
       </div>
 
-      {/* Floating scroll-to-bottom button with unread count */}
-      <AnimatePresence>
-        {userScrolledUp && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 8 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-            onClick={() => {
-              scrolledUpRef.current = false
-              setUserScrolledUp(false)
-              setUnreadCount(0)
-              lastSeenMessageCount.current = messages.length
-              scrollToBottom('smooth')
-            }}
-            className="absolute bottom-28 right-8 z-20 flex items-center gap-1.5 rounded-full shadow-lg px-3 py-2"
-            style={{
-              background: 'linear-gradient(135deg, rgba(27,122,61,0.90), rgba(46,204,113,0.80))',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(27,122,61,0.20)',
-              boxShadow: '0 4px 20px -4px rgba(27,122,61,0.35)',
-              color: 'white',
-            }}
-          >
-            <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.5} />
-            {unreadCount > 0 && (
-              <span className="text-[11px] font-mono font-semibold leading-none">
-                {unreadCount} new
-              </span>
-            )}
-          </motion.button>
-        )}
-      </AnimatePresence>
-
       {/* Input area */}
       <div className="w-full px-6 pb-14 pt-3 lg:px-16 xl:px-24">
         <div className="mx-auto max-w-4xl">
@@ -957,7 +887,7 @@ export default function CCStream() {
           <div className="mt-1 rounded-2xl transition-all duration-300">
             {/* Interrupt mode hint strip */}
             <AnimatePresence>
-              {isStreaming && (
+              {status === 'streaming' && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
