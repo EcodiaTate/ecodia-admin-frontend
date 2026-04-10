@@ -424,7 +424,8 @@ import CCStream from './CCStream'
 
 export default function CortexPage() {
   return (
-    <div className="relative h-full">
+    // Escape the scene-container padding — Cortex chat is full-bleed
+    <div className="absolute inset-0 overflow-hidden">
       <CCStream />
     </div>
   )

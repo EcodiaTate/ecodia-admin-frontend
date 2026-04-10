@@ -94,3 +94,9 @@ export async function triggerHandover() {
   const { data } = await api.post('/os-session/handover', {}, { timeout: 0 })
   return data
 }
+
+/** Upload a file to Supabase Storage via the backend, returns a public URL */
+export async function uploadAttachment(file: { name: string; type: string; base64: string }) {
+  const { data } = await api.post('/os-session/upload', file)
+  return data as { url: string; name: string; type: string; size: number }
+}
