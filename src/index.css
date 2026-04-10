@@ -377,6 +377,12 @@
   }
 }
 
+/* Full-bleed scene — removes all .scene-container padding (e.g. Cortex chat) */
+.scene-full-bleed.scene-container,
+.scene-full-bleed .scene-container {
+  padding: 0 !important;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .ambient-particle,
