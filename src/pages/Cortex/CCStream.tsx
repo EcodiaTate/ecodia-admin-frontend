@@ -14,7 +14,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, useId } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ArrowUp, RotateCcw, Brain, ChevronDown,
+  RotateCcw, Brain, ChevronDown,
   Mail, DollarSign, Zap, Activity,
   GitBranch, TrendingUp, Download,
   Paperclip, FileText, X, Trash2, Image as ImageIcon,
@@ -85,25 +85,7 @@ function AttachmentChip({ file, onRemove }: { file: AttachedFile; onRemove: () =
 }
 
 // ─── Ghost prompts ──────────────────────────────────────────────────
-const GHOST_PROMPTS = [
-  'How\'s the business doing?',
-  'Check all inboxes, what needs attention?',
-  'Show me the CRM pipeline',
-  'Draft replies to urgent emails',
-  'What happened while I was away?',
-  'Fix the bookkeeping, categorize everything',
-  'Any pending code requests?',
-  'What\'s on the calendar this week?',
-]
 
-function useGhostPrompt(): string {
-  const [idx, setIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % GHOST_PROMPTS.length), 7000)
-    return () => clearInterval(t)
-  }, [])
-  return GHOST_PROMPTS[idx]
-}
 
 // ─── Chromatic Vitals — green+gold ambient data ─────────────────────
 
@@ -581,8 +563,6 @@ export default function CCStream() {
   }, [allMessages, visibleCount])
   const hasEarlier = allMessages.length > visibleCount
 
-  const ghostPrompt = useGhostPrompt()
-  const canSend = (input.trim().length > 0 || attachments.length > 0) && status !== 'streaming'
 
   // File handlers
   const handleFiles = useCallback(async (files: FileList | File[]) => {
@@ -957,13 +937,6 @@ export default function CCStream() {
                   <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.75} />
                 </button>
               )}
-              <button
-                onClick={handleSend}
-                disabled={!canSend}
-                className="flex h-7 w-7 flex-shrink-0 items-center justify-center text-black disabled:opacity-20 hover:opacity-60 transition-opacity"
-              >
-                <ArrowUp className="h-4 w-4" strokeWidth={2} />
-              </button>
             </div>
           </div>
         </div>
