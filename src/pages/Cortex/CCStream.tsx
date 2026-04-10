@@ -871,7 +871,6 @@ export default function CCStream() {
           {/* Conversation stream */}
           {hasMessages && (
             <div className="pb-8 pt-4 space-y-1">
-              <AmbientVitals />
               {hasEarlier && (
                 <button
                   onClick={() => setVisibleCount(c => c + VISIBLE_BATCH)}
@@ -895,11 +894,43 @@ export default function CCStream() {
         </div>
       </div>
 
-      {/* Input - wider on laptop, sits lower with more padding */}
-      <div className="w-full px-6 pb-8 pt-3 lg:px-16 xl:px-24">
-        <div className="mx-auto max-w-4xl">
-          <TokenBar />
+      {/* Floating scroll-to-bottom button with unread count */}
+      <AnimatePresence>
+        {userScrolledUp && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 8 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 22 }}
+            onClick={() => {
+              scrolledUpRef.current = false
+              setUserScrolledUp(false)
+              setUnreadCount(0)
+              lastSeenMessageCount.current = messages.length
+              scrollToBottom('smooth')
+            }}
+            className="absolute bottom-28 right-8 z-20 flex items-center gap-1.5 rounded-full shadow-lg px-3 py-2"
+            style={{
+              background: 'linear-gradient(135deg, rgba(27,122,61,0.90), rgba(46,204,113,0.80))',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(27,122,61,0.20)',
+              boxShadow: '0 4px 20px -4px rgba(27,122,61,0.35)',
+              color: 'white',
+            }}
+          >
+            <ChevronDown className="h-3.5 w-3.5" strokeWidth={2.5} />
+            {unreadCount > 0 && (
+              <span className="text-[11px] font-mono font-semibold leading-none">
+                {unreadCount} new
+              </span>
+            )}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
+      {/* Input area */}
+      <div className="w-full px-6 pb-14 pt-3 lg:px-16 xl:px-24">
+        <div className="mx-auto max-w-4xl">
           {/* Attachment chips */}
           <AnimatePresence>
             {attachments.length > 0 && (
@@ -923,14 +954,31 @@ export default function CCStream() {
             )}
           </AnimatePresence>
 
-          <div className="mt-1 rounded-2xl"
-            style={{
-              background: 'rgba(255, 255, 255, 0.68)',
-              border: '1px solid rgba(255, 255, 255, 0.55)',
-              borderTopColor: 'rgba(255, 255, 255, 0.80)',
-              boxShadow: '0 20px 48px -12px rgba(27,122,61,0.06), 0 8px 20px -8px rgba(217,119,6,0.02), inset 0 1px 0 rgba(255,255,255,0.4)',
-            }}
-          >
+          <div className="mt-1 rounded-2xl transition-all duration-300">
+            {/* Interrupt mode hint strip */}
+            <AnimatePresence>
+              {isStreaming && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex items-center gap-2 px-5 pt-3 pb-0">
+                    <motion.div
+                      className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: '#F59E0B' }}
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity }}
+                    />
+                    <span className="text-[10px] font-mono text-on-surface tracking-wide">
+                      interrupt mode — OS will respond when it pauses
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="flex items-end gap-3 px-5 py-4">
               {/* Paperclip */}
               <label htmlFor={fileInputId} className="flex h-8 w-8 flex-shrink-0 cursor-pointer items-center justify-center rounded-xl text-on-surface-muted/30 transition-all hover:text-on-surface-muted/60" style={{ color: 'rgba(27,122,61,0.35)' }}>
