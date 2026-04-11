@@ -685,28 +685,42 @@ export default function CCStream() {
     setAttachments([])
     if (inputRef.current) inputRef.current.style.height = 'auto'
 
-    // Upload non-text files to Supabase Storage so the OS can access them by URL.
-    // Text files and small images are inlined directly; binary/large files get a URL.
-    let fullMessage = text
+    // Upload every attachment to Supabase Storage and append only a compact
+    // reference (name, type, size, public URL) to the message. The OS reads the
+    // file in its own time via the URL — we never dump file contents into chat.
+    const uploadedRefs: { label: string; name: string; type: string; size: number; url: string }[] = []
+    const failedRefs: { name: string; size: number; type: string; reason: string }[] = []
+
     for (const a of currentAttachments) {
-      if (a.text) {
-        // Text files — inline the content directly
-        fullMessage = `${fullMessage}\n\n[File: ${a.name}]\n\`\`\`\n${a.text}\n\`\`\``
-      } else if (a.dataUrl) {
-        // Images, PDFs, and other binary files — upload to Supabase for a public URL
-        try {
-          const uploaded = await uploadAttachment({ name: a.name, type: a.type, base64: a.dataUrl })
-          const label = a.type.startsWith('image/') ? 'Image' : 'File'
-          fullMessage = `${fullMessage}\n\n[${label}: ${a.name}]\nURL: ${uploaded.url}`
-        } catch {
-          // Fallback: inline data URL for images, plain ref for others
-          if (a.type.startsWith('image/')) {
-            fullMessage = `${fullMessage}\n\n[Image: ${a.name}]\n${a.dataUrl}`
-          } else {
-            fullMessage = `${fullMessage}\n\n[File: ${a.name} (${formatBytes(a.size)}, ${a.type}) — upload failed]`
-          }
-        }
+      try {
+        const uploaded = await uploadAttachment(
+          a.text != null
+            ? { name: a.name, type: a.type, text: a.text }
+            : { name: a.name, type: a.type, base64: a.dataUrl || '' }
+        )
+        uploadedRefs.push({
+          label: a.type.startsWith('image/') ? 'Image' : 'File',
+          name: uploaded.name,
+          type: uploaded.type,
+          size: uploaded.size,
+          url: uploaded.url,
+        })
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : 'unknown error'
+        failedRefs.push({ name: a.name, size: a.size, type: a.type, reason })
       }
+    }
+
+    let fullMessage = text
+    if (uploadedRefs.length) {
+      const lines = uploadedRefs.map(r =>
+        `- [${r.label}] ${r.name} (${formatBytes(r.size)}, ${r.type}) → ${r.url}`
+      )
+      fullMessage = `${fullMessage}${fullMessage ? '\n\n' : ''}Attached files (fetch in your own time, do not assume contents):\n${lines.join('\n')}`
+    }
+    if (failedRefs.length) {
+      const lines = failedRefs.map(r => `- ${r.name} (${formatBytes(r.size)}, ${r.type}) — upload failed: ${r.reason}`)
+      fullMessage = `${fullMessage}${fullMessage ? '\n\n' : ''}Attachments that failed to upload:\n${lines.join('\n')}`
     }
     fullMessage = fullMessage.trim() || `[Attached ${currentAttachments.map(a => a.name).join(', ')}]`
 

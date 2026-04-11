@@ -22,8 +22,6 @@ import { getKGStats } from '@/api/knowledgeGraph'
 import { sendCortexChat, getCortexBriefing } from '@/api/cortex'
 import { getSession } from '@/api/claudeCode'
 import { useCortexStore } from '@/store/cortexStore'
-// useOSCortexStore still used by legacy OrganismCortex below — kept for reference
-// import { useOSCortexStore } from '@/store/osCortexStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowUp, Brain, Network, Paperclip,
@@ -417,8 +415,8 @@ export { reactToCortex }
 
 // ─── Page Router ────────────────────────────────────────────────────
 // Unified CC stream — replaces both Organism and OS modes.
-// The old modes are preserved in OrganismCortex and OSChat components
-// but the default interface is now the persistent CC session.
+// The legacy OrganismCortex function is preserved below for reference but
+// is not mounted; the default interface is the persistent CC session.
 
 import CCStream from './CCStream'
 

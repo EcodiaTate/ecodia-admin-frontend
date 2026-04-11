@@ -95,8 +95,14 @@ export async function triggerHandover() {
   return data
 }
 
-/** Upload a file to Supabase Storage via the backend, returns a public URL */
-export async function uploadAttachment(file: { name: string; type: string; base64: string }) {
+/** Upload a file to Supabase Storage via the backend, returns a public URL.
+ * Pass either `base64` (binary, optionally as a data URL) or `text` (raw UTF-8). */
+export async function uploadAttachment(file: {
+  name: string
+  type: string
+  base64?: string
+  text?: string
+}) {
   const { data } = await api.post('/os-session/upload', file)
   return data as { url: string; name: string; type: string; size: number }
 }
